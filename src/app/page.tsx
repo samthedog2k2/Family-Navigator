@@ -60,7 +60,7 @@ export default function DashboardPage() {
           {features.map((feature) => (
             <Card
               key={feature.href}
-              className="transform-gpu transition-transform duration-300 hover:scale-105 hover:shadow-lg dark:bg-gray-800"
+              className="transform-gpu transition-transform duration-300 hover:scale-105 hover:shadow-lg"
             >
               <Link href={feature.href}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
