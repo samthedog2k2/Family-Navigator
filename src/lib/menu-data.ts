@@ -20,6 +20,7 @@ export const mainNavItems: NavItem[] = [
   { title: "Home", href: "/", description: "Go to homepage", isLeaf: true },
   { title: "Chat", href: "/chat", description: "Chat with an AI", isLeaf: true },
   { title: "Calendar", href: "/calendar", description: "View family calendar", isLeaf: true },
+  { title: "Weather", href: "/weather", description: "View local weather and forecast", isLeaf: true },
   {
     title: "School",
     isLeaf: false,

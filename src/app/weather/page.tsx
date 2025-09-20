@@ -1,103 +1,129 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Navigation, AlertCircle, Wind } from "lucide-react";
-import { getWeatherForecast, WeatherOutput } from "@/ai/flows/weather";
-import { toast } from "@/hooks/use-toast";
+import { Sun, CloudSun, CloudRain, CloudSnow } from "lucide-react";
 
-const weatherIconMap: { [key: string]: React.ReactNode } = {
-  sun: <Sun className="size-8" />,
-  cloud: <Cloud className="size-8" />,
-  rain: <CloudRain className="size-8" />,
-  snow: <CloudSnow className="size-8" />,
-  wind: <Wind className="size-8" />,
-  thunderstorm: <CloudLightning className="size-8" />,
+type CurrentWeather = {
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  weathercode: number;
 };
 
+type DailyForecast = {
+  time: string[];
+  temperature_2m_max: number[];
+  temperature_2m_min: number[];
+  weathercode: number[];
+};
 
 export default function WeatherPage() {
-  const [weather, setWeather] = useState<WeatherOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [current, setCurrent] = useState<CurrentWeather | null>(null);
+  const [forecast, setForecast] = useState<DailyForecast | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchWeatherData = async (latitude: number, longitude: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const weatherData = await getWeatherForecast({ latitude, longitude });
-      setWeather(weatherData);
-    } catch (err) {
-      setError("Could not fetch weather data. Please try again later.");
-      toast({ title: "Error", description: "Failed to fetch weather.", variant: "destructive" });
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+  // fallback Greenwood, IN
+  const fallback = { lat: 39.6137, lon: -86.1067 };
+
+  const getIcon = (code: number, size = 32) => {
+    if (code === 0) return <Sun size={size} />;
+    if (code >= 1 && code <= 3) return <CloudSun size={size} />;
+    if (code >= 51 && code <= 67) return <CloudRain size={size} />;
+    if (code >= 71 && code <= 77) return <CloudSnow size={size} />;
+    return <Sun size={size} />;
   };
 
   useEffect(() => {
-    if (navigator.geolocation) {
+    function fetchWeather(lat: number, lon: number) {
+      fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&temperature_unit=fahrenheit`,
+        { cache: "no-store" }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setCurrent(data.current_weather);
+          setForecast(data.daily);
+        })
+        .catch((e) => console.error("Weather fetch failed:", e))
+        .finally(() => setLoading(false));
+    }
+
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchWeatherData(position.coords.latitude, position.coords.longitude);
-        },
-        () => {
-          // Geolocation failed, fallback to San Diego
-          setError("Geolocation failed. Showing weather for San Diego.");
-          fetchWeatherData(32.7157, -117.1611);
-        }
+        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+        () => fetchWeather(fallback.lat, fallback.lon)
       );
     } else {
-      // Geolocation not supported, fallback to San Diego
-      setError("Geolocation not supported. Showing weather for San Diego.");
-      fetchWeatherData(32.7157, -117.1611);
+      fetchWeather(fallback.lat, fallback.lon);
     }
   }, []);
-  
+
   return (
     <LayoutWrapper>
       <PageHeader
-        title="Weather"
-        description={weather ? `Current weather for ${weather.locationName}.` : "Loading weather..."}
+        title="Weather Dashboard"
+        description="Current conditions, 5-day forecast, and radar"
       />
-      <div className="flex justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Current Conditions</CardTitle>
-             <CardDescription>
-                {weather ? weather.currentConditions : "Loading..."}
-             </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center items-center h-32">
-                <Loader2 className="size-8 animate-spin text-primary" />
+
+      {loading ? (
+        <p className="text-muted-foreground mt-6">Loading weather...</p>
+      ) : !current ? (
+        <p className="text-destructive mt-6">Failed to load weather data.</p>
+      ) : (
+        <div className="space-y-8 mt-6">
+          {/* Current conditions */}
+          <div className="p-6 rounded-lg border shadow-sm bg-card">
+            <h2 className="text-xl font-bold mb-4">Current Conditions</h2>
+            <div className="flex items-center gap-4">
+              {getIcon(current.weathercode, 48)}
+              <div>
+                <p className="text-4xl font-bold">{Math.round(current.temperature)}°F</p>
+                <p className="text-sm text-muted-foreground">
+                  Wind: {current.windspeed} mph
+                </p>
               </div>
-            ) : weather ? (
-              <div className="flex items-center justify-around text-center">
-                <div className="flex items-center gap-4">
-                  {weatherIconMap[weather.currentIcon]}
-                  <div className="text-5xl font-bold">{weather.currentTemp}°F</div>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                   <Navigation className="size-8" style={{ transform: `rotate(${weather.windDirection}deg)` }}/>
-                   <div className="font-semibold">{weather.windSpeed} mph</div>
-                   <div className="text-sm text-muted-foreground">Wind</div>
-                </div>
+            </div>
+          </div>
+
+          {/* Forecast */}
+          {forecast && (
+            <div className="p-6 rounded-lg border shadow-sm bg-card">
+              <h2 className="text-xl font-bold mb-4">5-Day Forecast</h2>
+              <div className="grid grid-cols-5 gap-4">
+                {forecast.time.slice(0, 5).map((day, i) => (
+                  <div
+                    key={day}
+                    className="flex flex-col items-center rounded-md p-2"
+                  >
+                    <span className="text-sm">
+                      {new Date(day).toLocaleDateString("en-US", {
+                        weekday: "short",
+                      })}
+                    </span>
+                    {getIcon(forecast.weathercode[i])}
+                    <span className="text-sm">
+                      {Math.round(forecast.temperature_2m_max[i])}° /{" "}
+                      {Math.round(forecast.temperature_2m_min[i])}°
+                    </span>
+                  </div>
+                ))}
               </div>
-            ) : (
-                 <div className="flex flex-col items-center justify-center h-32 gap-2 text-destructive">
-                    <AlertCircle className="size-8" />
-                    <p>{error || "Could not load weather data."}</p>
-                 </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          )}
+
+          {/* Radar */}
+          <div className="p-6 rounded-lg border shadow-sm bg-card">
+            <h2 className="text-xl font-bold mb-4">Radar</h2>
+            <iframe
+              src="https://radar.weather.gov/"
+              className="w-full h-[400px] rounded"
+              title="Weather Radar"
+            />
+          </div>
+        </div>
+      )}
     </LayoutWrapper>
   );
 }
