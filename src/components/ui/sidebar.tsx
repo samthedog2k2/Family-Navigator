@@ -9,10 +9,7 @@ import { PanelLeft } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -208,35 +205,24 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="group peer hidden md:block text-card-foreground"
+        className={cn(
+          "peer hidden md:block text-card-foreground",
+          "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+          "h-svh w-[var(--sidebar-width)] transition-[width] ease-linear",
+          "fixed inset-y-0 z-10",
+          side === 'left' ? 'left-0' : 'right-0'
+        )}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
+        {...props}
       >
         <div
-          className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
-          )}
-        />
-        <div
-          className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
-            side === "left"
-              ? "left-0"
-              : "right-0",
-            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
-            className
-          )}
-          {...props}
+          data-sidebar="sidebar"
+          className={cn("flex h-full w-full flex-col bg-card", className)}
         >
-          <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-card"
-          >
-            {children}
-          </div>
+          {children}
         </div>
       </div>
     )
