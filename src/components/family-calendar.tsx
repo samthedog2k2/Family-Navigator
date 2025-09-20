@@ -30,7 +30,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Event } from "@/components/calendar-event";
 
 type CalendarEvent = {
@@ -112,7 +111,7 @@ export function FamilyCalendar() {
 
   const [activeCalendars, setActiveCalendars] = React.useState<
     (FamilyMember | "Family")[]
-  >(["Family", "Adam", "Holly", "Ethan", "Elle"]);
+  >(["Family"]);
 
   const days = eachDayOfInterval({
     start: startOfWeek(firstDayCurrentMonth),
@@ -129,18 +128,9 @@ export function FamilyCalendar() {
     setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
   }
 
-  const [activeTab, setActiveTab] = React.useState<FamilyMember | "Family">(
-    "Family"
+  const filteredEvents = events.filter((event) =>
+    activeCalendars.includes(event.calendar)
   );
-
-  const filteredEvents = events.filter((event) => {
-    if (activeTab === "Family") {
-      return activeCalendars.includes(event.calendar);
-    }
-    return (
-      event.calendar === activeTab && activeCalendars.includes(event.calendar)
-    );
-  });
 
   const toggleCalendar = (calendar: FamilyMember | "Family") => {
     setActiveCalendars((prev) =>
@@ -174,17 +164,7 @@ export function FamilyCalendar() {
             <ChevronRight />
           </Button>
         </div>
-        <div className="flex flex-1 items-center justify-between gap-4">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FamilyMember | "Family")}>
-            <TabsList>
-              {familyMembers.map((member) => (
-                <TabsTrigger key={member} value={member}>
-                  {member}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-
+        <div className="flex flex-1 items-center justify-end gap-4">
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
