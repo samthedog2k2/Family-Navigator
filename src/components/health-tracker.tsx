@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,6 +26,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import type { FamilyMember, HealthData, AppState } from "@/lib/types";
+import { getHealthData, updateHealthData } from "@/services/data-service";
+import { Loader2 } from "lucide-react";
 
 const familyMembers: FamilyMember[] = ["Adam", "Holly", "Ethan", "Elle"];
 
@@ -38,30 +40,16 @@ const healthSchema = z.object({
   notes: z.string().max(140, "Notes must be 140 characters or less").optional(),
 });
 
-const initialHealthData: HealthData = {
-  height: "",
-  age: "",
-  gender: "Male",
-  weight: "",
-  glucose: "",
-  notes: "",
-};
-
-const initialAppState: AppState = {
-  Adam: { ...initialHealthData },
-  Holly: { ...initialHealthData, gender: "Female" },
-  Ethan: { ...initialHealthData },
-  Elle: { ...initialHealthData, gender: "Female" },
-};
-
 function HealthForm({
   member,
   data,
   onSave,
+  isSaving,
 }: {
   member: FamilyMember;
   data: HealthData;
   onSave: (member: FamilyMember, data: HealthData) => void;
+  isSaving: boolean;
 }) {
   const {
     register,
@@ -75,10 +63,6 @@ function HealthForm({
 
   const onSubmit = (formData: HealthData) => {
     onSave(member, formData);
-    toast({
-      title: "Data Saved",
-      description: `Health data for ${member} has been updated.`,
-    });
   };
 
   return (
@@ -117,7 +101,7 @@ function HealthForm({
                 name="gender"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <SelectTrigger id={`gender-${member}`}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -162,7 +146,10 @@ function HealthForm({
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit">Save Data</Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Data
+          </Button>
         </CardFooter>
       </Card>
     </form>
@@ -170,14 +157,60 @@ function HealthForm({
 }
 
 export function HealthTracker() {
-  const [appState, setAppState] = useState<AppState>(initialAppState);
+  const [appState, setAppState] = useState<AppState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = (member: FamilyMember, data: HealthData) => {
-    setAppState((prevState) => ({
-      ...prevState,
-      [member]: data,
-    }));
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const data = await getHealthData();
+        setAppState(data);
+      } catch (error) {
+        toast({
+          title: "Error Loading Data",
+          description: "Could not retrieve health data. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleSave = async (member: FamilyMember, data: HealthData) => {
+    setIsSaving(true);
+    try {
+      const updatedData = await updateHealthData(member, data);
+      setAppState(updatedData);
+      toast({
+        title: "Data Saved",
+        description: `Health data for ${member} has been updated.`,
+      });
+    } catch (error) {
+       toast({
+        title: "Error Saving Data",
+        description: `Could not save health data for ${member}.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!appState) {
+    return <p>Could not load health data.</p>;
+  }
 
   return (
     <Tabs defaultValue={familyMembers[0]} className="w-full">
@@ -194,6 +227,7 @@ export function HealthTracker() {
             member={member}
             data={appState[member]}
             onSave={handleSave}
+            isSaving={isSaving}
           />
         </TabsContent>
       ))}
