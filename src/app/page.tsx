@@ -51,7 +51,7 @@ const features = [
   },
 ];
 
-export default function DashboardPage() {
+export default function HomePage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />

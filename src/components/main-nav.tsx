@@ -16,7 +16,7 @@ import {
 import * as React from "react";
 
 const mainNavLinks = [
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "Home" },
   { href: "/travel", label: "Travel" },
   { href: "/finance", label: "Finance" },
   { href: "/health", label: "Health" },
