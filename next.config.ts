@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -23,13 +24,18 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https' as const,
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },
     ],
   },
+  ...(process.env.NODE_ENV === 'development' && {
+      experimental: {
+          allowedDevOrigins: ['*'],
+      }
+  })
 };
 
 export default nextConfig;
