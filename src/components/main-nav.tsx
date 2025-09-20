@@ -109,12 +109,14 @@ export function MainNav({
         <NavigationMenuList>
           {mainNavLinks.map((link) => (
              <NavigationMenuItem key={link.href}>
-                <NavigationMenuLink
-                  asChild
-                  active={pathname === link.href}
-                >
-                  <Link href={link.href} className="text-base">{link.label}</Link>
-                </NavigationMenuLink>
+                <Link href={link.href} passHref legacyBehavior>
+                    <NavigationMenuLink
+                    active={pathname === link.href}
+                    className={navigationMenuTriggerStyle()}
+                    >
+                    {link.label}
+                    </NavigationMenuLink>
+                </Link>
             </NavigationMenuItem>
           ))}
           <NavigationMenuItem>
@@ -229,8 +231,5 @@ const ListItem = React.forwardRef<
   )
 })
 ListItem.displayName = "ListItem"
-
-
-    
 
     
