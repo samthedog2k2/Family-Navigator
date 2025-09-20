@@ -181,8 +181,7 @@ export function FamilyCalendar() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-[auto_1fr] mt-4">
-          <div className="w-14"></div>
+        <div className="grid grid-cols-1 mt-4">
           <div
             className={`grid ${
               view === "day"
@@ -190,7 +189,7 @@ export function FamilyCalendar() {
                 : view === "week"
                 ? "grid-cols-7"
                 : "grid-cols-5"
-            } text-center`}
+            } text-center ml-14`}
           >
             {days.map((day) => (
               <div key={day.toString()} className="flex flex-col items-center">
@@ -249,7 +248,7 @@ export function FamilyCalendar() {
         {(view === "day" || view === "week" || view === "workWeek") && (
           <div className="grid grid-cols-[auto_1fr] h-full">
             {/* Time column */}
-            <div className="text-xs text-right text-muted-foreground pr-2">
+            <div className="w-14 text-xs text-right text-muted-foreground pr-2">
               {hours.map((hour, index) => (
                 <div
                   key={hour.toString()}
@@ -260,7 +259,7 @@ export function FamilyCalendar() {
               ))}
             </div>
             
-            <div className="relative grid">
+            <div className="relative grid flex-1">
               {/* Horizontal lines */}
               <div className="col-start-1 col-end-2 grid grid-rows-24 pointer-events-none">
                 {hours.map((_, index) => (
