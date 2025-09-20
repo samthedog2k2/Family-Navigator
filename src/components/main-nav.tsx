@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -109,11 +110,10 @@ export function MainNav({
           {mainNavLinks.map((link) => (
              <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
-                  href={link.href}
+                  asChild
                   active={pathname === link.href}
-                  className={cn(navigationMenuTriggerStyle(), "text-base")}
                 >
-                  {link.label}
+                  <Link href={link.href} className="text-base">{link.label}</Link>
                 </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
@@ -229,3 +229,8 @@ const ListItem = React.forwardRef<
   )
 })
 ListItem.displayName = "ListItem"
+
+
+    
+
+    
