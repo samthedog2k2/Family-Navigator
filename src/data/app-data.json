@@ -1,0 +1,79 @@
+
+{
+  "healthData": {
+    "Adam": {
+      "height": "6'1\"",
+      "age": 38,
+      "gender": "Male",
+      "weight": "190",
+      "glucose": "92",
+      "notes": "Annual check-up last month."
+    },
+    "Holly": {
+      "height": "5'7\"",
+      "age": 36,
+      "gender": "Female",
+      "weight": "145",
+      "glucose": "88",
+      "notes": "Yoga class on Tuesdays."
+    },
+    "Ethan": {
+      "height": "4'5\"",
+      "age": 10,
+      "gender": "Male",
+      "weight": "75",
+      "glucose": "85",
+      "notes": "Soccer practice M/W/F."
+    },
+    "Elle": {
+      "height": "3'9\"",
+      "age": 7,
+      "gender": "Female",
+      "weight": "55",
+      "glucose": "90",
+      "notes": "Ballet on Saturdays."
+    }
+  },
+  "calendarEvents": [
+    {
+      "id": "1",
+      "title": "Ethan's Soccer Practice",
+      "start": "2024-09-24T16:00:00.000Z",
+      "end": "2024-09-24T17:30:00.000Z",
+      "calendar": "Ethan",
+      "color": "blue"
+    },
+    {
+      "id": "2",
+      "title": "Holly's Book Club",
+      "start": "2024-09-24T19:00:00.000Z",
+      "end": "2024-09-24T20:30:00.000Z",
+      "calendar": "Holly",
+      "color": "purple"
+    },
+    {
+      "id": "3",
+      "title": "Adam's Dentist Appointment",
+      "start": "2024-09-25T10:00:00.000Z",
+      "end": "2024-09-25T11:00:00.000Z",
+      "calendar": "Adam",
+      "color": "green"
+    },
+    {
+      "id": "4",
+      "title": "Elle's Ballet Recital",
+      "start": "2024-09-27T18:00:00.000Z",
+      "end": "2024-09-27T19:00:00.000Z",
+      "calendar": "Elle",
+      "color": "orange"
+    },
+    {
+      "id": "5",
+      "title": "Family Movie Night",
+      "start": "2024-09-28T19:00:00.000Z",
+      "end": "2024-09-28T21:00:00.0Z",
+      "calendar": "Family",
+      "color": "blue"
+    }
+  ]
+}
