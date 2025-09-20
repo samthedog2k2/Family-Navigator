@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { FamilyCalendar } from "@/components/family-calendar";
@@ -7,17 +6,10 @@ import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Check, Plus } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/lib/types";
 import { useCalendar } from "@/hooks/use-calendar";
 import { NewEventDialog } from "@/components/new-event-dialog";
+import { cn } from "@/lib/utils";
 
 const familyMembers: (FamilyMember | "Family")[] = [
   "Family",
@@ -28,7 +20,7 @@ const familyMembers: (FamilyMember | "Family")[] = [
 ];
 
 export default function CalendarPage() {
-  const { activeCalendars, toggleCalendar } = useCalendar();
+  const { activeCalendars, toggleCalendar, view, setView } = useCalendar();
 
   return (
     <LayoutWrapper>
@@ -40,34 +32,39 @@ export default function CalendarPage() {
         <div className="flex flex-col gap-4">
           <NewEventDialog />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full justify-start">
-                <span>Select Calendar</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px]">
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <div className="font-semibold">Show Calendars</div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {familyMembers.map((calendar) => (
-                <DropdownMenuItem
-                  key={calendar}
-                  onSelect={(e) => e.preventDefault()}
-                  onClick={() => toggleCalendar(calendar)}
+          <div className="flex flex-col gap-1">
+             {(["day", "workWeek", "week", "month"] as const).map((v) => (
+                <Button
+                    key={v}
+                    variant={view === v ? "default" : "outline"}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => setView(v)}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      !activeCalendars.includes(calendar) && "opacity-0"
-                    )}
-                  />
-                  <span>{calendar}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    {v === "workWeek" ? "Work Week" : v.charAt(0).toUpperCase() + v.slice(1)}
+                </Button>
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold mb-2 px-2">Show Calendars</h4>
+            {familyMembers.map((calendar) => (
+              <Button
+                key={calendar}
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => toggleCalendar(calendar)}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    !activeCalendars.includes(calendar) && "opacity-0"
+                  )}
+                />
+                <span>{calendar}</span>
+              </Button>
+            ))}
+          </div>
         </div>
         <div className="h-[calc(100vh-12rem)]">
           <FamilyCalendar />

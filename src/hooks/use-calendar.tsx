@@ -2,8 +2,9 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import type { FamilyMember } from '@/lib/types';
 import { startOfToday, add } from 'date-fns';
+
+export type FamilyMember = "Adam" | "Holly" | "Ethan" | "Elle";
 
 export type CalendarEvent = {
   id: string;
@@ -11,7 +12,6 @@ export type CalendarEvent = {
   start: Date;
   end: Date;
   calendar: FamilyMember | "Family";
-  color: "blue" | "green" | "purple" | "orange";
   allDay?: boolean;
 };
 
@@ -24,7 +24,6 @@ const rawInitialEvents = [
     start: { add: { hours: 16 } },
     end: { add: { hours: 17, minutes: 30 } },
     calendar: "Ethan",
-    color: "blue",
   },
   {
     id: "2",
@@ -32,7 +31,6 @@ const rawInitialEvents = [
     start: { add: { hours: 19 } },
     end: { add: { hours: 20, minutes: 30 } },
     calendar: "Holly",
-    color: "purple",
   },
    {
     id: '2.1',
@@ -40,7 +38,6 @@ const rawInitialEvents = [
     start: { add: { hours: 18, minutes: 30 } },
     end: { add: { hours: 20 } },
     calendar: 'Adam',
-    color: 'green',
   },
   {
     id: "3",
@@ -48,7 +45,6 @@ const rawInitialEvents = [
     start: { add: { days: 1, hours: 10 } },
     end: { add: { days: 1, hours: 11 } },
     calendar: "Adam",
-    color: "green",
   },
   {
     id: "4",
@@ -56,7 +52,6 @@ const rawInitialEvents = [
     start: { add: { days: 2, hours: 13 } },
     end: { add: { days: 2, hours: 14 } },
     calendar: "Elle",
-    color: "orange",
   },
   {
     id: "5",
@@ -64,7 +59,6 @@ const rawInitialEvents = [
     start: { add: { days: 4, hours: 19 } },
     end: { add: { days: 4, hours: 21 } },
     calendar: "Family",
-    color: "blue",
   },
   {
     id: "6",
@@ -72,7 +66,6 @@ const rawInitialEvents = [
     start: { add: { days: -2, hours: 15 } },
     end: { add: { days: -2, hours: 16 } },
     calendar: "Family",
-    color: "purple",
   },
 ];
 

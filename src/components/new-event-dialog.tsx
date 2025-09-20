@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from "react";
@@ -18,12 +17,14 @@ import { Label } from "@/components/ui/label";
 import { addMinutes, format } from "date-fns";
 import { Plus } from "lucide-react";
 import { useCalendar } from "@/hooks/use-calendar";
-import type { CalendarEvent } from "@/hooks/use-calendar";
+import type { CalendarEvent, FamilyMember } from "@/hooks/use-calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
   const { setEvents } = useCalendar();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [calendar, setCalendar] = useState<FamilyMember | "Family">("Family");
   const [start, setStart] = useState(
     defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : ""
   );
@@ -39,8 +40,7 @@ export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
       title,
       start: new Date(start),
       end: new Date(end),
-      calendar: "Family", // Default calendar
-      color: "blue", // Default color
+      calendar: calendar,
     };
 
     setEvents((prev) => [...prev, newEvent]);
@@ -81,6 +81,21 @@ export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
               placeholder="Team meeting"
             />
           </div>
+           <div className="grid gap-2">
+                <Label htmlFor="calendar">Calendar</Label>
+                <Select onValueChange={(value: FamilyMember | "Family") => setCalendar(value)} defaultValue={calendar}>
+                    <SelectTrigger id="calendar">
+                        <SelectValue placeholder="Select a calendar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Family">Family</SelectItem>
+                        <SelectItem value="Adam">Adam</SelectItem>
+                        <SelectItem value="Holly">Holly</SelectItem>
+                        <SelectItem value="Ethan">Ethan</SelectItem>
+                        <SelectItem value="Elle">Elle</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
           <div className="grid gap-2">
             <Label htmlFor="start">Start</Label>
             <Input
