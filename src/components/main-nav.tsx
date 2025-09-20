@@ -171,13 +171,12 @@ export function MainNav({
           {mainNavItems.map((item) => (
             <NavigationMenuItem key={item.title}>
               {item.isLeaf ? (
-                <Link href={item.href} legacyBehavior passHref>
-                  <NavigationMenuLink
-                    className={navigationMenuTriggerStyle()}
-                    active={pathname === item.href}
-                  >
-                    {item.title}
-                  </NavigationMenuLink>
+                <Link
+                  href={item.href}
+                  className={navigationMenuTriggerStyle()}
+                  data-active={pathname === item.href}
+                >
+                  {item.title}
                 </Link>
               ) : (
                 <>
@@ -230,6 +229,4 @@ const ListItem = React.forwardRef<
     </li>
   );
 });
-ListItem.displayName = "ListItem"
-
-    
+ListItem.displayName = "ListItem";
