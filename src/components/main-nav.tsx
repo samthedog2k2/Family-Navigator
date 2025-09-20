@@ -88,6 +88,41 @@ const agentLinks: { title: string; href: string; description: string }[] = [
   },
 ];
 
+const screenTimeLinks: { title: string; href: string; description: string }[] = [
+    {
+        title: "Ethan's Usage",
+        href: "/screentime/ethan",
+        description: "Track usage for iPad, Oculus, and Switch."
+    },
+    {
+        title: "Elle's Usage",
+        href: "/screentime/elle",
+        description: "Track usage for iPad, Oculus, and Switch."
+    }
+];
+
+const weatherLinks: { title: string; href: string; description: string }[] = [
+    {
+        title: "Forecast",
+        href: "/weather/forecast",
+        description: "View the latest weather forecast."
+    },
+    {
+        title: "Radar",
+        href: "/weather/radar",
+        description: "See real-time weather radar maps."
+    }
+];
+
+const entertainmentLinks: { title: string; href: string; description: string }[] = [
+    { title: "Netflix", href: "/entertainment/subscriptions/netflix", description: "Manage your Netflix subscription." },
+    { title: "Hulu", href: "/entertainment/subscriptions/hulu", description: "Manage your Hulu subscription." },
+    { title: "Prime", href: "/entertainment/subscriptions/prime", description: "Manage your Prime Video subscription." },
+    { title: "Max", href: "/entertainment/subscriptions/max", description: "Manage your Max subscription." },
+    { title: "Apple TV+", href: "/entertainment/subscriptions/apple", description: "Manage your Apple TV+ subscription." },
+    { title: "Movies", href: "/entertainment/movies", description: "Track movies to watch." },
+    { title: "Sports", href: "/entertainment/sports", description: "Follow your favorite sports." },
+];
 
 export function MainNav({
   className,
@@ -113,59 +148,11 @@ export function MainNav({
                 </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
-            <NavigationMenuItem>
-                <NavigationMenuTrigger>Travel</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                        {travelLinks.map((component) => (
-                            <ListItem
-                                key={component.title}
-                                title={component.title}
-                                href={component.href}
-                            >
-                                {component.description}
-                            </ListItem>
-                        ))}
-                    </ul>
-                </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-                <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] lg:w-[600px]">
-                        {financeLinks.map((component) => (
-                            <ListItem
-                                key={component.title}
-                                title={component.title}
-                                href={component.href}
-                            >
-                                {component.description}
-                            </ListItem>
-                        ))}
-                    </ul>
-                </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-                <NavigationMenuTrigger>Health</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] lg:w-[600px]">
-                        {healthLinks.map((component) => (
-                            <ListItem
-                                key={component.title}
-                                title={component.title}
-                                href={component.href}
-                            >
-                                {component.description}
-                            </ListItem>
-                        ))}
-                    </ul>
-                </NavigationMenuContent>
-            </NavigationMenuItem>
-           <NavigationMenuItem>
-            <NavigationMenuTrigger>AI Agents</NavigationMenuTrigger>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Screen Time</NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                {agentLinks.map((component) => (
+              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {screenTimeLinks.map((component) => (
                   <ListItem
                     key={component.title}
                     title={component.title}
@@ -177,6 +164,54 @@ export function MainNav({
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Weather</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {weatherLinks.map((component) => (
+                  <ListItem
+                    key={component.title}
+                    title={component.title}
+                    href={component.href}
+                  >
+                    {component.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Entertainment</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {entertainmentLinks.map((component) => (
+                  <ListItem
+                    key={component.title}
+                    title={component.title}
+                    href={component.href}
+                  >
+                    {component.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+              <NavigationMenuTrigger>AI Agents</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                  {agentLinks.map((component) => (
+                    <ListItem
+                      key={component.title}
+                      title={component.title}
+                      href={component.href}
+                    >
+                      {component.description}
+                    </ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
     </nav>
@@ -210,3 +245,4 @@ const ListItem = React.forwardRef<
 })
 ListItem.displayName = "ListItem"
 
+    

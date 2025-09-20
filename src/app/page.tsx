@@ -11,6 +11,9 @@ import {
   MessageCircle,
   Calendar as CalendarIcon,
   LayoutGrid,
+  Clock,
+  CloudSun,
+  Clapperboard,
 } from "lucide-react";
 import { Header } from "@/components/header";
 import {
@@ -66,6 +69,27 @@ const features = [
     description: "Organize your family's schedule.",
     href: "/calendar",
     icon: <CalendarIcon className="h-8 w-8 text-primary" />,
+  },
+    {
+    id: "screentime",
+    title: "Screen Time",
+    description: "Monitor device usage.",
+    href: "/screentime",
+    icon: <Clock className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "weather",
+    title: "Weather",
+    description: "Check the local forecast.",
+    href: "/weather",
+    icon: <CloudSun className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "entertainment",
+    title: "Entertainment",
+    description: "Manage subscriptions and watchlists.",
+    href: "/entertainment",
+    icon: <Clapperboard className="h-8 w-8 text-primary" />,
   },
 ];
 
@@ -142,3 +166,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
