@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Sun, Cloud, CloudRain, Snowflake, Wind } from "lucide-react";
+import { RadarMap } from "@/components/RadarMap";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 // Map Open-Meteo weather codes to icons + text
 const weatherCodeMap: Record<number, { icon: JSX.Element; text: string }> = {
@@ -24,7 +26,7 @@ export default function WeatherPage() {
   useEffect(() => {
     async function fetchWeather(lat: number, lon: number) {
       // Set radar URL first
-      setRadarUrl(`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=6&level=surface&overlay=radar&menu=&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&detailLat=${lat}&detailLon=${lon}&metricWind=mph&metricTemp=°F`);
+      setRadarUrl(`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=7&overlay=radar&level=surface&menu=&message=false&type=map&location=coordinates&detail=false&metricWind=default&metricTemp=default`);
 
       // Get friendly location name
       try {
@@ -78,11 +80,6 @@ export default function WeatherPage() {
     return <Cloud className={`${iconSizeClass} text-gray-400`} />;
   }
 
-  function getText(code: number) {
-     const weatherInfo = Object.entries(weatherCodeMap).find(([key]) => Number(key) >= code);
-     return weatherInfo ? weatherInfo[1].text : "Unknown";
-  }
-
   if (!weather || forecast.length === 0) {
     return (
        <LayoutWrapper>
@@ -97,58 +94,53 @@ export default function WeatherPage() {
 
   return (
     <LayoutWrapper>
-      <PageHeader
-        title="Weather"
-        description={`Current conditions and forecast for ${location}`}
-      />
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <PageHeader
+            title="Weather"
+            description={`Current conditions and forecast for ${location}`}
+            className="mb-0"
+          />
+        </div>
+        <div className="flex items-center gap-4 text-right">
+            <span className="text-5xl font-bold">{Math.round(weather.temperature_2m)}°F</span>
+            {getIcon(weather.weathercode)}
+        </div>
+      </div>
 
       <div className="space-y-8">
-        {/* Current Conditions */}
-        <div className="bg-card shadow-sm rounded-xl p-6 border">
-          <h2 className="text-xl font-semibold text-card-foreground">Current Conditions</h2>
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex items-center space-x-4">
-              {getIcon(weather.weathercode)}
-              <span className="text-5xl font-bold">{Math.round(weather.temperature_2m)}°F</span>
-            </div>
-            <div className="text-right text-muted-foreground">
-              <p>{getText(weather.weathercode)}</p>
-              <p className="flex items-center justify-end space-x-2">
-                <Wind className="h-4 w-4" />{" "}
-                <span>{weather.windspeed_10m} mph Wind</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* 5-Day Forecast */}
-        <div className="bg-card shadow-sm rounded-xl p-6 border">
-          <h2 className="text-xl font-semibold text-card-foreground mb-4">5-Day Forecast</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            {forecast.slice(0, 5).map((day, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center justify-center bg-muted/50 rounded-lg p-4 border"
-              >
-                <p className="font-medium text-foreground">
-                  {new Date(day.date).toLocaleDateString("en-US", { weekday: "short" })}
-                </p>
-                <div className="my-2">{getIcon(day.code, 'small')}</div>
-                <p className="text-foreground font-semibold">{Math.round(day.max)}° / {Math.round(day.min)}°</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>5-Day Forecast</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                {forecast.slice(0, 5).map((day, idx) => (
+                <div
+                    key={idx}
+                    className="flex flex-col items-center justify-center bg-muted/50 rounded-lg p-4 border"
+                >
+                    <p className="font-medium text-foreground">
+                    {new Date(day.date).toLocaleDateString("en-US", { weekday: "short" })}
+                    </p>
+                    <div className="my-2">{getIcon(day.code, 'small')}</div>
+                    <p className="text-foreground font-semibold">{Math.round(day.max)}° / {Math.round(day.min)}°</p>
+                </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Radar */}
-        <div className="bg-card shadow-sm rounded-xl p-6 border">
-          <h2 className="text-xl font-semibold text-card-foreground mb-4">Radar</h2>
-          <iframe
-            className="w-full h-[500px] rounded-lg border"
-            src={radarUrl}
-            frameBorder="0"
-          ></iframe>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Radar</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <RadarMap />
+            </CardContent>
+        </Card>
       </div>
     </LayoutWrapper>
   );
