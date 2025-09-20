@@ -10,6 +10,7 @@ import { ChatInterface } from "@/components/chat";
 import { FamilyCalendar } from "@/components/family-calendar";
 import { PageHeader } from "./page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { cn } from "@/lib/utils";
 
 const featureMap: { [key: string]: React.ComponentType } = {
   travel: TravelPlanner,
