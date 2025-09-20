@@ -304,33 +304,38 @@ export function FamilyCalendar() {
               ))}
             </div>
             <div className="grid grid-cols-7 grid-rows-5 h-full divide-x divide-border">
-              {days.map((day, dayIdx) => (
-                <div
-                  key={day.toString()}
-                  className={cn(
-                    dayIdx === 0 && colStartClasses[getDay(day)],
-                    "relative border-t border-border p-1.5",
-                    !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
-                  )}
-                >
-                  <time
-                    dateTime={format(day, "yyyy-MM-dd")}
+              {days.map((day, dayIdx) => {
+                const holiday = getHoliday(day);
+                return (
+                  <div
+                    key={day.toString()}
                     className={cn(
-                      "h-7 w-7 rounded-full text-sm font-medium flex items-center justify-center",
-                      isToday(day) && "bg-primary text-primary-foreground"
+                      dayIdx === 0 && colStartClasses[getDay(day)],
+                      "relative border-t border-border p-1.5",
+                      holiday && "bg-red-50/50 dark:bg-red-900/20",
+                      !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
                     )}
                   >
-                    {format(day, "d")}
-                  </time>
-                  <div className="mt-2 flex-1 space-y-1">
-                    {filteredEvents
-                      .filter((event) => isSameDay(event.start, day))
-                      .map((event) => (
-                        <Event key={event.id} event={event} />
-                      ))}
+                    <time
+                      dateTime={format(day, "yyyy-MM-dd")}
+                      className={cn(
+                        "h-7 w-7 rounded-full text-sm font-medium flex items-center justify-center",
+                        isToday(day) && "bg-primary text-primary-foreground"
+                      )}
+                    >
+                      {format(day, "d")}
+                    </time>
+                     {holiday && <div className="text-[10px] text-red-600 font-semibold mt-1">{holiday}</div>}
+                    <div className="mt-2 flex-1 space-y-1">
+                      {filteredEvents
+                        .filter((event) => isSameDay(event.start, day))
+                        .map((event) => (
+                          <Event key={event.id} event={event} />
+                        ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         ) : (
@@ -346,7 +351,7 @@ export function FamilyCalendar() {
                   {days.map((day) => {
                     const holiday = getHoliday(day);
                     return(
-                    <div key={day.toString()} className="py-2 flex flex-col items-center">
+                    <div key={day.toString()} className={cn("py-2 flex flex-col items-center", holiday && "bg-red-50/50 dark:bg-red-900/20")}>
                        <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
                       <span
                         className={cn(
@@ -356,7 +361,7 @@ export function FamilyCalendar() {
                       >
                         {format(day, "d")}
                       </span>
-                      {holiday && <span className="text-xs text-red-500 font-medium truncate px-1">{holiday}</span>}
+                      {holiday && <span className="text-xs text-red-600 font-semibold truncate px-1">{holiday}</span>}
                     </div>
                   )})}
                 </div>
@@ -424,3 +429,5 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
