@@ -39,23 +39,28 @@ export function TimelineEvent({ event }: { event: TCalendarEvent & { slotIndex?:
   const width = 100 / slotCount;
   const left = width * slotIndex;
 
-  const timelineColorClass: Record<string, string> = {
-    Family: "bg-orange-500 border-orange-700 text-white",
-    Adam: "bg-blue-500 border-blue-700 text-white",
-    Holly: "bg-purple-500 border-purple-700 text-white",
-    Ethan: "bg-green-500 border-green-700 text-white",
-    Elle: "bg-pink-400 border-pink-600 text-black",
+  const timelineColorClass: Record<string, { bg: string, text: string, border: string }> = {
+    Family: { bg: "bg-orange-500", text: "text-white", border: "border-orange-700" },
+    Adam:   { bg: "bg-blue-500", text: "text-white", border: "border-blue-700" },
+    Holly:  { bg: "bg-purple-500", text: "text-white", border: "border-purple-700" },
+    Ethan:  { bg: "bg-green-500", text: "text-white", border: "border-green-700" },
+    Elle:   { bg: "bg-pink-400", text: "text-black", border: "border-pink-600" },
   };
   
-  const colorClass = timelineColorClass[event.calendar] || "bg-gray-500 border-gray-700 text-white";
+  const color = timelineColorClass[event.calendar] || { bg: "bg-gray-500", text: "text-white", border: "border-gray-700" };
 
   return (
     <div
       className={cn(
-        "absolute rounded-md p-1 text-xs shadow-md overflow-hidden border",
-        colorClass
+        "absolute rounded-md p-1 text-xs shadow-md overflow-hidden border cursor-pointer",
+        "transition-all duration-150",
+        "hover:brightness-90 focus:ring-2 focus:ring-offset-1 focus:ring-black",
+        color.bg,
+        color.text,
+        color.border,
       )}
       style={{ top, height, left: `${left}%`, width: `${width}%` }}
+      tabIndex={0}
     >
       <p className="font-medium truncate">{event.title}</p>
        <div className="text-[10px] opacity-80">
