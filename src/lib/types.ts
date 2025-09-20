@@ -1,0 +1,14 @@
+export type FamilyMember = "Adam" | "Holly" | "Ethan" | "Elle";
+
+export type HealthData = {
+  height: string;
+  age: string;
+  gender: "Male" | "Female" | "Other" | "";
+  weight: string;
+  glucose: string;
+  notes: string;
+};
+
+export type AppState = {
+  [key in FamilyMember]: HealthData;
+};
