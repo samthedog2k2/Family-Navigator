@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 import { ChevronDown } from "lucide-react"
@@ -79,7 +80,24 @@ const NavigationMenuContent = React.forwardRef<
 ))
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName
 
-const NavigationMenuLink = NavigationMenuPrimitive.Link
+const NavigationMenuLink = React.forwardRef<
+  React.ElementRef<typeof Link>,
+  React.ComponentProps<typeof Link> & {
+    active?: boolean
+  }
+>(({ className, active, ...props }, ref) => (
+  <Link
+    ref={ref}
+    className={cn(
+      navigationMenuTriggerStyle(),
+      "data-[active=true]:bg-accent/50",
+      className
+    )}
+    data-active={active}
+    {...props}
+  />
+))
+NavigationMenuLink.displayName = "NavigationMenuLink"
 
 const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
