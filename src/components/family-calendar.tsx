@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -31,6 +32,7 @@ import { Skeleton } from "./ui/skeleton";
 import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
 import { NewEventDialog } from "./new-event-dialog";
 import { EventDetailDialog } from "./event-detail-dialog";
+import { getHoliday } from "@/lib/holidays";
 
 
 const viewIntervals = {
@@ -341,19 +343,22 @@ export function FamilyCalendar() {
                     view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
                   } divide-x divide-border text-center`}
                 >
-                  {days.map((day) => (
-                    <div key={day.toString()} className="py-2">
+                  {days.map((day) => {
+                    const holiday = getHoliday(day);
+                    return(
+                    <div key={day.toString()} className="py-2 flex flex-col items-center">
                        <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
                       <span
                         className={cn(
-                          "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full mx-auto",
+                          "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full",
                           isToday(day) && "bg-primary text-primary-foreground"
                         )}
                       >
                         {format(day, "d")}
                       </span>
+                      {holiday && <span className="text-xs text-red-500 font-medium truncate px-1">{holiday}</span>}
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             </div>
