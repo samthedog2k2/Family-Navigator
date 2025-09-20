@@ -73,32 +73,6 @@ export const mainNavItems: NavItem[] = [
     ]
   },
   {
-    title: "Weather",
-    isLeaf: false,
-    description: "Check the local forecast and radar.",
-    children: [
-       {
-        title: "Overview",
-        href: "/weather",
-        description: "View the main weather dashboard.",
-        isLeaf: true,
-        isOverview: true,
-      },
-       {
-        title: "Forecast",
-        href: "/weather/forecast",
-        description: "View the latest weather forecast.",
-        isLeaf: true,
-      },
-      {
-        title: "Radar",
-        href: "/weather/radar",
-        description: "See real-time weather radar maps.",
-        isLeaf: true,
-      }
-    ]
-  },
-  {
     title: "Entertainment",
     isLeaf: false,
     description: "Manage your subscriptions and watchlists.",

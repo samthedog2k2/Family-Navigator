@@ -14,6 +14,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { mainNavItems, isNavMenu } from "@/lib/menu-data";
+import { WeatherDropdown } from "./weather-dropdown";
 
 export function MainNav({
   className,
@@ -61,6 +62,9 @@ export function MainNav({
               )}
             </NavigationMenuItem>
           ))}
+          <NavigationMenuItem>
+             <WeatherDropdown />
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
     </nav>
