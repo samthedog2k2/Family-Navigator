@@ -3,7 +3,8 @@
 
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { FamilyMember } from '@/lib/types';
-import { startOfToday, add } from 'date-fns';
+import { startOfToday, add, parseISO } from 'date-fns';
+import Holidays from 'holidays';
 
 type CalendarEvent = {
   id: string;
@@ -12,9 +13,10 @@ type CalendarEvent = {
   end: Date;
   calendar: FamilyMember | "Family";
   color: "blue" | "green" | "purple" | "orange";
+  allDay?: boolean;
 };
 
-type CalendarView = "day" | "week" | "month";
+type CalendarView = "day" | "workWeek" | "week" | "month";
 
 const initialEvents: CalendarEvent[] = [
   {
@@ -85,8 +87,31 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState(initialEvents);
   const [currentDate, setCurrentDate] = useState(startOfToday());
-  const [view, setView] = useState<CalendarView>('week');
+  const [view, setView] = useState<CalendarView>('workWeek');
   const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family"]);
+
+  useEffect(() => {
+    const year = currentDate.getFullYear();
+    const h = new Holidays('US');
+    const usHolidays = h.getHolidays(year);
+    const holidayEvents: CalendarEvent[] = usHolidays
+    .filter(holiday => holiday.type === 'public')
+    .map((holiday: any) => ({
+      id: `holiday-${holiday.date}`,
+      title: holiday.name,
+      start: parseISO(holiday.date),
+      end: parseISO(holiday.date),
+      allDay: true,
+      calendar: 'Family',
+      color: 'green'
+    }));
+
+    // Filter out any existing holidays to prevent duplicates
+    const nonHolidayEvents = initialEvents.filter(e => !e.id.startsWith('holiday-'));
+    setEvents([...nonHolidayEvents, ...holidayEvents]);
+
+  }, [currentDate.getFullYear()]);
+
 
   const toggleCalendar = useCallback((calendar: FamilyMember | "Family") => {
     setActiveCalendars((prev) =>

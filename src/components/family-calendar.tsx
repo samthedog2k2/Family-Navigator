@@ -9,11 +9,9 @@ import {
   endOfWeek,
   format,
   getDay,
-  isEqual,
   isSameDay,
   isSameMonth,
   isToday,
-  parse,
   startOfToday,
   startOfWeek,
   sub,
@@ -21,8 +19,10 @@ import {
   eachHourOfInterval,
   startOfDay,
   endOfDay,
+  isMonday,
+  isFriday,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,18 @@ const viewIntervals = {
     month: {
         start: (d: Date) => startOfWeek(startOfMonth(d)),
         end: (d: Date) => endOfWeek(endOfMonth(d)),
+    },
+    workWeek: {
+      start: (d: Date) => {
+        const start = startOfWeek(d);
+        // If start of week is Sunday, add a day to get to Monday
+        return getDay(start) === 0 ? add(start, { days: 1 }) : start;
+      },
+      end: (d: Date) => {
+        const end = endOfWeek(d);
+        // If end of week is Saturday, subtract a day to get to Friday
+        return getDay(end) === 6 ? sub(end, { days: 1 }) : end;
+      }
     },
     week: {
         start: startOfWeek,
@@ -47,6 +59,7 @@ const viewIntervals = {
 
 const viewHeaders = {
     month: (d: Date) => format(d, "MMMM yyyy"),
+    workWeek: (d: Date) => `Week of ${format(startOfWeek(d, { weekStartsOn: 1 }), "MMM d")}`,
     week: (d: Date) => `Week of ${format(startOfWeek(d), "MMM d")}`,
     day: (d: Date) => format(d, "MMMM d, yyyy"),
 }
@@ -64,10 +77,14 @@ export function FamilyCalendar() {
   const today = startOfToday();
 
   const interval = viewIntervals[view];
-  const days = eachDayOfInterval({
+  let days = eachDayOfInterval({
     start: interval.start(currentDate),
     end: interval.end(currentDate)
   });
+
+  if (view === 'workWeek') {
+    days = days.filter(day => getDay(day) >= 1 && getDay(day) <= 5);
+  }
   
   const hours = eachHourOfInterval({
     start: startOfDay(today),
@@ -78,6 +95,7 @@ export function FamilyCalendar() {
     switch (view) {
         case 'month': return { months: 1 };
         case 'week': return { weeks: 1 };
+        case 'workWeek': return { weeks: 1 };
         case 'day': return { days: 1 };
     }
   }
@@ -124,10 +142,10 @@ export function FamilyCalendar() {
         </div>
 
         <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
-            {(['day', 'week', 'month'] as (typeof view)[]) .map(v => (
+            {(['day', 'workWeek', 'week', 'month'] as (typeof view)[]) .map(v => (
                 <Button key={v} variant={view === v ? 'secondary' : 'ghost'} size="sm" onClick={() => setView(v)}
                  className={cn(view === v && "shadow-sm", "px-3")}>
-                    {v.charAt(0).toUpperCase() + v.slice(1)}
+                    {v === 'workWeek' ? 'Work Week' : v.charAt(0).toUpperCase() + v.slice(1)}
                 </Button>
             ))}
         </div>
@@ -140,7 +158,7 @@ export function FamilyCalendar() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] mt-4">
             <div className="w-14"></div>
-            <div className={`grid grid-cols-${days.length} text-center`}>
+            <div className={`grid ${view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'} text-center`}>
                 {days.map((day) => (
                     <div key={day.toString()} className="flex flex-col items-center">
                         <span className="text-sm text-muted-foreground">{format(day, 'E')}</span>
@@ -183,7 +201,7 @@ export function FamilyCalendar() {
                 ))}
             </div>
         )}
-        {(view === 'day' || view === 'week') && (
+        {(view === 'day' || view === 'week' || view === 'workWeek') && (
             <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] h-full" style={{ gridTemplateRows: 'auto 1fr'}}>
                 {/* Time column */}
                 <div className="text-xs text-right text-muted-foreground pr-2 row-start-2">
@@ -195,7 +213,7 @@ export function FamilyCalendar() {
                 </div>
 
                 {/* Day columns */}
-                <div className={`grid grid-cols-${days.length} relative row-start-2`}>
+                <div className={`grid ${view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'} relative row-start-2`}>
                     {/* Horizontal lines */}
                      <div className="col-span-full grid grid-rows-24 absolute inset-0 pointer-events-none">
                         {hours.map((_, index) => (

@@ -2,7 +2,6 @@
 import { FamilyCalendar } from "@/components/family-calendar";
 import { CalendarControlSidebar } from "@/components/calendar-control-sidebar";
 import { LayoutWrapper } from "@/components/layout-wrapper";
-import { PageHeader } from "@/components/page-header";
 import {
   Sidebar,
   SidebarInset,
