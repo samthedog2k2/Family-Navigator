@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -36,9 +37,12 @@ export function UserNav() {
 
   if (!isLoggedIn) {
     return (
-      <Button onClick={handleLogin}>
-        Login
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Button onClick={handleLogin}>Login</Button>
+        <Button variant="outline" onClick={handleLogin}>
+          Sign Up
+        </Button>
+      </div>
     );
   }
 

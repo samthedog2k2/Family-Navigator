@@ -11,9 +11,6 @@ export function Header({ className }: { className?: string}) {
       <div className="container flex h-14 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Logo className="h-6 w-6" />
-          <span className="font-bold sm:inline-block">
-            Family Navigator
-          </span>
         </Link>
         <MainNav className="mx-6" />
         <div className="ml-auto flex items-center space-x-4">
