@@ -36,9 +36,9 @@ const features = [
     icon: <HeartPulse className="h-8 w-8 text-primary" />,
   },
   {
-    title: "Web Agent",
-    description: "Interact with websites using AI.",
-    href: "/web-agent",
+    title: "Agents",
+    description: "Interact with AI agents.",
+    href: "/agents/webpages",
     icon: <Bot className="h-8 w-8 text-primary" />,
   },
   {
