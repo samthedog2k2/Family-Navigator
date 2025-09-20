@@ -89,7 +89,15 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(() => {
+    if (typeof window !== "undefined") {
+      const savedDate = localStorage.getItem("calendarDate");
+      if (savedDate) {
+        return new Date(savedDate);
+      }
+    }
+    return startOfToday();
+  });
   
   const [view, setView] = useState<CalendarView>(() => {
     if (typeof window !== "undefined") {
@@ -112,16 +120,15 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const today = startOfToday();
-    setCurrentDate(today);
-
     const processedEvents = rawInitialEvents.map(event => ({
       ...event,
-      start: add(today, event.start.add),
-      end: add(today, event.end.add),
+      start: add(currentDate, event.start.add),
+      end: add(currentDate, event.end.add),
     }));
     setEvents(processedEvents as CalendarEvent[]);
 
     setIsLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -135,6 +142,12 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("showWorkHours", JSON.stringify(showWorkHours));
     }
   }, [showWorkHours]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("calendarDate", currentDate.toISOString());
+    }
+  }, [currentDate]);
 
   const toggleCalendar = useCallback((calendar: FamilyMember | "Family") => {
     setActiveCalendars((prev) =>
