@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   HeartPulse,
   Landmark,
@@ -16,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Header } from "@/components/header";
-import { placeholderImages } from "@/lib/placeholder-images.json";
 
 const features = [
   {
@@ -51,31 +49,22 @@ const features = [
   },
 ];
 
-const heroImage = placeholderImages.find(p => p.id === 'hero-family');
-
 export default function DashboardPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <section className="relative w-full h-[60vh] text-white">
-          {heroImage && (
-            <Image
-              src={heroImage.imageUrl}
-              alt={heroImage.description}
-              fill
-              className="object-cover"
-              data-ai-hint={heroImage.imageHint}
-            />
-          )}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center bg-black/50 p-4">
-            <h1 className="text-4xl md:text-6xl font-bold">Family Navigator</h1>
-            <p className="mt-4 text-lg md:text-xl max-w-2xl">
-              Your compass for family life. All your family's needs, organized in one place.
-            </p>
-            <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link href="/travel">Get Started</Link>
-            </Button>
+        <section className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">Family Navigator</h1>
+              <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                Your compass for family life. All your family's needs, organized in one place.
+              </p>
+              <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Link href="/travel">Get Started</Link>
+              </Button>
+            </div>
           </div>
         </section>
 
