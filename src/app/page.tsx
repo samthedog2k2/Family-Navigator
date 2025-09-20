@@ -108,23 +108,22 @@ export default function HomePage() {
                   )}
                   onClick={() => handleFeatureSelect(feature.id)}
                 >
+                  <div className="absolute top-4 right-4 z-10">
+                    <Checkbox
+                      checked={selectedFeatures.includes(feature.id)}
+                      onCheckedChange={() => handleFeatureSelect(feature.id)}
+                      aria-label={`Select ${feature.title}`}
+                    />
+                  </div>
                   <Card className="h-full transition-all hover:shadow-lg">
-                     <div className="absolute top-4 right-4">
-                      <Checkbox
-                        checked={selectedFeatures.includes(feature.id)}
-                        onCheckedChange={() => handleFeatureSelect(feature.id)}
-                        aria-label={`Select ${feature.title}`}
-                      />
-                    </div>
-                    <Link href={feature.href} className="block" onClick={(e) => e.stopPropagation()}>
-                        <CardHeader className="flex-row items-center gap-4">
-                          {feature.icon}
-                          <CardTitle>{feature.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <CardDescription>{feature.description}</CardDescription>
-                        </CardContent>
-                     </Link>
+                    <CardHeader className="flex-row items-center gap-4">
+                      {feature.icon}
+                      <CardTitle>{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{feature.description}</CardDescription>
+                      <Link href={feature.href} onClick={(e) => e.stopPropagation()} className="absolute inset-0" aria-hidden="true" />
+                    </CardContent>
                   </Card>
                 </div>
               ))}
