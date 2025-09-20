@@ -26,7 +26,7 @@ const familyMembers: (FamilyMember | "Family")[] = [
 ];
 
 export default function CalendarPage() {
-  const { activeCalendars, toggleCalendar, view, setView } = useCalendar();
+  const { activeCalendars, toggleCalendar } = useCalendar();
 
   return (
     <LayoutWrapper>
@@ -40,23 +40,6 @@ export default function CalendarPage() {
             <Plus className="mr-2 h-4 w-4" />
             Add Event
           </Button>
-
-          <div className="flex flex-col gap-2">
-            {(["day", "workWeek", "week", "month"] as (typeof view)[]).map(
-              (v) => (
-                <Button
-                  key={v}
-                  variant={view === v ? "secondary" : "ghost"}
-                  onClick={() => setView(v)}
-                  className={cn("justify-start", view === v && "shadow-sm")}
-                >
-                  {v === "workWeek"
-                    ? "Work Week"
-                    : v.charAt(0).toUpperCase() + v.slice(1)}
-                </Button>
-              )
-            )}
-          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
