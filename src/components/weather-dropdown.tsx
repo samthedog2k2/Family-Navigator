@@ -24,8 +24,9 @@ import {
   getWeatherForecast,
   WeatherOutput,
 } from "@/ai/flows/weather";
+import { toast } from "@/hooks/use-toast";
 
-const weatherIconMap = {
+const weatherIconMap: { [key: string]: React.ReactNode } = {
   sun: <Sun className="size-5" />,
   cloud: <Cloud className="size-5" />,
   rain: <CloudRain className="size-5" />,
@@ -43,10 +44,12 @@ export function WeatherDropdown() {
     async function fetchWeather() {
       try {
         setIsLoading(true);
-        const result = await getWeatherForecast({ location: "San Diego, CA" });
+        // Default to San Diego for the dropdown
+        const result = await getWeatherForecast({ latitude: 32.7157, longitude: -117.1611 });
         setWeather(result);
       } catch (e) {
-        setError("Could not fetch weather. Please try again later.");
+        setError("Could not fetch weather.");
+        toast({ title: "Weather Error", description: "Could not fetch weather for the dropdown.", variant: "destructive" });
         console.error(e);
       } finally {
         setIsLoading(false);
@@ -81,7 +84,7 @@ export function WeatherDropdown() {
           ) : weather ? (
             <>
               <div className="text-center mb-4">
-                <p className="text-lg font-semibold">San Diego, CA</p>
+                <p className="text-lg font-semibold">{weather.locationName}</p>
                 <div className="flex items-center justify-center gap-2">
                   <div className="text-4xl font-bold">{weather.currentTemp}°</div>
                    <div className="flex flex-col items-center">
