@@ -22,89 +22,13 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import type { FamilyMember } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Event, TimelineEvent } from "@/components/calendar-event";
-
-type CalendarEvent = {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  calendar: FamilyMember | "Family";
-  color: "blue" | "green" | "purple" | "orange";
-};
-
-type CalendarView = "day" | "week" | "month";
-
-const familyMembers: (FamilyMember | "Family")[] = [
-  "Family",
-  "Adam",
-  "Holly",
-  "Ethan",
-  "Elle",
-];
-
-const initialEvents: CalendarEvent[] = [
-  {
-    id: "1",
-    title: "Ethan's Soccer Practice",
-    start: add(startOfToday(), { hours: 16 }),
-    end: add(startOfToday(), { hours: 17, minutes: 30 }),
-    calendar: "Ethan",
-    color: "blue",
-  },
-  {
-    id: "2",
-    title: "Holly's Book Club",
-    start: add(startOfToday(), { hours: 19 }),
-    end: add(startOfToday(), { hours: 20, minutes: 30 }),
-    calendar: "Holly",
-    color: "purple",
-  },
-  {
-    id: "3",
-    title: "Adam's Dentist Appointment",
-    start: add(startOfToday(), { days: 1, hours: 10 }),
-    end: add(startOfToday(), { days: 1, hours: 11 }),
-    calendar: "Adam",
-    color: "green",
-  },
-  {
-    id: "4",
-    title: "Elle's Ballet Recital",
-    start: add(startOfToday(), { days: 3, hours: 18 }),
-    end: add(startOfToday(), { days: 3, hours: 19 }),
-    calendar: "Elle",
-    color: "orange",
-  },
-  {
-    id: "5",
-    title: "Family Movie Night",
-    start: add(startOfToday(), { days: 4, hours: 19 }),
-    end: add(startOfToday(), { days: 4, hours: 21 }),
-    calendar: "Family",
-    color: "blue",
-  },
-  {
-    id: "6",
-    title: "Parent-Teacher Conference",
-    start: add(startOfToday(), { days: -2, hours: 15 }),
-    end: add(startOfToday(), { days: -2, hours: 16 }),
-    calendar: "Family",
-    color: "purple",
-  },
-];
+import { useCalendar } from "@/hooks/use-calendar";
+import { SidebarTrigger } from "./ui/sidebar";
 
 const viewIntervals = {
     month: {
@@ -128,14 +52,16 @@ const viewHeaders = {
 }
 
 export function FamilyCalendar() {
-  const today = startOfToday();
-  const [events, setEvents] = React.useState(initialEvents);
-  const [currentDate, setCurrentDate] = React.useState(today);
-  const [view, setView] = React.useState<CalendarView>('week');
+  const {
+    events,
+    currentDate,
+    setCurrentDate,
+    view,
+    setView,
+    activeCalendars,
+  } = useCalendar();
 
-  const [activeCalendars, setActiveCalendars] = React.useState<
-    (FamilyMember | "Family")[]
-  >(["Family", "Adam", "Holly", "Ethan", "Elle"]);
+  const today = startOfToday();
 
   const interval = viewIntervals[view];
   const days = eachDayOfInterval({
@@ -168,14 +94,6 @@ export function FamilyCalendar() {
     activeCalendars.includes(event.calendar)
   );
 
-  const toggleCalendar = (calendar: FamilyMember | "Family") => {
-    setActiveCalendars((prev) =>
-      prev.includes(calendar)
-        ? prev.filter((c) => c !== calendar)
-        : [...prev, calendar]
-    );
-  };
-
   const colStartClasses = [
     "",
     "col-start-2",
@@ -192,6 +110,7 @@ export function FamilyCalendar() {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+            <SidebarTrigger className="md:hidden"/>
             <Button variant="outline" onClick={() => setCurrentDate(today)}>Today</Button>
           <Button variant="outline" size="icon" onClick={prevPeriod} aria-label="Previous period">
             <ChevronLeft />
@@ -205,47 +124,12 @@ export function FamilyCalendar() {
         </div>
 
         <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
-            {(['day', 'week', 'month'] as CalendarView[]).map(v => (
+            {(['day', 'week', 'month'] as (typeof view)[]) .map(v => (
                 <Button key={v} variant={view === v ? 'secondary' : 'ghost'} size="sm" onClick={() => setView(v)}
                  className={cn(view === v && "shadow-sm", "px-3")}>
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                 </Button>
             ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <span>Select Calendar</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <div className="font-semibold">Show Calendars</div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {familyMembers.map((calendar) => (
-                  <DropdownMenuItem
-                    key={calendar}
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => toggleCalendar(calendar)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        !activeCalendars.includes(calendar) && "opacity-0"
-                      )}
-                    />
-                    <span>{calendar}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button>
-              <Plus className="h-4 w-4"/>
-              <span>Add event</span>
-            </Button>
         </div>
       </div>
       

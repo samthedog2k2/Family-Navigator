@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { Inter } from 'next/font/google'
+import { CalendarProvider } from "@/hooks/use-calendar";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans',})
 
@@ -18,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
-        <div className="flex-1">
-          {children}
-        </div>
+        <CalendarProvider>
+          <div className="flex-1">
+            {children}
+          </div>
+        </CalendarProvider>
         <Toaster />
         <footer className="py-4 text-center text-sm text-muted-foreground">
           Your compass for family life.

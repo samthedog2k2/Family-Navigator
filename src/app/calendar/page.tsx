@@ -1,16 +1,25 @@
 
 import { FamilyCalendar } from "@/components/family-calendar";
+import { CalendarControlSidebar } from "@/components/calendar-control-sidebar";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 
 export default function CalendarPage() {
   return (
-    <LayoutWrapper>
-      <PageHeader
-        title="Family Calendar"
-        description="Organize and view schedules for the whole family."
-      />
-      <FamilyCalendar />
-    </LayoutWrapper>
+    <SidebarProvider>
+      <Sidebar>
+        <CalendarControlSidebar />
+      </Sidebar>
+      <SidebarInset>
+        <LayoutWrapper>
+          <FamilyCalendar />
+        </LayoutWrapper>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
