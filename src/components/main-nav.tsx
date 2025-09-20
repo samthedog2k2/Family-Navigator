@@ -17,11 +17,52 @@ import * as React from "react";
 
 const mainNavLinks = [
   { href: "/", label: "Home" },
-  { href: "/travel", label: "Travel" },
-  { href: "/finance", label: "Finance" },
-  { href: "/health", label: "Health" },
   { href: "/chat", label: "Chat" },
 ];
+
+const travelLinks: { title: string; href: string; description: string }[] = [
+  {
+    title: "Cruises",
+    href: "/travel",
+    description: "Plan and book your next cruise adventure.",
+  },
+  {
+    title: "Road Trips",
+    href: "/travel",
+    description: "Discover scenic routes and plan your journey.",
+  },
+  {
+    title: "Lodging",
+    href: "/travel",
+    description: "Find and book accommodations for your trip.",
+  },
+];
+
+const financeLinks: { title: string; href: string; description: string }[] = [
+    {
+        title: "Smart Summary",
+        href: "/finance",
+        description: "Get an AI-powered summary of your finances."
+    },
+    {
+        title: "Savings Projections",
+        href: "/finance",
+        description: "Project your retirement and college savings."
+    }
+]
+
+const healthLinks: { title: string; href: string; description: string }[] = [
+    {
+        title: "Log Vitals",
+        href: "/health",
+        description: "Record daily health metrics for your family."
+    },
+    {
+        title: "View Trends",
+        href: "/health",
+        description: "Analyze health data and spot trends over time."
+    }
+]
 
 const agentLinks: { title: string; href: string; description: string }[] = [
   {
@@ -74,6 +115,54 @@ export function MainNav({
               </Link>
             </NavigationMenuItem>
           ))}
+            <NavigationMenuItem>
+                <NavigationMenuTrigger>Travel</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                        {travelLinks.map((component) => (
+                            <ListItem
+                                key={component.title}
+                                title={component.title}
+                                href={component.href}
+                            >
+                                {component.description}
+                            </ListItem>
+                        ))}
+                    </ul>
+                </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+                <NavigationMenuTrigger>Finance</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] lg:w-[600px]">
+                        {financeLinks.map((component) => (
+                            <ListItem
+                                key={component.title}
+                                title={component.title}
+                                href={component.href}
+                            >
+                                {component.description}
+                            </ListItem>
+                        ))}
+                    </ul>
+                </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+                <NavigationMenuTrigger>Health</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] lg:w-[600px]">
+                        {healthLinks.map((component) => (
+                            <ListItem
+                                key={component.title}
+                                title={component.title}
+                                href={component.href}
+                            >
+                                {component.description}
+                            </ListItem>
+                        ))}
+                    </ul>
+                </NavigationMenuContent>
+            </NavigationMenuItem>
            <NavigationMenuItem>
             <NavigationMenuTrigger>Agents</NavigationMenuTrigger>
             <NavigationMenuContent>
