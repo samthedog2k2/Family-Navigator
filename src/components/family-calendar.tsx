@@ -255,7 +255,7 @@ export function FamilyCalendar() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] mt-4">
-            <div></div>
+            <div className="w-14"></div>
             <div className={`grid grid-cols-${days.length} text-center`}>
                 {days.map((day) => (
                     <div key={day.toString()} className="flex flex-col items-center">
@@ -300,27 +300,27 @@ export function FamilyCalendar() {
             </div>
         )}
         {(view === 'day' || view === 'week') && (
-            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] h-full">
+            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] h-full" style={{ gridTemplateRows: 'auto 1fr'}}>
                 {/* Time column */}
-                <div className="text-xs text-right text-muted-foreground pr-2">
+                <div className="text-xs text-right text-muted-foreground pr-2 row-start-2">
                     {hours.map(hour => (
-                        <div key={hour.toString()} className="h-12 flex items-start justify-end -mt-2">
-                             <span className="relative top-2">{format(hour, 'ha')}</span>
+                        <div key={hour.toString()} className="h-12 flex items-start justify-end -mt-2.5">
+                             <span className="relative top-0">{format(hour, 'ha')}</span>
                         </div>
                     ))}
                 </div>
 
                 {/* Day columns */}
-                <div className={`grid grid-cols-${days.length} relative`}>
+                <div className={`grid grid-cols-${days.length} relative row-start-2`}>
                     {/* Horizontal lines */}
-                     <div className="col-span-full grid grid-rows-24 absolute inset-0">
+                     <div className="col-span-full grid grid-rows-24 absolute inset-0 pointer-events-none">
                         {hours.map((_, index) => (
                             <div key={index} className="border-t border-muted"></div>
                         ))}
                     </div>
 
                     {days.map((day, dayIndex) => (
-                        <div key={day.toString()} className={cn("relative", dayIndex > 0 && "border-l")}>
+                        <div key={day.toString()} className={cn("relative", dayIndex > 0 && "border-l border-muted")}>
                              {filteredEvents.filter(event => isSameDay(event.start, day))
                                 .map(event => (
                                     <TimelineEvent key={event.id} event={event}/>
@@ -334,5 +334,3 @@ export function FamilyCalendar() {
     </div>
   );
 }
-
-    
