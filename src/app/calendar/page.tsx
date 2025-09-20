@@ -16,7 +16,9 @@ export default function CalendarPage() {
       </Sidebar>
       <SidebarInset>
         <LayoutWrapper>
-          <FamilyCalendar />
+          <div className="container mx-auto">
+            <FamilyCalendar />
+          </div>
         </LayoutWrapper>
       </SidebarInset>
     </SidebarProvider>
