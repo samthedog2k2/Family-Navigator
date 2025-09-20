@@ -190,7 +190,7 @@ export function FamilyCalendar() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={prevPeriod}>
             <ChevronLeft />
@@ -203,16 +203,16 @@ export function FamilyCalendar() {
           </Button>
         </div>
 
-        <div className="flex-1 space-x-2">
+        <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
             {(['day', 'week', 'month'] as CalendarView[]).map(v => (
-                <Button key={v} variant={view === v ? 'default' : 'outline'} onClick={() => setView(v)}>
+                <Button key={v} variant={view === v ? 'default' : 'ghost'} size="sm" onClick={() => setView(v)}
+                 className={cn(view === v && "shadow-sm", "px-3")}>
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                 </Button>
             ))}
         </div>
 
-        <div className="flex items-center justify-end gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -245,7 +245,6 @@ export function FamilyCalendar() {
               <Plus />
               <span>Add event</span>
             </Button>
-          </div>
         </div>
       </div>
       <div className={cn("grid text-xs font-semibold leading-6 text-center text-muted-foreground mt-4", viewGridCols[view])}>
@@ -275,26 +274,19 @@ export function FamilyCalendar() {
             )}
           >
             <div className="flex flex-col">
-              <div className="flex items-center justify-between">
                 <button
                   onClick={() => setSelectedDay(day)}
                   className={cn(
-                    "h-7 w-7 rounded-full text-sm",
-                    isEqual(day, selectedDay) &&
-                      "bg-primary text-primary-foreground",
-                    !isEqual(day, selectedDay) &&
-                      isToday(day) &&
-                      "bg-accent text-accent-foreground",
-                    !isEqual(day, selectedDay) &&
-                      !isToday(day) &&
-                      "hover:bg-accent"
+                    "h-7 w-7 rounded-full text-sm font-medium",
+                     isEqual(day, selectedDay) && "bg-primary text-primary-foreground",
+                     !isEqual(day, selectedDay) && isToday(day) && "bg-accent text-accent-foreground",
+                     !isEqual(day, selectedDay) && !isToday(day) && "hover:bg-accent"
                   )}
                 >
                   <time dateTime={format(day, "yyyy-MM-dd")}>
                     {format(day, "d")}
                   </time>
                 </button>
-              </div>
               <div className="mt-2 flex-1 space-y-1">
                 {filteredEvents
                   .filter((event) => isSameDay(event.start, day))
@@ -309,5 +301,3 @@ export function FamilyCalendar() {
     </div>
   );
 }
-
-    

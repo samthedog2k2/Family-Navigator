@@ -26,7 +26,7 @@ const colorClasses = {
 export function Event({ event }: EventProps) {
   return (
     <div
-      className={`rounded-md border p-1.5 text-[11px] font-medium leading-tight ${
+      className={`rounded-md border p-1.5 text-xs font-medium leading-tight ${
         colorClasses[event.color]
       }`}
     >
