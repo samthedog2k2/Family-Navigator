@@ -62,11 +62,13 @@ export function WeatherDropdown() {
         },
         () => {
           // Geolocation failed, fallback to San Diego
+          setError("Geolocation failed. Using San Diego.");
           fetchWeatherData(32.7157, -117.1611);
         }
       );
     } else {
       // Geolocation not supported, fallback to San Diego
+       setError("Geolocation not supported. Using San Diego.");
       fetchWeatherData(32.7157, -117.1611);
     }
   }, []);
