@@ -16,6 +16,7 @@ import {
   parse,
   startOfToday,
   startOfWeek,
+  sub,
 } from "date-fns";
 import { Resizable } from "re-resizable";
 import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -40,6 +41,8 @@ type CalendarEvent = {
   calendar: FamilyMember | "Family";
   color: "blue" | "green" | "purple" | "orange";
 };
+
+type CalendarView = "day" | "week" | "month";
 
 const familyMembers: (FamilyMember | "Family")[] = [
   "Family",
@@ -100,32 +103,65 @@ const initialEvents: CalendarEvent[] = [
   },
 ];
 
+const viewIntervals = {
+    month: {
+        start: (d: Date) => startOfWeek(startOfMonth(d)),
+        end: (d: Date) => endOfWeek(endOfMonth(d)),
+    },
+    week: {
+        start: startOfWeek,
+        end: endOfWeek,
+    },
+    day: {
+        start: (d: Date) => d,
+        end: (d: Date) => d,
+    }
+}
+
+const viewHeaders = {
+    month: (d: Date) => format(d, "MMMM yyyy"),
+    week: (d: Date) => `Week of ${format(startOfWeek(d), "MMM d")}`,
+    day: (d: Date) => format(d, "MMMM d, yyyy"),
+}
+
+const viewGridCols = {
+    month: 'grid-cols-7',
+    week: 'grid-cols-7',
+    day: 'grid-cols-1'
+}
+
 export function FamilyCalendar() {
   const today = startOfToday();
   const [events, setEvents] = React.useState(initialEvents);
+  const [currentDate, setCurrentDate] = React.useState(today);
   const [selectedDay, setSelectedDay] = React.useState(today);
-  const [currentMonth, setCurrentMonth] = React.useState(
-    format(today, "MMM-yyyy")
-  );
-  const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
+  const [view, setView] = React.useState<CalendarView>('week');
 
   const [activeCalendars, setActiveCalendars] = React.useState<
     (FamilyMember | "Family")[]
   >(["Family"]);
 
+
+  const interval = viewIntervals[view];
   const days = eachDayOfInterval({
-    start: startOfWeek(firstDayCurrentMonth),
-    end: endOfWeek(endOfMonth(firstDayCurrentMonth)),
+    start: interval.start(currentDate),
+    end: interval.end(currentDate)
   });
 
-  function prevMonth() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
-    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
+  const getPeriod = () => {
+    switch (view) {
+        case 'month': return { months: 1 };
+        case 'week': return { weeks: 1 };
+        case 'day': return { days: 1 };
+    }
   }
 
-  function nextMonth() {
-    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
-    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
+  function prevPeriod() {
+    setCurrentDate(sub(currentDate, getPeriod()));
+  }
+
+  function nextPeriod() {
+    setCurrentDate(add(currentDate, getPeriod()));
   }
 
   const filteredEvents = events.filter((event) =>
@@ -150,26 +186,37 @@ export function FamilyCalendar() {
     "col-start-7",
   ];
 
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={prevMonth}>
+          <Button variant="outline" size="icon" onClick={prevPeriod}>
             <ChevronLeft />
           </Button>
-          <h2 className="w-40 text-center text-lg font-semibold">
-            {format(firstDayCurrentMonth, "MMMM yyyy")}
+          <h2 className="w-48 text-center text-lg font-semibold">
+             {viewHeaders[view](currentDate)}
           </h2>
-          <Button variant="outline" size="icon" onClick={nextMonth}>
+          <Button variant="outline" size="icon" onClick={nextPeriod}>
             <ChevronRight />
           </Button>
         </div>
-        <div className="flex flex-1 items-center justify-end gap-4">
+
+        <div className="flex-1 space-x-2">
+            {(['day', 'week', 'month'] as CalendarView[]).map(v => (
+                <Button key={v} variant={view === v ? 'default' : 'outline'} onClick={() => setView(v)}>
+                    {v.charAt(0).toUpperCase() + v.slice(1)}
+                </Button>
+            ))}
+        </div>
+
+        <div className="flex items-center justify-end gap-4">
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <span>Select Calendars</span>
+                  <span>Select Calendar</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -201,14 +248,9 @@ export function FamilyCalendar() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-7 text-xs font-semibold leading-6 text-center text-muted-foreground mt-4">
-        <div>Sun</div>
-        <div>Mon</div>
-        <div>Tue</div>
-        <div>Wed</div>
-        <div>Thu</div>
-        <div>Fri</div>
-        <div>Sat</div>
+      <div className={cn("grid text-xs font-semibold leading-6 text-center text-muted-foreground mt-4", viewGridCols[view])}>
+        { (view === 'week' || view === 'month') && weekDays.map(day => <div key={day}>{day}</div>) }
+        { view === 'day' && <div>{weekDays[getDay(currentDate)]}</div> }
       </div>
       <Resizable
         defaultSize={{
@@ -221,15 +263,15 @@ export function FamilyCalendar() {
         enable={{
           bottom: true,
         }}
-        className="grid grid-cols-7"
+        className={cn("grid", viewGridCols[view])}
       >
         {days.map((day, dayIdx) => (
           <div
             key={day.toString()}
             className={cn(
-              dayIdx === 0 && colStartClasses[getDay(day)],
+              (view === 'month' && dayIdx === 0) && colStartClasses[getDay(day)],
               "relative border-t p-1.5",
-              !isSameMonth(day, firstDayCurrentMonth) && "text-muted-foreground/50 bg-muted/20"
+              view === 'month' && !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
             )}
           >
             <div className="flex flex-col">
@@ -267,3 +309,5 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
