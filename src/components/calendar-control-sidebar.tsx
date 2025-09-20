@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/lib/types";
 import { Calendar } from "./ui/calendar";
 import { useCalendar } from "@/hooks/use-calendar";
+import { Skeleton } from "./ui/skeleton";
+import { useState, useEffect } from "react";
 
 
 const familyMembers: (FamilyMember | "Family")[] = [
@@ -35,6 +37,12 @@ export function CalendarControlSidebar() {
     currentDate,
     setCurrentDate 
   } = useCalendar();
+  
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
 
   return (
@@ -47,11 +55,15 @@ export function CalendarControlSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <div className="px-2">
-            <Calendar
-                mode="single"
-                selected={currentDate}
-                onSelect={(day) => day && setCurrentDate(day)}
-            />
+            {isClient ? (
+              <Calendar
+                  mode="single"
+                  selected={currentDate}
+                  onSelect={(day) => day && setCurrentDate(day)}
+              />
+            ) : (
+              <Skeleton className="h-[280px] w-full" />
+            )}
         </div>
         <div className="p-2">
           <DropdownMenu>
