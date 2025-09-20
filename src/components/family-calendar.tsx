@@ -21,6 +21,8 @@ import {
   endOfDay,
   differenceInMinutes,
   setHours,
+  eachMinuteOfInterval,
+  setMinutes,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -145,26 +147,36 @@ export function FamilyCalendar() {
   } = useCalendar();
 
   const [selectedEvent, setSelectedEvent] = React.useState<TCalendarEvent | null>(null);
+  const [showWorkHours, setShowWorkHours] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    if (!scrollRef.current || (view !== 'day' && view !== 'week' && view !== 'workWeek')) return;
-  
-    const now = new Date();
-    // Only auto-scroll if the current date is today
-    if (!isToday(currentDate)) return;
-
-    const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
-  
-    const HALF_HOUR_HEIGHT = 24; // must match your grid
-    const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
-  
-    // Scroll so current time is ~2 hours from top for context
-    scrollRef.current.scrollTo({
-      top: Math.max(top - 2 * (60 / 30) * HALF_HOUR_HEIGHT, 0),
-      behavior: "smooth",
-    });
-  }, [view, currentDate]);
+    if (view === 'day' || view === 'week' || view === 'workWeek') {
+      const now = new Date();
+      if (!isToday(currentDate) || showWorkHours) {
+          // scroll to 8am if not today or in work hours view
+          const eightAMTop = 8 * 2 * 24; // 8am * 2 slots/hr * 24px/slot
+           if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+              top: eightAMTop,
+              behavior: "smooth",
+            });
+           }
+          return;
+      }
+      
+      const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
+      const HALF_HOUR_HEIGHT = 24;
+      const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
+      
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: Math.max(top - 2 * (60 / 30) * HALF_HOUR_HEIGHT, 0),
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [view, currentDate, showWorkHours]);
 
 
   if (isLoading) {
@@ -196,10 +208,18 @@ export function FamilyCalendar() {
     days = days.slice(0, 5); // Mon-Fri
   }
 
-  const hours = eachHourOfInterval({
-    start: startOfDay(today),
-    end: endOfDay(today),
-  });
+  const WORK_START = 8;
+  const WORK_END = 17;
+
+  const dayHours = showWorkHours
+    ? eachHourOfInterval({
+        start: setHours(today, WORK_START),
+        end: setHours(today, WORK_END),
+      })
+    : eachHourOfInterval({
+        start: startOfDay(today),
+        end: endOfDay(today),
+      });
 
   const getPeriod = () => {
     switch (view) {
@@ -246,6 +266,9 @@ export function FamilyCalendar() {
           </Button>
           <Button variant="outline" size="icon" onClick={nextPeriod} aria-label="Next period">
             <ChevronRight />
+          </Button>
+           <Button variant="outline" size="sm" onClick={() => setShowWorkHours(prev => !prev)}>
+            {showWorkHours ? "Show Full Day" : "Show Work Hours"}
           </Button>
           <h2 className="ml-2 w-48 text-left text-lg font-semibold">
             {viewHeaders[view](currentDate)}
@@ -334,9 +357,11 @@ export function FamilyCalendar() {
             <div ref={scrollRef} className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
               {/* Time Column */}
               <div className="sticky left-0 z-20 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
-                {hours.map((hour, index) => (
+                {dayHours.map((hour, index) => (
                    <div key={hour.toString()} className="h-24 flex justify-end items-start -mt-2.5">
-                    {index > 0 && <span>{format(hour, "ha")}</span>}
+                    {index > 0 || (showWorkHours && hour.getHours() === WORK_START) || (!showWorkHours && hour.getHours() === 0) ? 
+                        <span>{format(hour, "ha")}</span> : null
+                    }
                   </div>
                 ))}
               </div>
@@ -344,8 +369,8 @@ export function FamilyCalendar() {
               {/* Grid */}
               <div className="relative grid flex-1">
                  {/* Horizontal lines: 48 rows (30 min each) */}
-                 <div className="absolute inset-0 grid grid-rows-48 pointer-events-none">
-                  {Array.from({ length: 48 }).map((_, index) => (
+                 <div className="absolute inset-0 grid grid-rows-[repeat(var(--num-rows),minmax(0,1fr))] pointer-events-none" style={{ '--num-rows': dayHours.length * 2 } as React.CSSProperties}>
+                  {Array.from({ length: dayHours.length * 2 }).map((_, index) => (
                     <div
                       key={index}
                       className={cn(
@@ -390,3 +415,5 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
