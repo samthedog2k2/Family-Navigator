@@ -109,14 +109,13 @@ export function MainNav({
         <NavigationMenuList>
           {mainNavLinks.map((link) => (
              <NavigationMenuItem key={link.href}>
-                <Link href={link.href} passHref legacyBehavior>
-                    <NavigationMenuLink
-                    active={pathname === link.href}
-                    className={navigationMenuTriggerStyle()}
-                    >
-                    {link.label}
-                    </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink
+                  href={link.href}
+                  active={pathname === link.href}
+                  className={navigationMenuTriggerStyle()}
+                >
+                  {link.label}
+                </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
           <NavigationMenuItem>
