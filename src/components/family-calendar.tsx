@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -21,8 +20,6 @@ import {
   endOfDay,
   differenceInMinutes,
   setHours,
-  eachMinuteOfInterval,
-  setMinutes,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -34,7 +31,6 @@ import { Skeleton } from "./ui/skeleton";
 import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
 import { NewEventDialog } from "./new-event-dialog";
 import { EventDetailDialog } from "./event-detail-dialog";
-import { getHoliday } from "@/lib/holidays";
 
 
 const viewIntervals = {
@@ -345,27 +341,19 @@ export function FamilyCalendar() {
                     view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
                   } divide-x divide-border text-center`}
                 >
-                  {days.map((day) => {
-                    const holiday = getHoliday(day);
-                    return (
-                      <div key={day.toString()} className="flex flex-col items-center py-2">
-                        <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
-                        <span
-                          className={cn(
-                            "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full",
-                            isToday(day) && "bg-primary text-primary-foreground"
-                          )}
-                        >
-                          {format(day, "d")}
-                        </span>
-                        {holiday && (
-                          <span className="text-xs text-primary font-semibold mt-1 truncate px-1">
-                            {holiday}
-                          </span>
+                  {days.map((day) => (
+                    <div key={day.toString()} className="py-2">
+                       <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
+                      <span
+                        className={cn(
+                          "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full mx-auto",
+                          isToday(day) && "bg-primary text-primary-foreground"
                         )}
-                      </div>
-                    )
-                  })}
+                      >
+                        {format(day, "d")}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
