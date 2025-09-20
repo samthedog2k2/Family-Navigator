@@ -19,6 +19,7 @@ import {
   eachHourOfInterval,
   startOfDay,
   endOfDay,
+  differenceInMinutes,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -54,6 +55,31 @@ const viewHeaders = {
   week: (d: Date) => `Week of ${format(startOfWeek(d), "MMM d")}`,
   day: (d: Date) => format(d, "MMMM d, yyyy"),
 };
+
+function NowLine() {
+  const [now, setNow] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60 * 1000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const HOUR_HEIGHT = 48; // h-12
+  const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
+  const top = (minutesSinceStart / 60) * HOUR_HEIGHT;
+
+  // Only show if the current day is being viewed
+  if (!isToday(now)) return null;
+
+  return (
+    <div
+      className="absolute left-0 right-0 h-[2px] bg-red-500 z-20"
+      style={{ top: `${top}px` }}
+    />
+  );
+}
 
 export function FamilyCalendar() {
   const {
@@ -191,7 +217,7 @@ export function FamilyCalendar() {
           </>
         ) : (
           <div className="flex-1 flex flex-col">
-            <div className="sticky top-0 z-10 bg-background border-b border-border">
+            <div className="sticky top-0 z-20 bg-background border-b border-border">
               <div className="grid grid-cols-[auto_1fr]">
                 <div className="w-14"></div>
                 <div
@@ -219,18 +245,20 @@ export function FamilyCalendar() {
             <div className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
               <div className="sticky left-0 z-10 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
                 {hours.map((hour, index) => (
-                  <div key={hour.toString()} className="h-12 flex justify-end">
+                  <div key={hour.toString()} className="h-12 flex justify-end items-start">
                     {index > 0 && <span className="relative -top-2.5">{format(hour, "ha")}</span>}
                   </div>
                 ))}
               </div>
 
               <div className="relative grid flex-1">
-                <div className="grid grid-rows-24 divide-y divide-border">
+                <div className="grid grid-rows-24 divide-y divide-border pointer-events-none">
                   {hours.map((_, index) => (
                     <div key={index} className="h-12"></div>
                   ))}
                 </div>
+
+                <NowLine />
 
                 <div
                   className={`grid ${

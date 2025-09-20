@@ -2,7 +2,8 @@
 "use client";
 
 import type { FamilyMember } from "@/lib/types";
-import { differenceInMinutes, getMinutes, getHours } from "date-fns";
+import { differenceInMinutes, getMinutes, getHours, startOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type CalendarEvent = {
   id: string;
@@ -36,31 +37,29 @@ export function Event({ event }: EventProps) {
   );
 }
 
-const timelineColorClasses = {
-  blue: "bg-blue-500 border-blue-700",
-  green: "bg-green-500 border-green-700",
-  purple: "bg-purple-500 border-purple-700",
-  orange: "bg-orange-500 border-orange-700",
-};
-
-const TOTAL_MINUTES_IN_DAY = 24 * 60;
-
 export function TimelineEvent({ event }: EventProps) {
-  const startMinutes = getHours(event.start) * 60 + getMinutes(event.start);
-  const durationMinutes = differenceInMinutes(event.end, event.start);
+  const HOUR_HEIGHT = 48; // Corresponds to h-12 in Tailwind
 
-  const top = (startMinutes / TOTAL_MINUTES_IN_DAY) * 100;
-  const height = (durationMinutes / TOTAL_MINUTES_IN_DAY) * 100;
-  
+  const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));
+  const endMinutes = differenceInMinutes(event.end, startOfDay(event.end));
+
+  const top = (startMinutes / 60) * HOUR_HEIGHT;
+  const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT;
+
   return (
     <div
-      className={`absolute left-2 right-2 z-10 rounded-lg border p-2 text-white shadow-md ${timelineColorClasses[event.color]}`}
-      style={{
-        top: `${top}%`,
-        height: `${height}%`,
-      }}
+      className={cn(
+        "absolute left-1 right-1 z-10 rounded-md p-1 text-xs shadow-md overflow-hidden",
+        "bg-primary/80 text-primary-foreground"
+      )}
+      style={{ top: `${top}px`, height: `${height}px` }}
     >
-      <p className="text-xs font-bold">{event.title}</p>
+      <p className="font-medium truncate">{event.title}</p>
+       <div className="text-[10px] opacity-80">
+        {event.start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} -{" "}
+        {event.end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+      </div>
     </div>
   );
 }
+
