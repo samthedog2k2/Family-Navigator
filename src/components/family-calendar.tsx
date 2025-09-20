@@ -181,7 +181,7 @@ export function FamilyCalendar() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] mt-4">
+        <div className="grid grid-cols-[auto_1fr] mt-4">
           <div className="w-14"></div>
           <div
             className={`grid ${
@@ -247,12 +247,9 @@ export function FamilyCalendar() {
           </div>
         )}
         {(view === "day" || view === "week" || view === "workWeek") && (
-          <div
-            className="grid grid-cols-1 md:grid-cols-[auto_1fr] h-full"
-            style={{ gridTemplateRows: "auto 1fr" }}
-          >
+          <div className="grid grid-cols-[auto_1fr] h-full">
             {/* Time column */}
-            <div className="text-xs text-right text-muted-foreground pr-2 row-start-2">
+            <div className="text-xs text-right text-muted-foreground pr-2">
               {hours.map((hour, index) => (
                 <div
                   key={hour.toString()}
@@ -262,40 +259,42 @@ export function FamilyCalendar() {
                 </div>
               ))}
             </div>
-
-            {/* Day columns */}
-            <div
-              className={`grid ${
-                view === "day"
-                  ? "grid-cols-1"
-                  : view === "week"
-                  ? "grid-cols-7"
-                  : "grid-cols-5"
-              } relative row-start-2`}
-            >
+            
+            <div className="relative grid">
               {/* Horizontal lines */}
-              <div className="col-span-full grid grid-rows-24 absolute inset-0 pointer-events-none">
+              <div className="col-start-1 col-end-2 grid grid-rows-24 pointer-events-none">
                 {hours.map((_, index) => (
                   <div key={index} className="border-t border-muted"></div>
                 ))}
               </div>
 
-              {days.map((day, dayIndex) => (
-                <div
-                  key={day.toString()}
-                  className={cn(
-                    "relative",
-                    dayIndex > 0 && "border-l border-muted",
-                    isToday(day) && 'bg-accent/50'
-                  )}
-                >
-                  {filteredEvents
-                    .filter((event) => isSameDay(event.start, day))
-                    .map((event) => (
-                      <TimelineEvent key={event.id} event={event} />
-                    ))}
-                </div>
-              ))}
+              {/* Day columns */}
+              <div
+                className={`grid ${
+                  view === "day"
+                    ? "grid-cols-1"
+                    : view === "week"
+                    ? "grid-cols-7"
+                    : "grid-cols-5"
+                } relative col-start-1 col-end-2 row-start-1`}
+              >
+                {days.map((day, dayIndex) => (
+                  <div
+                    key={day.toString()}
+                    className={cn(
+                      "relative",
+                      dayIndex > 0 && "border-l border-muted",
+                      isToday(day) && 'bg-accent/50'
+                    )}
+                  >
+                    {filteredEvents
+                      .filter((event) => isSameDay(event.start, day))
+                      .map((event) => (
+                        <TimelineEvent key={event.id} event={event} />
+                      ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
