@@ -169,7 +169,7 @@ export function FamilyCalendar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <span>Calendars</span>
+                  <span>Select Calendars</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
