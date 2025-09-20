@@ -8,14 +8,16 @@ import {
   Plane,
   Bot,
   MessageCircle,
-  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 const features = [
   {
@@ -56,33 +58,6 @@ const features = [
 ];
 
 export default function HomePage() {
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const router = useRouter();
-
-  const handleCheckboxChange = (featureId: string) => {
-    setSelectedFeatures((prev) =>
-      prev.includes(featureId)
-        ? prev.filter((id) => id !== featureId)
-        : [...prev, featureId]
-    );
-  };
-
-  const handleBuildPage = () => {
-    if (selectedFeatures.length === 0) {
-      // Or show a toast message
-      return;
-    }
-    if (selectedFeatures.length === 1) {
-      const feature = features.find((f) => f.id === selectedFeatures[0]);
-      if (feature) {
-        router.push(feature.href);
-      }
-    } else {
-      const query = selectedFeatures.join(",");
-      router.push(`/dashboard?features=${query}`);
-    }
-  };
-
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
@@ -99,11 +74,6 @@ export default function HomePage() {
                   organized in one place.
                 </p>
               </div>
-              <div className="space-x-4">
-                <Button asChild size="lg">
-                  <Link href="#">Create Account</Link>
-                </Button>
-              </div>
             </div>
           </div>
         </section>
@@ -113,57 +83,28 @@ export default function HomePage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Build Your Dashboard
+                  Explore Features
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Select the features you want to see on your custom page.
+                  Select a feature to get started.
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
               {features.map((feature) => (
-                <div
-                  key={feature.id}
-                  className="grid gap-2 relative rounded-lg border p-4 bg-card"
-                >
-                  <div className="flex items-center gap-4">
-                    {feature.icon}
-                    <h3 className="text-xl font-bold">{feature.title}</h3>
-                  </div>
-                  <p className="text-muted-foreground">
-                    {feature.description}
-                  </p>
-                  <div className="flex items-center justify-between mt-2">
-                    <Button
-                      variant="link"
-                      asChild
-                      className="p-0 justify-start"
-                    >
-                      <Link href={feature.href}>Learn More</Link>
-                    </Button>
-                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`checkbox-${feature.id}`}
-                        checked={selectedFeatures.includes(feature.id)}
-                        onCheckedChange={() => handleCheckboxChange(feature.id)}
-                      />
-                      <Label htmlFor={`checkbox-${feature.id}`} className="cursor-pointer">
-                        Add
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                 <Link href={feature.href} key={feature.id} className="block">
+                    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+                      <CardHeader className="flex-row items-center gap-4">
+                          {feature.icon}
+                          <CardTitle>{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                          <CardDescription>{feature.description}</CardDescription>
+                      </CardContent>
+                    </Card>
+                  </Link>
               ))}
             </div>
-             <div className="text-center mt-8">
-                <Button
-                  size="lg"
-                  onClick={handleBuildPage}
-                  disabled={selectedFeatures.length === 0}
-                >
-                  Build Your Page
-                </Button>
-              </div>
           </div>
         </section>
       </main>
