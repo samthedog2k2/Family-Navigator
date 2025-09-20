@@ -85,32 +85,34 @@ type CalendarContextType = {
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(startOfToday());
   const [view, setView] = useState<CalendarView>('workWeek');
   const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family"]);
+  const [holidaysLoaded, setHolidaysLoaded] = useState(false);
 
   useEffect(() => {
-    const year = currentDate.getFullYear();
-    const h = new Holidays('US');
-    const usHolidays = h.getHolidays(year);
-    const holidayEvents: CalendarEvent[] = usHolidays
-    .filter(holiday => holiday.type === 'public')
-    .map((holiday: any) => ({
-      id: `holiday-${holiday.date}`,
-      title: holiday.name,
-      start: parseISO(holiday.date),
-      end: parseISO(holiday.date),
-      allDay: true,
-      calendar: 'Family',
-      color: 'green'
-    }));
-
-    // Filter out any existing holidays to prevent duplicates
-    const nonHolidayEvents = initialEvents.filter(e => !e.id.startsWith('holiday-'));
-    setEvents([...nonHolidayEvents, ...holidayEvents]);
-
-  }, [currentDate.getFullYear()]);
+    // This effect runs once to load both initial events and holidays.
+    if (!holidaysLoaded) {
+      const year = currentDate.getFullYear();
+      const h = new Holidays('US');
+      const usHolidays = h.getHolidays(year);
+      const holidayEvents: CalendarEvent[] = usHolidays
+        .filter(holiday => holiday.type === 'public')
+        .map((holiday: any) => ({
+          id: `holiday-${holiday.date}`,
+          title: holiday.name,
+          start: parseISO(holiday.date),
+          end: parseISO(holiday.date),
+          allDay: true,
+          calendar: 'Family',
+          color: 'green'
+        }));
+      
+      setEvents([...initialEvents, ...holidayEvents]);
+      setHolidaysLoaded(true);
+    }
+  }, [holidaysLoaded, currentDate]);
 
 
   const toggleCalendar = useCallback((calendar: FamilyMember | "Family") => {
