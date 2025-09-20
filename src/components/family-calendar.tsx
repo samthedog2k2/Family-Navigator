@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Event, TimelineEvent } from "@/components/calendar-event";
 import { useCalendar } from "@/hooks/use-calendar";
 import { Skeleton } from "./ui/skeleton";
+import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
 
 const viewIntervals = {
   month: {
@@ -70,9 +71,6 @@ function NowLine() {
   const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
   const top = (minutesSinceStart / 60) * HOUR_HEIGHT;
 
-  // Only show if the current day is being viewed
-  if (!isToday(now)) return null;
-
   return (
     <div
       className="absolute left-0 right-0 h-[2px] bg-red-500 z-20"
@@ -80,6 +78,38 @@ function NowLine() {
     />
   );
 }
+
+function groupOverlappingEvents(events: TCalendarEvent[]) {
+  const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
+  if (sorted.length === 0) return [];
+  
+  const clusters: { items: typeof sorted; }[] = [];
+  let currentCluster: typeof sorted = [];
+
+  for (const ev of sorted) {
+    if (
+      currentCluster.length === 0 ||
+      ev.start < currentCluster[currentCluster.length - 1].end
+    ) {
+      currentCluster.push(ev);
+    } else {
+      clusters.push({ items: currentCluster });
+      currentCluster = [ev];
+    }
+  }
+  if (currentCluster.length) clusters.push({ items: currentCluster });
+
+  // assign slotIndex + slotCount
+  return clusters.flatMap((cluster) => {
+    const count = cluster.items.length;
+    return cluster.items.map((ev, i) => ({
+      ...ev,
+      slotIndex: i,
+      slotCount: count,
+    }));
+  });
+}
+
 
 export function FamilyCalendar() {
   const {
@@ -265,18 +295,20 @@ export function FamilyCalendar() {
                     view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
                   } divide-x divide-border absolute inset-0`}
                 >
-                  {days.map((day) => (
-                    <div
-                      key={day.toString()}
-                      className={cn("relative", isToday(day) && 'bg-accent/50')}
-                    >
-                      {filteredEvents
-                        .filter((event) => isSameDay(event.start, day))
-                        .map((event) => (
-                          <TimelineEvent key={event.id} event={event} />
-                        ))}
-                    </div>
-                  ))}
+                  {days.map((day) => {
+                    const dayEvents = filteredEvents.filter((event) => isSameDay(event.start, day));
+                    const laidOutEvents = groupOverlappingEvents(dayEvents);
+                    return(
+                      <div
+                        key={day.toString()}
+                        className={cn("relative", isToday(day) && 'bg-accent/50')}
+                      >
+                        {laidOutEvents.map((event) => (
+                            <TimelineEvent key={event.id} event={event} />
+                          ))}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>

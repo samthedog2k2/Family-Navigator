@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, useMemo, useCallback } 
 import type { FamilyMember } from '@/lib/types';
 import { startOfToday, add } from 'date-fns';
 
-type CalendarEvent = {
+export type CalendarEvent = {
   id: string;
   title: string;
   start: Date;
@@ -33,6 +33,14 @@ const rawInitialEvents = [
     end: { add: { hours: 20, minutes: 30 } },
     calendar: "Holly",
     color: "purple",
+  },
+   {
+    id: '2.1',
+    title: "Adam's Project Deadline",
+    start: { add: { hours: 18, minutes: 30 } },
+    end: { add: { hours: 20 } },
+    calendar: 'Adam',
+    color: 'green',
   },
   {
     id: "3",

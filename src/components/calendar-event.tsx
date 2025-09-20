@@ -1,21 +1,12 @@
 
 "use client";
 
-import type { FamilyMember } from "@/lib/types";
-import { differenceInMinutes, getMinutes, getHours, startOfDay } from "date-fns";
+import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
+import { differenceInMinutes, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
-type CalendarEvent = {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  calendar: FamilyMember | "Family";
-  color: "blue" | "green" | "purple" | "orange";
-};
-
 type EventProps = {
-  event: CalendarEvent;
+  event: TCalendarEvent & { slotIndex?: number; slotCount?: number };
 };
 
 const colorClasses = {
@@ -46,13 +37,19 @@ export function TimelineEvent({ event }: EventProps) {
   const top = (startMinutes / 60) * HOUR_HEIGHT;
   const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT;
 
+  // Collision layout
+  const slotIndex = event.slotIndex ?? 0;
+  const slotCount = event.slotCount ?? 1;
+  const width = 100 / slotCount;
+  const left = width * slotIndex;
+
   return (
     <div
       className={cn(
-        "absolute left-1 right-1 z-10 rounded-md p-1 text-xs shadow-md overflow-hidden",
+        "absolute rounded-md p-1 text-xs shadow-md overflow-hidden",
         "bg-primary/80 text-primary-foreground"
       )}
-      style={{ top: `${top}px`, height: `${height}px` }}
+      style={{ top, height, left: `${left}%`, width: `${width}%` }}
     >
       <p className="font-medium truncate">{event.title}</p>
        <div className="text-[10px] opacity-80">
@@ -62,4 +59,3 @@ export function TimelineEvent({ event }: EventProps) {
     </div>
   );
 }
-
