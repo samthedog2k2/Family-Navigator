@@ -144,39 +144,46 @@ export function FamilyCalendar() {
     setView,
     activeCalendars,
     isLoading,
+    showWorkHours,
+    setShowWorkHours,
   } = useCalendar();
 
   const [selectedEvent, setSelectedEvent] = React.useState<TCalendarEvent | null>(null);
-  const [showWorkHours, setShowWorkHours] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
-    if (view === 'day' || view === 'week' || view === 'workWeek') {
-      const now = new Date();
-      if (!isToday(currentDate) || showWorkHours) {
-          // scroll to 8am if not today or in work hours view
-          const eightAMTop = 8 * 2 * 24; // 8am * 2 slots/hr * 24px/slot
-           if (scrollRef.current) {
-            scrollRef.current.scrollTo({
-              top: eightAMTop,
-              behavior: "smooth",
-            });
-           }
-          return;
-      }
-      
-      const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
-      const HALF_HOUR_HEIGHT = 24;
-      const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
-      
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: Math.max(top - 2 * (60 / 30) * HALF_HOUR_HEIGHT, 0),
-          behavior: "smooth",
-        });
-      }
+ React.useEffect(() => {
+    if (view !== 'day' && view !== 'week' && view !== 'workWeek') return;
+    if (!scrollRef.current) return;
+    
+    // For non-today views in work hours mode, scroll to 8am.
+    if (showWorkHours && !isToday(currentDate)) {
+        const eightAMTop = 8 * 2 * 24; // 8am * 2 slots/hr * 24px/slot
+        scrollRef.current.scrollTo({ top: eightAMTop, behavior: 'instant' });
+        return;
     }
-  }, [view, currentDate, showWorkHours]);
+
+    // For full day views, scroll to 8am.
+    if (!showWorkHours) {
+        const eightAMTop = 8 * 2 * 24; // 8am * 2 slots/hr * 24px/slot
+        scrollRef.current.scrollTo({ top: eightAMTop, behavior: 'instant' });
+        return;
+    }
+
+    // For today's view (in either mode), scroll to current time.
+    if (isToday(currentDate)) {
+        const now = new Date();
+        const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
+        const HALF_HOUR_HEIGHT = 24;
+        const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
+        const scrollPosition = Math.max(top - 2 * (60 / 30) * HALF_HOUR_HEIGHT, 0);
+
+        scrollRef.current.scrollTo({
+            top: scrollPosition,
+            behavior: "smooth",
+        });
+    }
+
+}, [view, currentDate, showWorkHours, isLoading]); // Rerun on view, date, showWorkHours, and loading state change
 
 
   if (isLoading) {
@@ -415,5 +422,3 @@ export function FamilyCalendar() {
     </div>
   );
 }
-
-    

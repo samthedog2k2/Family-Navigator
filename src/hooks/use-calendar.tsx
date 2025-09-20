@@ -15,7 +15,7 @@ export type CalendarEvent = {
   allDay?: boolean;
 };
 
-type CalendarView = "day" | "workWeek" | "week" | "month";
+export type CalendarView = "day" | "workWeek" | "week" | "month";
 
 const rawInitialEvents = [
   {
@@ -81,6 +81,8 @@ type CalendarContextType = {
   setActiveCalendars: React.Dispatch<React.SetStateAction<(FamilyMember | "Family")[]>>;
   toggleCalendar: (calendar: FamilyMember | "Family") => void;
   isLoading: boolean;
+  showWorkHours: boolean;
+  setShowWorkHours: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -88,7 +90,23 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [view, setView] = useState<CalendarView>('workWeek');
+  
+  const [view, setView] = useState<CalendarView>(() => {
+    if (typeof window !== "undefined") {
+      const savedView = localStorage.getItem("calendarView");
+      return (savedView as CalendarView) || 'workWeek';
+    }
+    return 'workWeek';
+  });
+
+  const [showWorkHours, setShowWorkHours] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("showWorkHours");
+        return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
   const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family", "Adam", "Holly", "Ethan", "Elle"]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -105,6 +123,18 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("calendarView", view);
+    }
+  }, [view]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("showWorkHours", JSON.stringify(showWorkHours));
+    }
+  }, [showWorkHours]);
 
   const toggleCalendar = useCallback((calendar: FamilyMember | "Family") => {
     setActiveCalendars((prev) =>
@@ -125,7 +155,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     setActiveCalendars,
     toggleCalendar,
     isLoading,
-  }), [events, currentDate, view, activeCalendars, toggleCalendar, isLoading]);
+    showWorkHours,
+    setShowWorkHours,
+  }), [events, currentDate, view, activeCalendars, toggleCalendar, isLoading, showWorkHours]);
 
   return (
     <CalendarContext.Provider value={value}>
