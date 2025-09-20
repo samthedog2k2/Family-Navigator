@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
-import { Inter } from 'next/font/google'
+import { PT_Sans } from 'next/font/google'
 import { CalendarProvider } from "@/hooks/use-calendar";
 import { cookies } from "next/headers";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans',})
+const ptSans = PT_Sans({ 
+  subsets: ['latin'], 
+  weight: ['400', '700'],
+  variable: '--font-sans',
+})
 
 export const metadata: Metadata = {
   title: "Family Navigator",
@@ -22,7 +26,7 @@ export default function RootLayout({
   
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
+      <body className={`${ptSans.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
         <CalendarProvider>
           <div className="flex-1">
             {children}
