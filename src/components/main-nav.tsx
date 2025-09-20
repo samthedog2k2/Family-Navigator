@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -14,7 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { mainNavItems, isNavMenu, NavItem } from "@/lib/menu-data";
+import { mainNavItems, isNavMenu } from "@/lib/menu-data";
 
 export function MainNav({
   className,
@@ -24,7 +23,10 @@ export function MainNav({
 
   return (
     <nav
-      className={cn("hidden items-center space-x-4 md:flex lg:space-x-6", className)}
+      className={cn(
+        "hidden items-center space-x-4 md:flex lg:space-x-6",
+        className
+      )}
       {...props}
     >
       <NavigationMenu>
@@ -49,14 +51,13 @@ export function MainNav({
                   </NavigationMenuContent>
                 </>
               ) : (
-                <Link href={item.href} legacyBehavior passHref>
-                  <NavigationMenuLink
-                    className={navigationMenuTriggerStyle()}
-                    active={pathname === item.href}
-                  >
-                    {item.title}
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                  active={pathname === item.href}
+                >
+                  <Link href={item.href}>{item.title}</Link>
+                </NavigationMenuLink>
               )}
             </NavigationMenuItem>
           ))}
