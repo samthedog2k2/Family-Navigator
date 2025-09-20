@@ -21,71 +21,17 @@ const mainNavLinks = [
   { href: "/calendar", label: "Calendar" },
 ];
 
-const travelLinks: { title: string; href: string; description: string }[] = [
-  {
-    title: "Cruises",
-    href: "/travel",
-    description: "Plan and book your next cruise adventure.",
-  },
-  {
-    title: "Road Trips",
-    href: "/travel",
-    description: "Discover scenic routes and plan your journey.",
-  },
-  {
-    title: "Lodging",
-    href: "/travel",
-    description: "Find and book accommodations for your trip.",
-  },
-];
-
-const financeLinks: { title: string; href: string; description: string }[] = [
+const schoolLinks: { title: string; href: string; description: string }[] = [
     {
-        title: "Smart Summary",
-        href: "/finance",
-        description: "Get an AI-powered summary of your finances."
+        title: "Ethan's Page",
+        href: "/school/ethan",
+        description: "View Ethan's school schedule, grades, and assignments."
     },
     {
-        title: "Savings Projections",
-        href: "/finance",
-        description: "Project your retirement and college savings."
+        title: "Elle's Page",
+        href: "/school/elle",
+        description: "View Elle's school schedule, grades, and assignments."
     }
-]
-
-const healthLinks: { title: string; href: string; description: string }[] = [
-    {
-        title: "Log Vitals",
-        href: "/health",
-        description: "Record daily health metrics for your family."
-    },
-    {
-        title: "View Trends",
-        href: "/health",
-        description: "Analyze health data and spot trends over time."
-    }
-]
-
-const agentLinks: { title: string; href: string; description: string }[] = [
-  {
-    title: "Travel Agent",
-    href: "/agents/travel",
-    description: "Plan trips, find deals, and get travel recommendations.",
-  },
-  {
-    title: "Finance Agent",
-    href: "/agents/finance",
-    description: "Analyze spending, track investments, and get financial advice.",
-  },
-  {
-    title: "Health Agent",
-    href: "/agents/health",
-    description: "Monitor health data, get fitness tips, and track wellness goals.",
-  },
-  {
-    title: "Webpages Agent",
-    href: "/agents/webpages",
-    description: "Interact with websites to extract information and perform tasks.",
-  },
 ];
 
 const screenTimeLinks: { title: string; href: string; description: string }[] = [
@@ -124,6 +70,29 @@ const entertainmentLinks: { title: string; href: string; description: string }[]
     { title: "Sports", href: "/entertainment/sports", description: "Follow your favorite sports." },
 ];
 
+const agentLinks: { title: string; href: string; description: string }[] = [
+  {
+    title: "Travel Agent",
+    href: "/agents/travel",
+    description: "Plan trips, find deals, and get travel recommendations.",
+  },
+  {
+    title: "Finance Agent",
+    href: "/agents/finance",
+    description: "Analyze spending, track investments, and get financial advice.",
+  },
+  {
+    title: "Health Agent",
+    href: "/agents/health",
+    description: "Monitor health data, get fitness tips, and track wellness goals.",
+  },
+  {
+    title: "Webpages Agent",
+    href: "/agents/webpages",
+    description: "Interact with websites to extract information and perform tasks.",
+  },
+];
+
 export function MainNav({
   className,
   ...props
@@ -148,6 +117,22 @@ export function MainNav({
                 </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>School</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {schoolLinks.map((component) => (
+                  <ListItem
+                    key={component.title}
+                    title={component.title}
+                    href={component.href}
+                  >
+                    {component.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuTrigger>Screen Time</NavigationMenuTrigger>
             <NavigationMenuContent>

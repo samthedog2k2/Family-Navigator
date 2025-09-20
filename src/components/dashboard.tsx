@@ -8,6 +8,7 @@ import { HealthTracker } from "@/components/health-tracker";
 import { WebAgentForm } from "@/components/web-agent-form";
 import { ChatInterface } from "@/components/chat";
 import { FamilyCalendar } from "@/components/family-calendar";
+import { SchoolDashboard } from "@/components/school-dashboard";
 import { PageHeader } from "./page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const featureMap: { [key: string]: React.ComponentType } = {
   agents: WebAgentForm,
   chat: ChatInterface,
   calendar: FamilyCalendar,
+  school: SchoolDashboard,
 };
 
 const featureTitles: { [key: string]: string } = {
@@ -27,7 +29,8 @@ const featureTitles: { [key: string]: string } = {
     health: "Health Tracker",
     agents: "Webpages Agent",
     chat: "Chat Agent",
-    calendar: "Family Calendar"
+    calendar: "Family Calendar",
+    school: "School Dashboard",
 }
 
 export function Dashboard() {

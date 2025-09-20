@@ -14,6 +14,7 @@ import {
   Clock,
   CloudSun,
   Clapperboard,
+  School,
 } from "lucide-react";
 import { Header } from "@/components/header";
 import {
@@ -69,6 +70,13 @@ const features = [
     description: "Organize your family's schedule.",
     href: "/calendar",
     icon: <CalendarIcon className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "school",
+    title: "School",
+    description: "Track grades and assignments.",
+    href: "/school",
+    icon: <School className="h-8 w-8 text-primary" />,
   },
     {
     id: "screentime",
@@ -139,14 +147,15 @@ export default function HomePage() {
                       aria-label={`Select ${feature.title}`}
                     />
                   </div>
+                  <Link href={feature.href} className="h-full flex flex-col">
                     <CardHeader className="flex-row items-center gap-4">
                       {feature.icon}
                       <CardTitle>{feature.title}</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-grow">
                       <CardDescription>{feature.description}</CardDescription>
-                      <Link href={feature.href} onClick={(e) => e.stopPropagation()} className="font-medium text-primary hover:underline text-sm mt-2 inline-block">Go to {feature.title}</Link>
                     </CardContent>
+                  </Link>
                 </Card>
               ))}
             </div>
