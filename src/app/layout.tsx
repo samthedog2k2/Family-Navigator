@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { Inter } from 'next/font/google'
 import { CalendarProvider } from "@/hooks/use-calendar";
+import { cookies } from "next/headers";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans',})
 
@@ -16,6 +17,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const layout = cookies().get("react-resizable-panels:layout");
+  const defaultLayout = layout ? JSON.parse(layout.value) : undefined;
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
