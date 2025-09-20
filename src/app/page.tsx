@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   HeartPulse,
@@ -9,6 +10,7 @@ import {
   Bot,
   MessageCircle,
   Calendar as CalendarIcon,
+  LayoutGrid,
 } from "lucide-react";
 import { Header } from "@/components/header";
 import {
@@ -18,6 +20,9 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -65,6 +70,18 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  const handleFeatureSelect = (featureId: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(featureId)
+        ? prev.filter((id) => id !== featureId)
+        : [...prev, featureId]
+    );
+  };
+  
+  const dashboardUrl = `/dashboard?features=${selectedFeatures.join(',')}`;
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
@@ -83,19 +100,45 @@ export default function HomePage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
               {features.map((feature) => (
-                 <Link href={feature.href} key={feature.id} className="block">
-                    <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
-                      <CardHeader className="flex-row items-center gap-4">
+                <div
+                  key={feature.id}
+                  className={cn(
+                    "relative block cursor-pointer",
+                    selectedFeatures.includes(feature.id) && "ring-2 ring-primary rounded-lg"
+                  )}
+                  onClick={() => handleFeatureSelect(feature.id)}
+                >
+                  <Card className="h-full transition-all hover:shadow-lg">
+                     <div className="absolute top-4 right-4">
+                      <Checkbox
+                        checked={selectedFeatures.includes(feature.id)}
+                        onCheckedChange={() => handleFeatureSelect(feature.id)}
+                        aria-label={`Select ${feature.title}`}
+                      />
+                    </div>
+                    <Link href={feature.href} className="block" onClick={(e) => e.stopPropagation()}>
+                        <CardHeader className="flex-row items-center gap-4">
                           {feature.icon}
                           <CardTitle>{feature.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
+                        </CardHeader>
+                        <CardContent>
                           <CardDescription>{feature.description}</CardDescription>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                        </CardContent>
+                     </Link>
+                  </Card>
+                </div>
               ))}
             </div>
+            {selectedFeatures.length > 0 && (
+                <div className="text-center mt-8">
+                    <Button asChild size="lg">
+                        <Link href={dashboardUrl}>
+                            <LayoutGrid className="mr-2"/>
+                           Create My Dashboard
+                        </Link>
+                    </Button>
+                </div>
+            )}
           </div>
         </section>
       </main>
