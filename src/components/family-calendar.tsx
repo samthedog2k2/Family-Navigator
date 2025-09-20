@@ -58,6 +58,10 @@ const viewHeaders = {
   day: (d: Date) => format(d, "MMMM d, yyyy"),
 };
 
+const calendarViews: CalendarView[] = ["day", "workWeek", "week", "month"];
+type CalendarView = "day" | "workWeek" | "week" | "month";
+
+
 function NowLine() {
   const [now, setNow] = React.useState(new Date());
 
@@ -132,6 +136,7 @@ export function FamilyCalendar() {
     currentDate,
     setCurrentDate,
     view,
+    setView,
     activeCalendars,
     isLoading,
   } = useCalendar();
@@ -241,6 +246,18 @@ export function FamilyCalendar() {
           <h2 className="ml-2 w-48 text-left text-lg font-semibold">
             {viewHeaders[view](currentDate)}
           </h2>
+        </div>
+        <div className="flex gap-1">
+          {calendarViews.map((v) => (
+            <Button
+              key={v}
+              variant={view === v ? "default" : "outline"}
+              size="sm"
+              onClick={() => setView(v)}
+            >
+              {v === "workWeek" ? "Work Week" : v.charAt(0).toUpperCase() + v.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -367,3 +384,5 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
