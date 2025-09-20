@@ -20,6 +20,7 @@ import {
   startOfDay,
   endOfDay,
   differenceInMinutes,
+  setHours,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -66,31 +67,39 @@ function NowLine() {
     }, 60 * 1000); // Update every minute
     return () => clearInterval(interval);
   }, []);
-
-  const HOUR_HEIGHT = 48; // h-12
+  
+  const HALF_HOUR_HEIGHT = 24; // 30min = 24px
   const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
-  const top = (minutesSinceStart / 60) * HOUR_HEIGHT;
+  const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
 
   return (
-    <div
-      className="absolute left-0 right-0 h-[2px] bg-red-500 z-20"
-      style={{ top: `${top}px` }}
-    />
+    <>
+      <div
+        className="absolute left-0 right-0 h-[2px] bg-red-500 z-20"
+        style={{ top }}
+      />
+      <div
+        className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 z-20"
+        style={{ top: top - 3 }}
+      />
+    </>
   );
 }
 
 function groupOverlappingEvents(events: TCalendarEvent[]) {
   const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
   if (sorted.length === 0) return [];
-  
-  const clusters: { items: typeof sorted; }[] = [];
+
+  const clusters: { items: typeof sorted }[] = [];
   let currentCluster: typeof sorted = [];
 
   for (const ev of sorted) {
-    if (
-      currentCluster.length === 0 ||
-      ev.start < currentCluster[currentCluster.length - 1].end
-    ) {
+    // Find the last event in the current cluster
+    const lastInCluster = currentCluster.reduce((latest, current) => {
+      return !latest || current.end > latest.end ? current : latest;
+    }, null as TCalendarEvent | null);
+
+    if (currentCluster.length === 0 || (lastInCluster && ev.start < lastInCluster.end)) {
       currentCluster.push(ev);
     } else {
       clusters.push({ items: currentCluster });
@@ -99,13 +108,19 @@ function groupOverlappingEvents(events: TCalendarEvent[]) {
   }
   if (currentCluster.length) clusters.push({ items: currentCluster });
 
-  // assign slotIndex + slotCount
-  return clusters.flatMap((cluster) => {
-    const count = cluster.items.length;
-    return cluster.items.map((ev, i) => ({
-      ...ev,
-      slotIndex: i,
-      slotCount: count,
+  // Assign slotIndex and slotCount to each event within its cluster
+  return clusters.flatMap(cluster => {
+    // Sort items within the cluster by start time to ensure consistent ordering
+    const sortedClusterItems = cluster.items.sort((a, b) => a.start.getTime() - b.start.getTime());
+    
+    // This is a simplified slot allocation. A more robust solution would
+    // re-use slots if an event finishes before another starts within the same cluster.
+    const slotCount = sortedClusterItems.length;
+
+    return sortedClusterItems.map((event, index) => ({
+      ...event,
+      slotIndex: index,
+      slotCount: slotCount,
     }));
   });
 }
@@ -247,7 +262,7 @@ export function FamilyCalendar() {
           </>
         ) : (
           <div className="flex-1 flex flex-col">
-            <div className="sticky top-0 z-20 bg-background border-b border-border">
+            <div className="sticky top-0 z-30 bg-background border-b border-border">
               <div className="grid grid-cols-[auto_1fr]">
                 <div className="w-14"></div>
                 <div
@@ -273,16 +288,19 @@ export function FamilyCalendar() {
             </div>
 
             <div className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
-              <div className="sticky left-0 z-10 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
+              {/* Time Column */}
+              <div className="sticky left-0 z-20 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
                 {hours.map((hour, index) => (
-                  <div key={hour.toString()} className="h-12 flex justify-end items-start">
-                    {index > 0 && <span className="relative -top-2.5">{format(hour, "ha")}</span>}
+                   <div key={hour.toString()} className="h-24 flex justify-end items-start -mt-2.5">
+                    {index > 0 && <span>{format(hour, "ha")}</span>}
                   </div>
                 ))}
               </div>
 
+              {/* Grid */}
               <div className="relative grid flex-1">
-                 <div className="grid grid-rows-48 pointer-events-none">
+                 {/* Horizontal lines: 48 rows (30 min each) */}
+                 <div className="absolute inset-0 grid grid-rows-48 pointer-events-none">
                   {Array.from({ length: 48 }).map((_, index) => (
                     <div
                       key={index}
@@ -296,8 +314,9 @@ export function FamilyCalendar() {
                   ))}
                 </div>
 
-                <NowLine />
+                {isToday(currentDate) && <NowLine />}
 
+                {/* Day columns */}
                 <div
                   className={`grid ${
                     view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
@@ -309,7 +328,7 @@ export function FamilyCalendar() {
                     return(
                       <div
                         key={day.toString()}
-                        className={cn("relative", isToday(day) && 'bg-accent/50')}
+                        className={cn("relative", isToday(day) && 'bg-accent/20')}
                       >
                         {laidOutEvents.map((event) => (
                             <TimelineEvent key={event.id} event={event} />

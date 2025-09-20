@@ -29,7 +29,7 @@ export function Event({ event }: EventProps) {
 }
 
 export function TimelineEvent({ event }: EventProps) {
-  const HALF_HOUR_HEIGHT = 24; // Corresponds to h-6 in Tailwind for each 30-min slot
+  const HALF_HOUR_HEIGHT = 24; // 30min = 24px
 
   const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));
   const endMinutes = differenceInMinutes(event.end, startOfDay(event.end));
