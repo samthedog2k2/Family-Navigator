@@ -147,14 +147,12 @@ export default function HomePage() {
                       aria-label={`Select ${feature.title}`}
                     />
                   </div>
-                  <Link href={feature.href} className="h-full flex flex-col">
-                    <CardHeader className="flex-row items-center gap-4">
+                  <Link href={feature.href} className="h-full flex flex-col p-6">
+                    <div className="flex-row items-center gap-4 flex mb-2">
                       {feature.icon}
                       <CardTitle>{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <CardDescription>{feature.description}</CardDescription>
-                    </CardContent>
+                    </div>
+                    <CardDescription>{feature.description}</CardDescription>
                   </Link>
                 </Card>
               ))}
@@ -175,5 +173,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
