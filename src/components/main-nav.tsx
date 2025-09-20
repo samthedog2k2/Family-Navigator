@@ -60,6 +60,7 @@ const weatherLinks: { title: string; href: string; description: string }[] = [
 ];
 
 const entertainmentLinks: { title: string; href: string; description: string }[] = [
+    { title: "Subscriptions", href: "/entertainment", description: "Manage your streaming subscriptions." },
     { title: "Netflix", href: "/entertainment/subscriptions/netflix", description: "Manage your Netflix subscription." },
     { title: "Hulu", href: "/entertainment/subscriptions/hulu", description: "Manage your Hulu subscription." },
     { title: "Prime", href: "/entertainment/subscriptions/prime", description: "Manage your Prime Video subscription." },
@@ -228,5 +229,3 @@ const ListItem = React.forwardRef<
   )
 })
 ListItem.displayName = "ListItem"
-
-    

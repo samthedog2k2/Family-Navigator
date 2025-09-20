@@ -1,6 +1,17 @@
 
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Clapperboard } from "lucide-react";
+import Link from "next/link";
+
+const subscriptionLinks = [
+    { title: "Netflix", href: "/entertainment/subscriptions/netflix", description: "Manage your Netflix subscription." },
+    { title: "Hulu", href: "/entertainment/subscriptions/hulu", description: "Manage your Hulu subscription." },
+    { title: "Prime Video", href: "/entertainment/subscriptions/prime", description: "Manage your Prime Video subscription." },
+    { title: "Max", href: "/entertainment/subscriptions/max", description: "Manage your Max subscription." },
+    { title: "Apple TV+", href: "/entertainment/subscriptions/apple", description: "Manage your Apple TV+ subscription." },
+];
 
 export default function EntertainmentPage() {
   return (
@@ -9,11 +20,21 @@ export default function EntertainmentPage() {
         title="Entertainment"
         description="Manage your subscriptions and watchlists."
       />
-      <div className="flex h-[500px] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground bg-muted/20">
-        <p className="text-muted-foreground">Entertainment dashboard coming soon</p>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {subscriptionLinks.map((link) => (
+            <Card key={link.title}>
+                <Link href={link.href}>
+                    <CardHeader className="flex-row items-center gap-4">
+                    <Clapperboard className="h-8 w-8 text-primary" />
+                    <CardTitle>{link.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <CardDescription>{link.description}</CardDescription>
+                    </CardContent>
+                </Link>
+            </Card>
+        ))}
       </div>
     </LayoutWrapper>
   );
 }
-
-    
