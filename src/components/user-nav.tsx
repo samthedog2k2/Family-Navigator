@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,17 +19,12 @@ export function UserNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check local storage for login state on component mount
     const storedLoginState = localStorage.getItem("isLoggedIn");
     if (storedLoginState === "true") {
       setIsLoggedIn(true);
     }
   }, []);
 
-  const handleLogin = () => {
-    localStorage.setItem("isLoggedIn", "true");
-    setIsLoggedIn(true);
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
@@ -38,9 +34,11 @@ export function UserNav() {
   if (!isLoggedIn) {
     return (
       <div className="flex items-center space-x-2">
-        <Button onClick={handleLogin}>Login</Button>
-        <Button variant="outline" onClick={handleLogin}>
-          Sign Up
+        <Button asChild>
+            <Link href="/login">Login</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/login">Sign Up</Link>
         </Button>
       </div>
     );
