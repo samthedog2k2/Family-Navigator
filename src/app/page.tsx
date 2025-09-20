@@ -100,13 +100,13 @@ export default function HomePage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
               {features.map((feature) => (
-                <div
+                <Card
                   key={feature.id}
-                  className={cn(
-                    "relative block cursor-pointer",
-                    selectedFeatures.includes(feature.id) && "ring-2 ring-primary rounded-lg"
-                  )}
                   onClick={() => handleFeatureSelect(feature.id)}
+                  className={cn(
+                    "relative cursor-pointer h-full transition-all hover:shadow-lg",
+                    selectedFeatures.includes(feature.id) && "ring-2 ring-primary"
+                  )}
                 >
                   <div className="absolute top-4 right-4 z-10">
                     <Checkbox
@@ -115,17 +115,15 @@ export default function HomePage() {
                       aria-label={`Select ${feature.title}`}
                     />
                   </div>
-                  <Card className="h-full transition-all hover:shadow-lg">
                     <CardHeader className="flex-row items-center gap-4">
                       {feature.icon}
                       <CardTitle>{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription>{feature.description}</CardDescription>
-                      <Link href={feature.href} onClick={(e) => e.stopPropagation()} className="absolute inset-0" aria-hidden="true" />
+                      <Link href={feature.href} onClick={(e) => e.stopPropagation()} className="font-medium text-primary hover:underline text-sm mt-2 inline-block">Go to {feature.title}</Link>
                     </CardContent>
-                  </Card>
-                </div>
+                </Card>
               ))}
             </div>
             {selectedFeatures.length > 0 && (
