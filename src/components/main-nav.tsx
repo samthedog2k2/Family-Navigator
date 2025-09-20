@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -13,9 +14,8 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import * as React from "react";
 
-// Strong types for navigation items
+// ---------- Strong typing ----------
 type NavLink = {
   title: string;
   href: string;
@@ -25,7 +25,7 @@ type NavLink = {
 
 type NavMenu = {
   title: string;
-  href?: string; // For overview pages
+  href: string; // For overview pages
   isLeaf: false;
   description: string;
   children: {
@@ -37,6 +37,9 @@ type NavMenu = {
 
 type NavItem = NavLink | NavMenu;
 
+const isNavMenu = (item: NavItem): item is NavMenu => !item.isLeaf;
+
+// ---------- Menu data ----------
 const mainNavItems: NavItem[] = [
   { title: "Home", href: "/", description: "Go to homepage", isLeaf: true },
   { title: "Chat", href: "/chat", description: "Chat with an AI", isLeaf: true },
@@ -128,6 +131,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: "AI Agents",
+    href: "/agents/webpages",
     isLeaf: false,
     description: "Interact with AI agents.",
     children: [
@@ -170,15 +174,7 @@ export function MainNav({
         <NavigationMenuList>
           {mainNavItems.map((item) => (
             <NavigationMenuItem key={item.title}>
-              {item.isLeaf ? (
-                <Link
-                  href={item.href}
-                  className={navigationMenuTriggerStyle()}
-                  data-active={pathname === item.href}
-                >
-                  {item.title}
-                </Link>
-              ) : (
+              {isNavMenu(item) ? (
                 <>
                   <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -195,6 +191,10 @@ export function MainNav({
                     </ul>
                   </NavigationMenuContent>
                 </>
+              ) : (
+                <Link href={item.href} className={navigationMenuTriggerStyle()} data-active={pathname === item.href}>
+                  {item.title}
+                </Link>
               )}
             </NavigationMenuItem>
           ))}
@@ -230,3 +230,5 @@ const ListItem = React.forwardRef<
   );
 });
 ListItem.displayName = "ListItem";
+
+    
