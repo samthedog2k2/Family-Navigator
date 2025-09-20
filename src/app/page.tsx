@@ -8,6 +8,7 @@ import {
   Car,
   GraduationCap,
   Briefcase,
+  MessageCircle,
 } from "lucide-react";
 import {
   Card,
@@ -44,6 +45,12 @@ const features = [
     description: "Interact with websites using AI.",
     href: "/web-agent",
     icon: <Bot className="h-8 w-8 text-primary-foreground" />,
+  },
+  {
+    title: "Chat Agent",
+    description: "Chat with an AI to improve the app.",
+    href: "/chat",
+    icon: <MessageCircle className="h-8 w-8 text-primary-foreground" />,
   },
 ];
 

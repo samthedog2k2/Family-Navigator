@@ -11,6 +11,7 @@ const links = [
   { href: "/finance", label: "Finance" },
   { href: "/health", label: "Health" },
   { href: "/web-agent", label: "Web Agent" },
+  { href: "/chat", label: "Chat" },
 ];
 
 export function MainNav({
@@ -21,7 +22,7 @@ export function MainNav({
 
   return (
     <nav
-      className={cn("flex items-center space-x-4 lg:space-x-6", className)}
+      className={cn("hidden items-center space-x-4 md:flex lg:space-x-6", className)}
       {...props}
     >
       {links.map((link) => (
