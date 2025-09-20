@@ -1,12 +1,11 @@
-
 {
   "healthData": {
     "Adam": {
-      "height": "6'1\"",
-      "age": 38,
+      "height": "6'3\"",
+      "age": 53,
       "gender": "Male",
-      "weight": "190",
-      "glucose": "92",
+      "weight": "269.4",
+      "glucose": "100",
       "notes": "Annual check-up last month."
     },
     "Holly": {
