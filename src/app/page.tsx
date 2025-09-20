@@ -8,6 +8,7 @@ import {
   Plane,
   Bot,
   MessageCircle,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Header } from "@/components/header";
 import {
@@ -54,6 +55,13 @@ const features = [
     href: "/chat",
     icon: <MessageCircle className="h-8 w-8 text-primary" />,
   },
+  {
+    id: "calendar",
+    title: "Calendar",
+    description: "Organize your family's schedule.",
+    href: "/calendar",
+    icon: <CalendarIcon className="h-8 w-8 text-primary" />,
+  },
 ];
 
 export default function HomePage() {
@@ -66,10 +74,10 @@ export default function HomePage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Explore Features
+                  What would you like to do today?
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Select a feature to get started.
+                  Choose from the features below to get started.
                 </p>
               </div>
             </div>

@@ -18,6 +18,7 @@ import * as React from "react";
 const mainNavLinks = [
   { href: "/", label: "Home" },
   { href: "/chat", label: "Chat" },
+  { href: "/calendar", label: "Calendar" },
 ];
 
 const travelLinks: { title: string; href: string; description: string }[] = [
