@@ -24,7 +24,13 @@ export function Event({ event }: { event: TCalendarEvent }) {
   );
 }
 
-export function TimelineEvent({ event }: { event: TCalendarEvent & { slotIndex?: number; slotCount?: number } }) {
+type TimelineEventProps = {
+  event: TCalendarEvent & { slotIndex?: number; slotCount?: number };
+  onClick?: (event: TCalendarEvent) => void;
+};
+
+
+export function TimelineEvent({ event, onClick }: TimelineEventProps) {
   const HALF_HOUR_HEIGHT = 24; // 30min = 24px
 
   const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));
@@ -61,6 +67,7 @@ export function TimelineEvent({ event }: { event: TCalendarEvent & { slotIndex?:
       )}
       style={{ top, height, left: `${left}%`, width: `${width}%` }}
       tabIndex={0}
+      onClick={() => onClick?.(event)}
     >
       <p className="font-medium truncate">{event.title}</p>
        <div className="text-[10px] opacity-80">

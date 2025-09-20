@@ -31,6 +31,8 @@ import { useCalendar } from "@/hooks/use-calendar";
 import { Skeleton } from "./ui/skeleton";
 import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
 import { NewEventDialog } from "./new-event-dialog";
+import { EventDetailDialog } from "./event-detail-dialog";
+
 
 const viewIntervals = {
   month: {
@@ -142,6 +144,7 @@ export function FamilyCalendar() {
     isLoading,
   } = useCalendar();
 
+  const [selectedEvent, setSelectedEvent] = React.useState<TCalendarEvent | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -372,7 +375,7 @@ export function FamilyCalendar() {
                         className={cn("relative", isToday(day) && 'bg-accent/20')}
                       >
                         {laidOutEvents.map((event) => (
-                            <TimelineEvent key={event.id} event={event} />
+                            <TimelineEvent key={event.id} event={event} onClick={setSelectedEvent}/>
                           ))}
                       </div>
                     )
@@ -383,10 +386,7 @@ export function FamilyCalendar() {
           </div>
         )}
       </div>
+       <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </div>
   );
 }
-
-    
-
-    
