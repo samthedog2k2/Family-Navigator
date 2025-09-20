@@ -43,7 +43,7 @@ const features = [
   },
   {
     id: "agents",
-    title: "Agents",
+    title: "AI Agents",
     description: "Interact with AI agents.",
     href: "/agents/webpages",
     icon: <Bot className="h-8 w-8 text-primary" />,
