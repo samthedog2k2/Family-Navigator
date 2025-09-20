@@ -49,7 +49,7 @@ export function TimelineEvent({ event }: EventProps) {
 
   return (
     <div
-      className={`absolute left-1 right-1 z-10 rounded-lg border p-2 text-white shadow-md ${timelineColorClasses[event.color]}`}
+      className={`absolute left-2 right-2 z-10 rounded-lg border p-2 text-white shadow-md ${timelineColorClasses[event.color]}`}
       style={{
         top: `${top}rem`,
         height: `${height}rem`,
@@ -59,5 +59,3 @@ export function TimelineEvent({ event }: EventProps) {
     </div>
   );
 }
-
-    

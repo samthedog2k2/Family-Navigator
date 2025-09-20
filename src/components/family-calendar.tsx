@@ -68,7 +68,6 @@ export function FamilyCalendar() {
     currentDate,
     setCurrentDate,
     view,
-    setView,
     activeCalendars,
     isLoading,
   } = useCalendar();
@@ -83,12 +82,6 @@ export function FamilyCalendar() {
             <Skeleton className="h-9 w-9" />
             <Skeleton className="h-9 w-9" />
             <Skeleton className="h-9 w-48" />
-          </div>
-          <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-16" />
           </div>
         </div>
         <div className="flex-1 overflow-auto mt-4">
@@ -152,7 +145,7 @@ export function FamilyCalendar() {
       : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-[calc(100vh-8rem)] flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
@@ -179,28 +172,10 @@ export function FamilyCalendar() {
             {viewHeaders[view](currentDate)}
           </h2>
         </div>
-
-        <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
-          {(["day", "workWeek", "week", "month"] as (typeof view)[]).map(
-            (v) => (
-              <Button
-                key={v}
-                variant={view === v ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setView(v)}
-                className={cn(view === v && "shadow-sm", "px-3")}
-              >
-                {v === "workWeek"
-                  ? "Work Week"
-                  : v.charAt(0).toUpperCase() + v.slice(1)}
-              </Button>
-            )
-          )}
-        </div>
       </div>
 
       {view === "month" ? (
-        <div className="grid grid-cols-7 mt-4 text-xs font-semibold leading-6 text-center text-muted-foreground">
+        <div className="grid flex-1 grid-cols-7 mt-4 text-xs font-semibold leading-6 text-center text-muted-foreground">
           {weekDays.map((day) => (
             <div key={day}>{day}</div>
           ))}
@@ -236,7 +211,7 @@ export function FamilyCalendar() {
         </div>
       )}
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto rounded-lg border mt-2">
         {view === "month" && (
           <div className="grid grid-cols-7 grid-rows-5 h-full">
             {days.map((day, dayIdx) => (
@@ -278,12 +253,12 @@ export function FamilyCalendar() {
           >
             {/* Time column */}
             <div className="text-xs text-right text-muted-foreground pr-2 row-start-2">
-              {hours.map((hour) => (
+              {hours.map((hour, index) => (
                 <div
                   key={hour.toString()}
-                  className="h-12 flex items-start justify-end -mt-2.5"
+                  className={cn("h-12 flex items-start justify-end -mt-2.5", index > 0 && "border-t")}
                 >
-                  <span className="relative top-0">{format(hour, "ha")}</span>
+                  { index > 0 && <span className="relative top-0">{format(hour, "ha")}</span>}
                 </div>
               ))}
             </div>
@@ -310,7 +285,8 @@ export function FamilyCalendar() {
                   key={day.toString()}
                   className={cn(
                     "relative",
-                    dayIndex > 0 && "border-l border-muted"
+                    dayIndex > 0 && "border-l border-muted",
+                    isToday(day) && 'bg-accent/50'
                   )}
                 >
                   {filteredEvents

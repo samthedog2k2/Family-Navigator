@@ -16,11 +16,7 @@ import {
 } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/lib/types";
-import { Calendar } from "./ui/calendar";
 import { useCalendar } from "@/hooks/use-calendar";
-import { Skeleton } from "./ui/skeleton";
-import { useState, useEffect } from "react";
-
 
 const familyMembers: (FamilyMember | "Family")[] = [
   "Family",
@@ -34,17 +30,10 @@ export function CalendarControlSidebar() {
   const { 
     activeCalendars, 
     toggleCalendar,
-    currentDate,
-    setCurrentDate 
+    view,
+    setView
   } = useCalendar();
   
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-
   return (
     <div className="flex flex-col h-full">
       <SidebarHeader>
@@ -53,19 +42,25 @@ export function CalendarControlSidebar() {
           <span>Add event</span>
         </Button>
       </SidebarHeader>
-      <SidebarContent>
-        <div className="px-2">
-            {isClient ? (
-              <Calendar
-                  mode="single"
-                  selected={currentDate}
-                  onSelect={(day) => day && setCurrentDate(day)}
-              />
-            ) : (
-              <Skeleton className="h-[280px] w-full" />
+      <SidebarContent className="flex flex-col">
+        <div className="p-2 flex flex-col gap-2">
+            {(["day", "workWeek", "week", "month"] as (typeof view)[]).map(
+                (v) => (
+                <Button
+                    key={v}
+                    variant={view === v ? "secondary" : "ghost"}
+                    onClick={() => setView(v)}
+                    className={cn("justify-start", view === v && "shadow-sm")}
+                >
+                    {v === "workWeek"
+                    ? "Work Week"
+                    : v.charAt(0).toUpperCase() + v.slice(1)}
+                </Button>
+                )
             )}
         </div>
-        <div className="p-2">
+
+        <div className="p-2 mt-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full justify-start">

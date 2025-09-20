@@ -45,8 +45,8 @@ const rawInitialEvents = [
   {
     id: "4",
     title: "Elle's Ballet Recital",
-    start: { add: { days: 3, hours: 18 } },
-    end: { add: { days: 3, hours: 19 } },
+    start: { add: { days: 2, hours: 13 } },
+    end: { add: { days: 2, hours: 14 } },
     calendar: "Elle",
     color: "orange",
   },
@@ -88,7 +88,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [view, setView] = useState<CalendarView>('workWeek');
-  const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family"]);
+  const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family", "Adam", "Holly", "Ethan", "Elle"]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
