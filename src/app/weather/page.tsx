@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Sun, Cloud, CloudRain, Snowflake, Wind } from "lucide-react";
