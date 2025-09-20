@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Navigation, AlertCircle } from "lucide-react";
+import { Loader2, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Navigation, AlertCircle, CloudSun } from "lucide-react";
 
 type WeatherData = {
   temperature: number;
   windspeed: number;
   weathercode: number;
+  winddirection: number;
 };
 
 const weatherCodeMap: { [key: number]: { description: string; icon: React.ReactNode } } = {
