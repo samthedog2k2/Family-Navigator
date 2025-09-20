@@ -26,7 +26,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Event, TimelineEvent } from "@/components/calendar-event";
 import { useCalendar } from "@/hooks/use-calendar";
-import { SidebarTrigger } from "./ui/sidebar";
 import { Skeleton } from "./ui/skeleton";
 
 const viewIntervals = {
@@ -148,7 +147,6 @@ export function FamilyCalendar() {
     <div className="flex h-[calc(100vh-8rem)] flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden" />
           <Button variant="outline" onClick={() => setCurrentDate(today)}>
             Today
           </Button>
