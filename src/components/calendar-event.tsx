@@ -29,13 +29,13 @@ export function Event({ event }: EventProps) {
 }
 
 export function TimelineEvent({ event }: EventProps) {
-  const HOUR_HEIGHT = 48; // Corresponds to h-12 in Tailwind
+  const HALF_HOUR_HEIGHT = 24; // Corresponds to h-6 in Tailwind for each 30-min slot
 
   const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));
   const endMinutes = differenceInMinutes(event.end, startOfDay(event.end));
 
-  const top = (startMinutes / 60) * HOUR_HEIGHT;
-  const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT;
+  const top = (startMinutes / 30) * HALF_HOUR_HEIGHT;
+  const height = ((endMinutes - startMinutes) / 30) * HALF_HOUR_HEIGHT;
 
   // Collision layout
   const slotIndex = event.slotIndex ?? 0;

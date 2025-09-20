@@ -282,9 +282,17 @@ export function FamilyCalendar() {
               </div>
 
               <div className="relative grid flex-1">
-                <div className="grid grid-rows-24 divide-y divide-border pointer-events-none">
-                  {hours.map((_, index) => (
-                    <div key={index} className="h-12"></div>
+                 <div className="grid grid-rows-48 pointer-events-none">
+                  {Array.from({ length: 48 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "border-t",
+                        index % 2 === 0
+                          ? "border-border"
+                          : "border-border/50"
+                      )}
+                    ></div>
                   ))}
                 </div>
 
