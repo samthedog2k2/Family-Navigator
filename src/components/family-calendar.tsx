@@ -30,6 +30,7 @@ import { Event, TimelineEvent } from "@/components/calendar-event";
 import { useCalendar } from "@/hooks/use-calendar";
 import { Skeleton } from "./ui/skeleton";
 import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
+import { NewEventDialog } from "./new-event-dialog";
 
 const viewIntervals = {
   month: {
@@ -247,7 +248,7 @@ export function FamilyCalendar() {
             {viewHeaders[view](currentDate)}
           </h2>
         </div>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           {calendarViews.map((v) => (
             <Button
               key={v}
@@ -258,6 +259,7 @@ export function FamilyCalendar() {
               {v === "workWeek" ? "Work Week" : v.charAt(0).toUpperCase() + v.slice(1)}
             </Button>
           ))}
+           <NewEventDialog defaultDate={currentDate} />
         </div>
       </div>
 
@@ -384,5 +386,7 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
 
     

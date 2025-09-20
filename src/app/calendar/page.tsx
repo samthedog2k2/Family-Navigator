@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { FamilyCalendar } from "@/components/family-calendar";
@@ -16,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { FamilyMember } from "@/lib/types";
 import { useCalendar } from "@/hooks/use-calendar";
+import { NewEventDialog } from "@/components/new-event-dialog";
 
 const familyMembers: (FamilyMember | "Family")[] = [
   "Family",
@@ -36,10 +38,7 @@ export default function CalendarPage() {
       />
       <div className="grid grid-cols-[200px_1fr] gap-6">
         <div className="flex flex-col gap-4">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Event
-          </Button>
+          <NewEventDialog />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -77,3 +76,5 @@ export default function CalendarPage() {
     </LayoutWrapper>
   );
 }
+
+    
