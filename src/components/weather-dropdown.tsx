@@ -41,11 +41,10 @@ export function WeatherDropdown() {
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    async function fetchWeather() {
+    async function fetchWeatherData(latitude: number, longitude: number) {
       try {
         setIsLoading(true);
-        // Default to San Diego for the dropdown
-        const result = await getWeatherForecast({ latitude: 32.7157, longitude: -117.1611 });
+        const result = await getWeatherForecast({ latitude, longitude });
         setWeather(result);
       } catch (e) {
         setError("Could not fetch weather.");
@@ -55,7 +54,21 @@ export function WeatherDropdown() {
         setIsLoading(false);
       }
     }
-    fetchWeather();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeatherData(position.coords.latitude, position.coords.longitude);
+        },
+        () => {
+          // Geolocation failed, fallback to San Diego
+          fetchWeatherData(32.7157, -117.1611);
+        }
+      );
+    } else {
+      // Geolocation not supported, fallback to San Diego
+      fetchWeatherData(32.7157, -117.1611);
+    }
   }, []);
 
   return (

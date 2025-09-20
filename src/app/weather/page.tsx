@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Navigation, AlertCircle, Wind, CloudFog, Snowflake, CloudRainWind } from "lucide-react";
+import { Loader2, Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Navigation, AlertCircle, Wind } from "lucide-react";
 import { getWeatherForecast, WeatherOutput } from "@/ai/flows/weather";
 import { toast } from "@/hooks/use-toast";
 
