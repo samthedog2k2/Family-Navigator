@@ -17,8 +17,11 @@ import {
   startOfToday,
   startOfWeek,
   sub,
+  startOfMonth,
+  eachHourOfInterval,
+  startOfDay,
+  endOfDay,
 } from "date-fns";
-import { Resizable } from "re-resizable";
 import { Check, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -31,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Event } from "@/components/calendar-event";
+import { Event, TimelineEvent } from "@/components/calendar-event";
 
 type CalendarEvent = {
   id: string;
@@ -124,28 +127,25 @@ const viewHeaders = {
     day: (d: Date) => format(d, "MMMM d, yyyy"),
 }
 
-const viewGridCols = {
-    month: 'grid-cols-7',
-    week: 'grid-cols-7',
-    day: 'grid-cols-1'
-}
-
 export function FamilyCalendar() {
   const today = startOfToday();
   const [events, setEvents] = React.useState(initialEvents);
   const [currentDate, setCurrentDate] = React.useState(today);
-  const [selectedDay, setSelectedDay] = React.useState(today);
   const [view, setView] = React.useState<CalendarView>('week');
 
   const [activeCalendars, setActiveCalendars] = React.useState<
     (FamilyMember | "Family")[]
-  >(["Family"]);
-
+  >(["Family", "Adam", "Holly", "Ethan", "Elle"]);
 
   const interval = viewIntervals[view];
   const days = eachDayOfInterval({
     start: interval.start(currentDate),
     end: interval.end(currentDate)
+  });
+  
+  const hours = eachHourOfInterval({
+    start: startOfDay(today),
+    end: endOfDay(today),
   });
 
   const getPeriod = () => {
@@ -192,20 +192,21 @@ export function FamilyCalendar() {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={prevPeriod}>
+            <Button variant="outline" onClick={() => setCurrentDate(today)}>Today</Button>
+          <Button variant="outline" size="icon" onClick={prevPeriod} aria-label="Previous period">
             <ChevronLeft />
           </Button>
-          <h2 className="w-48 text-center text-lg font-semibold">
-             {viewHeaders[view](currentDate)}
-          </h2>
-          <Button variant="outline" size="icon" onClick={nextPeriod}>
+          <Button variant="outline" size="icon" onClick={nextPeriod} aria-label="Next period">
             <ChevronRight />
           </Button>
+           <h2 className="ml-2 w-48 text-left text-lg font-semibold">
+             {viewHeaders[view](currentDate)}
+          </h2>
         </div>
 
         <div className="hidden md:flex items-center gap-2 rounded-md bg-muted p-1">
             {(['day', 'week', 'month'] as CalendarView[]).map(v => (
-                <Button key={v} variant={view === v ? 'default' : 'ghost'} size="sm" onClick={() => setView(v)}
+                <Button key={v} variant={view === v ? 'secondary' : 'ghost'} size="sm" onClick={() => setView(v)}
                  className={cn(view === v && "shadow-sm", "px-3")}>
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                 </Button>
@@ -232,7 +233,7 @@ export function FamilyCalendar() {
                   >
                     <Check
                       className={cn(
-                        "mr-2",
+                        "mr-2 h-4 w-4",
                         !activeCalendars.includes(calendar) && "opacity-0"
                       )}
                     />
@@ -242,62 +243,96 @@ export function FamilyCalendar() {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button>
-              <Plus />
+              <Plus className="h-4 w-4"/>
               <span>Add event</span>
             </Button>
         </div>
       </div>
-      <div className={cn("grid text-xs font-semibold leading-6 text-center text-muted-foreground mt-4", viewGridCols[view])}>
-        { (view === 'week' || view === 'month') && weekDays.map(day => <div key={day}>{day}</div>) }
-        { view === 'day' && <div>{weekDays[getDay(currentDate)]}</div> }
-      </div>
-      <Resizable
-        defaultSize={{
-          height: "80vh",
-          width: "100%",
-        }}
-        handleClasses={{
-          bottom: "w-full h-2 bottom-0",
-        }}
-        enable={{
-          bottom: true,
-        }}
-        className={cn("grid", viewGridCols[view])}
-      >
-        {days.map((day, dayIdx) => (
-          <div
-            key={day.toString()}
-            className={cn(
-              (view === 'month' && dayIdx === 0) && colStartClasses[getDay(day)],
-              "relative border-t p-1.5",
-              view === 'month' && !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
-            )}
-          >
-            <div className="flex flex-col">
-                <button
-                  onClick={() => setSelectedDay(day)}
-                  className={cn(
-                    "h-7 w-7 rounded-full text-sm font-medium",
-                     isEqual(day, selectedDay) && "bg-primary text-primary-foreground",
-                     !isEqual(day, selectedDay) && isToday(day) && "bg-accent text-accent-foreground",
-                     !isEqual(day, selectedDay) && !isToday(day) && "hover:bg-accent"
-                  )}
-                >
-                  <time dateTime={format(day, "yyyy-MM-dd")}>
-                    {format(day, "d")}
-                  </time>
-                </button>
-              <div className="mt-2 flex-1 space-y-1">
-                {filteredEvents
-                  .filter((event) => isSameDay(event.start, day))
-                  .map((event) => (
-                    <Event key={event.id} event={event} />
-                  ))}
-              </div>
+      
+      {view === 'month' ? (
+         <div className="grid grid-cols-7 mt-4 text-xs font-semibold leading-6 text-center text-muted-foreground">
+            {weekDays.map(day => <div key={day}>{day}</div>)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] mt-4">
+            <div></div>
+            <div className={`grid grid-cols-${days.length} text-center`}>
+                {days.map((day) => (
+                    <div key={day.toString()} className="flex flex-col items-center">
+                        <span className="text-sm text-muted-foreground">{format(day, 'E')}</span>
+                         <span className={cn("text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full", isToday(day) && "bg-primary text-primary-foreground")}>{format(day, 'd')}</span>
+                    </div>
+                ))}
             </div>
-          </div>
-        ))}
-      </Resizable>
+        </div>
+      )}
+
+
+      <div className="flex-1 overflow-auto">
+        {view === 'month' && (
+             <div className="grid grid-cols-7 grid-rows-5 h-full">
+                {days.map((day, dayIdx) => (
+                <div
+                    key={day.toString()}
+                    className={cn(
+                    dayIdx === 0 && colStartClasses[getDay(day)],
+                    "relative border-t border-r p-1.5",
+                    !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
+                    )}
+                >
+                    <div className="flex flex-col">
+                        <time dateTime={format(day, "yyyy-MM-dd")} className={cn(
+                                "h-7 w-7 rounded-full text-sm font-medium flex items-center justify-center",
+                                isToday(day) && "bg-primary text-primary-foreground",
+                            )}>
+                            {format(day, "d")}
+                        </time>
+                    <div className="mt-2 flex-1 space-y-1">
+                        {filteredEvents
+                        .filter((event) => isSameDay(event.start, day))
+                        .map((event) => (
+                            <Event key={event.id} event={event} />
+                        ))}
+                    </div>
+                    </div>
+                </div>
+                ))}
+            </div>
+        )}
+        {(view === 'day' || view === 'week') && (
+            <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] h-full">
+                {/* Time column */}
+                <div className="text-xs text-right text-muted-foreground pr-2">
+                    {hours.map(hour => (
+                        <div key={hour.toString()} className="h-12 flex items-start justify-end -mt-2">
+                             <span className="relative top-2">{format(hour, 'ha')}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Day columns */}
+                <div className={`grid grid-cols-${days.length} relative`}>
+                    {/* Horizontal lines */}
+                     <div className="col-span-full grid grid-rows-24 absolute inset-0">
+                        {hours.map((_, index) => (
+                            <div key={index} className="border-t border-muted"></div>
+                        ))}
+                    </div>
+
+                    {days.map((day, dayIndex) => (
+                        <div key={day.toString()} className={cn("relative", dayIndex > 0 && "border-l")}>
+                             {filteredEvents.filter(event => isSameDay(event.start, day))
+                                .map(event => (
+                                    <TimelineEvent key={event.id} event={event}/>
+                                ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+       </div>
     </div>
   );
 }
+
+    
