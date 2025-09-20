@@ -2,7 +2,7 @@
 "use client";
 
 import type { FamilyMember } from "@/lib/types";
-import { differenceInMinutes, getMinutes } from "date-fns";
+import { differenceInMinutes, getMinutes, getHours } from "date-fns";
 
 type CalendarEvent = {
   id: string;
@@ -43,16 +43,21 @@ const timelineColorClasses = {
   orange: "bg-orange-500 border-orange-700",
 };
 
-export function TimelineEvent({ event }: EventProps) {
-  const top = (event.start.getHours() * 60 + getMinutes(event.start)) / 60 * 3; // 3rem per hour
-  const height = differenceInMinutes(event.end, event.start) / 60 * 3;
+const TOTAL_MINUTES_IN_DAY = 24 * 60;
 
+export function TimelineEvent({ event }: EventProps) {
+  const startMinutes = getHours(event.start) * 60 + getMinutes(event.start);
+  const durationMinutes = differenceInMinutes(event.end, event.start);
+
+  const top = (startMinutes / TOTAL_MINUTES_IN_DAY) * 100;
+  const height = (durationMinutes / TOTAL_MINUTES_IN_DAY) * 100;
+  
   return (
     <div
       className={`absolute left-2 right-2 z-10 rounded-lg border p-2 text-white shadow-md ${timelineColorClasses[event.color]}`}
       style={{
-        top: `${top}rem`,
-        height: `${height}rem`,
+        top: `${top}%`,
+        height: `${height}%`,
       }}
     >
       <p className="text-xs font-bold">{event.title}</p>

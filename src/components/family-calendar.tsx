@@ -34,14 +34,8 @@ const viewIntervals = {
     end: (d: Date) => endOfWeek(endOfMonth(d)),
   },
   workWeek: {
-    start: (d: Date) => {
-      const start = startOfWeek(d, { weekStartsOn: 1 });
-      return start;
-    },
-    end: (d: Date) => {
-      const end = endOfWeek(d, { weekStartsOn: 1 });
-      return sub(end, { days: 2 });
-    },
+    start: (d: Date) => startOfWeek(d, { weekStartsOn: 1 }),
+    end: (d: Date) => endOfWeek(d, { weekStartsOn: 1 }),
   },
   week: {
     start: startOfWeek,
@@ -76,7 +70,6 @@ export function FamilyCalendar() {
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-9 md:hidden" />
             <Skeleton className="h-9 w-20" />
             <Skeleton className="h-9 w-9" />
             <Skeleton className="h-9 w-9" />
@@ -91,12 +84,15 @@ export function FamilyCalendar() {
   }
 
   const today = startOfToday();
-
-  const interval = viewIntervals[view];
+  
   let days = eachDayOfInterval({
-    start: interval.start(currentDate),
-    end: interval.end(currentDate),
+    start: viewIntervals[view].start(currentDate),
+    end: viewIntervals[view].end(currentDate),
   });
+
+  if (view === "workWeek") {
+    days = days.slice(0, 5); // Mon-Fri
+  }
 
   const hours = eachHourOfInterval({
     start: startOfDay(today),
@@ -108,7 +104,6 @@ export function FamilyCalendar() {
       case "month":
         return { months: 1 };
       case "week":
-        return { weeks: 1 };
       case "workWeek":
         return { weeks: 1 };
       case "day":
@@ -129,13 +124,7 @@ export function FamilyCalendar() {
   );
 
   const colStartClasses = [
-    "",
-    "col-start-2",
-    "col-start-3",
-    "col-start-4",
-    "col-start-5",
-    "col-start-6",
-    "col-start-7",
+    "", "col-start-2", "col-start-3", "col-start-4", "col-start-5", "col-start-6", "col-start-7",
   ];
 
   const weekDays =
@@ -144,26 +133,16 @@ export function FamilyCalendar() {
       : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setCurrentDate(today)}>
             Today
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={prevPeriod}
-            aria-label="Previous period"
-          >
+          <Button variant="outline" size="icon" onClick={prevPeriod} aria-label="Previous period">
             <ChevronLeft />
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={nextPeriod}
-            aria-label="Next period"
-          >
+          <Button variant="outline" size="icon" onClick={nextPeriod} aria-label="Next period">
             <ChevronRight />
           </Button>
           <h2 className="ml-2 w-48 text-left text-lg font-semibold">
@@ -172,56 +151,24 @@ export function FamilyCalendar() {
         </div>
       </div>
 
-      {view === "month" ? (
-        <div className="grid flex-1 grid-cols-7 mt-4 text-xs font-semibold leading-6 text-center text-muted-foreground">
-          {weekDays.map((day) => (
-            <div key={day}>{day}</div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 mt-4">
-          <div
-            className={`grid ${
-              view === "day"
-                ? "grid-cols-1"
-                : view === "week"
-                ? "grid-cols-7"
-                : "grid-cols-5"
-            } text-center ml-14`}
-          >
-            {days.map((day) => (
-              <div key={day.toString()} className="flex flex-col items-center">
-                <span className="text-sm text-muted-foreground">
-                  {format(day, "E")}
-                </span>
-                <span
+      <div className="flex-1 mt-4 flex flex-col overflow-auto rounded-lg border">
+        {view === "month" ? (
+          <>
+            <div className="grid flex-1 grid-cols-7 text-xs font-semibold leading-6 text-center text-muted-foreground">
+              {weekDays.map((day) => (
+                <div key={day}>{day}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 grid-rows-5 h-full divide-x divide-border">
+              {days.map((day, dayIdx) => (
+                <div
+                  key={day.toString()}
                   className={cn(
-                    "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full",
-                    isToday(day) && "bg-primary text-primary-foreground"
+                    dayIdx === 0 && colStartClasses[getDay(day)],
+                    "relative border-t border-border p-1.5",
+                    !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
                   )}
                 >
-                  {format(day, "d")}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1 overflow-auto rounded-lg border mt-2">
-        {view === "month" && (
-          <div className="grid grid-cols-7 grid-rows-5 h-full">
-            {days.map((day, dayIdx) => (
-              <div
-                key={day.toString()}
-                className={cn(
-                  dayIdx === 0 && colStartClasses[getDay(day)],
-                  "relative border-t border-r p-1.5",
-                  !isSameMonth(day, currentDate) &&
-                    "text-muted-foreground/50 bg-muted/20"
-                )}
-              >
-                <div className="flex flex-col">
                   <time
                     dateTime={format(day, "yyyy-MM-dd")}
                     className={cn(
@@ -239,58 +186,70 @@ export function FamilyCalendar() {
                       ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {(view === "day" || view === "week" || view === "workWeek") && (
-          <div className="grid grid-cols-[auto_1fr] h-full">
-            {/* Time column */}
-            <div className="w-14 text-xs text-right text-muted-foreground pr-2">
-              {hours.map((hour, index) => (
-                <div
-                  key={hour.toString()}
-                  className={cn("h-12 flex items-start justify-end -mt-2.5", index > 0 && "border-t")}
-                >
-                  { index > 0 && <span className="relative top-0">{format(hour, "ha")}</span>}
-                </div>
               ))}
             </div>
-            
-            <div className="relative grid flex-1">
-              {/* Horizontal lines */}
-              <div className="col-start-1 col-end-2 grid grid-rows-24 pointer-events-none">
-                {hours.map((_, index) => (
-                  <div key={index} className="border-t border-muted"></div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col">
+            <div className="sticky top-0 z-10 bg-background border-b border-border">
+              <div className="grid grid-cols-[auto_1fr]">
+                <div className="w-14"></div>
+                <div
+                  className={`grid ${
+                    view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
+                  } divide-x divide-border text-center`}
+                >
+                  {days.map((day) => (
+                    <div key={day.toString()} className="flex flex-col items-center py-2">
+                      <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
+                      <span
+                        className={cn(
+                          "text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full",
+                          isToday(day) && "bg-primary text-primary-foreground"
+                        )}
+                      >
+                        {format(day, "d")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
+              <div className="sticky left-0 z-10 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
+                {hours.map((hour, index) => (
+                  <div key={hour.toString()} className="h-12 flex justify-end">
+                    {index > 0 && <span className="relative -top-2.5">{format(hour, "ha")}</span>}
+                  </div>
                 ))}
               </div>
 
-              {/* Day columns */}
-              <div
-                className={`grid ${
-                  view === "day"
-                    ? "grid-cols-1"
-                    : view === "week"
-                    ? "grid-cols-7"
-                    : "grid-cols-5"
-                } relative col-start-1 col-end-2 row-start-1`}
-              >
-                {days.map((day, dayIndex) => (
-                  <div
-                    key={day.toString()}
-                    className={cn(
-                      "relative",
-                      dayIndex > 0 && "border-l border-muted",
-                      isToday(day) && 'bg-accent/50'
-                    )}
-                  >
-                    {filteredEvents
-                      .filter((event) => isSameDay(event.start, day))
-                      .map((event) => (
-                        <TimelineEvent key={event.id} event={event} />
-                      ))}
-                  </div>
-                ))}
+              <div className="relative grid flex-1">
+                <div className="grid grid-rows-24 divide-y divide-border">
+                  {hours.map((_, index) => (
+                    <div key={index} className="h-12"></div>
+                  ))}
+                </div>
+
+                <div
+                  className={`grid ${
+                    view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'
+                  } divide-x divide-border absolute inset-0`}
+                >
+                  {days.map((day) => (
+                    <div
+                      key={day.toString()}
+                      className={cn("relative", isToday(day) && 'bg-accent/50')}
+                    >
+                      {filteredEvents
+                        .filter((event) => isSameDay(event.start, day))
+                        .map((event) => (
+                          <TimelineEvent key={event.id} event={event} />
+                        ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
