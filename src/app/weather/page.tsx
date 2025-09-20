@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ export default function WeatherPage() {
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
   const [forecast, setForecast] = useState<DailyForecast | null>(null);
   const [loading, setLoading] = useState(true);
+  const [radarUrl, setRadarUrl] = useState("https://www.rainviewer.com/map.html?loc=39.61,-86.10,8&oFa=1&oC=1&oU=1&oCS=1&oF=1&layer=radar");
 
   // fallback Greenwood, IN
   const fallback = { lat: 39.6137, lon: -86.1067 };
@@ -37,8 +39,9 @@ export default function WeatherPage() {
 
   useEffect(() => {
     function fetchWeather(lat: number, lon: number) {
+      setRadarUrl(`https://www.rainviewer.com/map.html?loc=${lat},${lon},8&oFa=1&oC=1&oU=1&oCS=1&oF=1&layer=radar`);
       fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&temperature_unit=fahrenheit`,
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&temperature_unit=fahrenheit&windspeed_unit=mph`,
         { cache: "no-store" }
       )
         .then((res) => res.json())
@@ -58,7 +61,7 @@ export default function WeatherPage() {
     } else {
       fetchWeather(fallback.lat, fallback.lon);
     }
-  }, []);
+  }, [fallback.lat, fallback.lon]);
 
   return (
     <LayoutWrapper>
@@ -117,7 +120,7 @@ export default function WeatherPage() {
           <div className="p-6 rounded-lg border shadow-sm bg-card">
             <h2 className="text-xl font-bold mb-4">Radar</h2>
             <iframe
-              src="https://radar.weather.gov/"
+              src={radarUrl}
               className="w-full h-[400px] rounded"
               title="Weather Radar"
             />
