@@ -46,7 +46,7 @@ export default function CalendarPage() {
                 <span>Select Calendar</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuContent align="start" className="w-[200px]">
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <div className="font-semibold">Show Calendars</div>
               </DropdownMenuItem>
@@ -76,5 +76,3 @@ export default function CalendarPage() {
     </LayoutWrapper>
   );
 }
-
-    

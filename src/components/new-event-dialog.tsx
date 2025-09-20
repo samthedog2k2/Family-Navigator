@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -16,8 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addMinutes, format } from "date-fns";
 import { Plus } from "lucide-react";
+import { useCalendar } from "@/hooks/use-calendar";
+import type { CalendarEvent } from "@/hooks/use-calendar";
 
 export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
+  const { setEvents } = useCalendar();
+  const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [start, setStart] = useState(
     defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : ""
@@ -27,12 +32,32 @@ export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
   );
 
   const handleSave = () => {
-    console.log("New event created:", { title, start, end });
-    // TODO: integrate with your state or API
+    if (!title || !start || !end) return;
+
+    const newEvent: CalendarEvent = {
+      id: crypto.randomUUID(),
+      title,
+      start: new Date(start),
+      end: new Date(end),
+      calendar: "Family", // Default calendar
+      color: "blue", // Default color
+    };
+
+    setEvents((prev) => [...prev, newEvent]);
+
+    // Reset form and close dialog
+    setTitle("");
+    setStart(defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "");
+    setEnd(
+      defaultDate
+        ? format(addMinutes(defaultDate, 30), "yyyy-MM-dd'T'HH:mm")
+        : ""
+    );
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -84,5 +109,3 @@ export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
     </Dialog>
   );
 }
-
-    
