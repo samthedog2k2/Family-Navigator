@@ -3,31 +3,39 @@
 import React, { useEffect, useState } from "react";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
-import { Sun, Cloud, CloudRain, Snowflake, Wind } from "lucide-react";
 import { RadarMap } from "@/components/RadarMap";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { getWeatherIcon } from "@/lib/weather-icons.tsx";
 
-// Map Open-Meteo weather codes to icons + text
-const weatherCodeMap: Record<number, { icon: JSX.Element; text: string }> = {
-  0: { icon: <Sun className="h-12 w-12 text-yellow-500" />, text: "Clear sky" },
-  1: { icon: <Cloud className="h-12 w-12 text-gray-500" />, text: "Mainly clear" },
-  2: { icon: <Cloud className="h-12 w-12 text-gray-400" />, text: "Partly cloudy" },
-  3: { icon: <Cloud className="h-12 w-12 text-gray-600" />, text: "Overcast" },
-  61: { icon: <CloudRain className="h-12 w-12 text-blue-500" />, text: "Rain showers" },
-  71: { icon: <Snowflake className="h-12 w-12 text-blue-300" />, text: "Snowfall" },
+type CurrentWeather = {
+  temperature_2m: number;
+  weathercode: number;
+  is_day: 0 | 1;
 };
 
+type DailyForecast = {
+  time: string[];
+  temperature_2m_max: number[];
+  temperature_2m_min: number[];
+  weathercode: number[];
+};
+
+type HourlyForecastItem = {
+    time: string;
+    temp: number;
+    weathercode: number;
+};
+
+
 export default function WeatherPage() {
-  const [weather, setWeather] = useState<any>(null);
-  const [forecast, setForecast] = useState<any[]>([]);
+  const [current, setCurrent] = useState<CurrentWeather | null>(null);
+  const [daily, setDaily] = useState<DailyForecast | null>(null);
+  const [hourly, setHourly] = useState<HourlyForecastItem[]>([]);
   const [location, setLocation] = useState("Greenwood, IN");
-  const [radarUrl, setRadarUrl] = useState("https://embed.windy.com/embed2.html?lat=39.6&lon=-86.1&zoom=6&level=surface&overlay=radar&menu=&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&detailLat=39.6&detailLon=-86.1&metricWind=mph&metricTemp=°F");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchWeather(lat: number, lon: number) {
-      // Set radar URL first
-      setRadarUrl(`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=7&overlay=radar&level=surface&menu=&message=false&type=map&location=coordinates&detail=false&metricWind=default&metricTemp=default`);
-
       // Get friendly location name
       try {
         const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
@@ -41,18 +49,26 @@ export default function WeatherPage() {
       // Get weather data
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&temperature_unit=fahrenheit&windspeed_unit=mph`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,is_day,weathercode&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&temperature_unit=fahrenheit&windspeed_unit=mph`
         );
         const data = await res.json();
-        setWeather(data.current);
-        setForecast(data.daily.time.map((t: string, i: number) => ({
-          date: t,
-          max: data.daily.temperature_2m_max[i],
-          min: data.daily.temperature_2m_min[i],
-          code: data.daily.weathercode[i],
-        })));
+        setCurrent(data.current);
+        setDaily(data.daily);
+
+        const today = new Date().toISOString().split("T")[0];
+        const hourlyData: HourlyForecastItem[] = data.hourly.time
+          .map((t: string, idx: number) => ({
+            time: t,
+            temp: data.hourly.temperature_2m[idx],
+            weathercode: data.hourly.weathercode[idx],
+          }))
+          .filter((h: HourlyForecastItem) => h.time.startsWith(today));
+        
+        setHourly(hourlyData);
       } catch (err) {
         console.error("Failed to fetch weather:", err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -71,16 +87,7 @@ export default function WeatherPage() {
     }
   }, []);
 
-  function getIcon(code: number, size: 'large' | 'small' = 'large') {
-    const iconSizeClass = size === 'large' ? "h-12 w-12" : "h-8 w-8";
-    const weatherInfo = Object.entries(weatherCodeMap).find(([key]) => Number(key) >= code);
-    if(weatherInfo) {
-        return React.cloneElement(weatherInfo[1].icon, {className: `${iconSizeClass} ${weatherInfo[1].icon.props.className.split(' ').filter((c:string) => !c.startsWith('h-') && !c.startsWith('w-')).join(' ')}`})
-    }
-    return <Cloud className={`${iconSizeClass} text-gray-400`} />;
-  }
-
-  if (!weather || forecast.length === 0) {
+  if (loading || !current || !daily) {
     return (
        <LayoutWrapper>
         <PageHeader
@@ -103,29 +110,47 @@ export default function WeatherPage() {
           />
         </div>
         <div className="flex items-center gap-4 text-right">
-            <span className="text-5xl font-bold">{Math.round(weather.temperature_2m)}°F</span>
-            {getIcon(weather.weathercode)}
+            <span className="text-5xl font-bold">{Math.round(current.temperature_2m)}°F</span>
+            {getWeatherIcon(current.weathercode, current.is_day === 1)}
         </div>
       </div>
 
       <div className="space-y-8">
-        {/* 5-Day Forecast */}
+        {/* Hourly Forecast */}
+        <Card>
+          <CardHeader><CardTitle>Hourly Forecast</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex overflow-x-auto gap-4 py-2">
+              {hourly.map((h) => (
+                <div key={h.time} className="flex flex-col items-center min-w-[60px] p-2 rounded-lg bg-muted/50 border">
+                  <span className="text-xs font-semibold">
+                    {new Date(h.time).toLocaleTimeString('en-us', {hour: 'numeric'})}
+                  </span>
+                   <div className="my-2">{getWeatherIcon(h.weathercode)}</div>
+                  <span className="font-medium">{Math.round(h.temp)}°</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* 7-Day Forecast */}
         <Card>
           <CardHeader>
-            <CardTitle>5-Day Forecast</CardTitle>
+            <CardTitle>7-Day Forecast</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                {forecast.slice(0, 5).map((day, idx) => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+                {daily.time.map((day, idx) => (
                 <div
                     key={idx}
                     className="flex flex-col items-center justify-center bg-muted/50 rounded-lg p-4 border"
                 >
                     <p className="font-medium text-foreground">
-                    {new Date(day.date).toLocaleDateString("en-US", { weekday: "short" })}
+                    {new Date(day).toLocaleDateString("en-US", { weekday: "short" })}
                     </p>
-                    <div className="my-2">{getIcon(day.code, 'small')}</div>
-                    <p className="text-foreground font-semibold">{Math.round(day.max)}° / {Math.round(day.min)}°</p>
+                    <div className="my-2">{getWeatherIcon(daily.weathercode[idx])}</div>
+                    <p className="text-foreground font-semibold">{Math.round(daily.temperature_2m_max[idx])}° / {Math.round(daily.temperature_2m_min[idx])}°</p>
                 </div>
                 ))}
             </div>
