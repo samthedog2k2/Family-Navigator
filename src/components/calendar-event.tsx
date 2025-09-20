@@ -6,10 +6,10 @@ import { differenceInMinutes, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const colorClasses: Record<string, string> = {
-  Family: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-700",
-  Adam: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/50 dark:text-green-200 dark:border-green-700",
+  Family: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/50 dark:text-orange-200 dark:border-orange-700",
+  Adam: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-700",
   Holly: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/50 dark:text-purple-200 dark:border-purple-700",
-  Ethan: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/50 dark:text-orange-200 dark:border-orange-700",
+  Ethan: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/50 dark:text-green-200 dark:border-green-700",
   Elle: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/50 dark:text-pink-200 dark:border-pink-700",
 };
 
@@ -40,19 +40,19 @@ export function TimelineEvent({ event }: { event: TCalendarEvent & { slotIndex?:
   const left = width * slotIndex;
 
   const timelineColorClass: Record<string, string> = {
-    Family: "bg-blue-500 border-blue-700",
-    Adam: "bg-green-500 border-green-700",
-    Holly: "bg-purple-500 border-purple-700",
-    Ethan: "bg-orange-500 border-orange-700",
-    Elle: "bg-pink-500 border-pink-700",
+    Family: "bg-orange-500 border-orange-700 text-white",
+    Adam: "bg-blue-500 border-blue-700 text-white",
+    Holly: "bg-purple-500 border-purple-700 text-white",
+    Ethan: "bg-green-500 border-green-700 text-white",
+    Elle: "bg-pink-400 border-pink-600 text-black",
   };
   
-  const colorClass = timelineColorClass[event.calendar] || "bg-gray-500 border-gray-700";
+  const colorClass = timelineColorClass[event.calendar] || "bg-gray-500 border-gray-700 text-white";
 
   return (
     <div
       className={cn(
-        "absolute rounded-md p-1 text-xs shadow-md overflow-hidden text-white border",
+        "absolute rounded-md p-1 text-xs shadow-md overflow-hidden border",
         colorClass
       )}
       style={{ top, height, left: `${left}%`, width: `${width}%` }}

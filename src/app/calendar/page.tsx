@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/accordion";
 
 const calendarList: { id: "Family" | "Adam" | "Holly" | "Ethan" | "Elle"; color: string }[] = [
-  { id: "Family", color: "bg-blue-500" },
-  { id: "Adam", color: "bg-green-500" },
+  { id: "Family", color: "bg-orange-500" },
+  { id: "Adam", color: "bg-blue-500" },
   { id: "Holly", color: "bg-purple-500" },
-  { id: "Ethan", color: "bg-orange-500" },
+  { id: "Ethan", color: "bg-green-500" },
   { id: "Elle", color: "bg-pink-500" },
 ];
 
@@ -53,7 +53,7 @@ export default function CalendarPage() {
                          <div
                           className={cn(
                             "w-5 h-5 rounded-sm border border-primary flex items-center justify-center",
-                            activeCalendars.includes(calendar.id) && calendar.color.replace('bg-', 'bg-')
+                            activeCalendars.includes(calendar.id) && calendar.color
                           )}
                         >
                           {activeCalendars.includes(calendar.id) && (
