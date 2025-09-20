@@ -136,6 +136,28 @@ export function FamilyCalendar() {
     isLoading,
   } = useCalendar();
 
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!scrollRef.current || (view !== 'day' && view !== 'week' && view !== 'workWeek')) return;
+  
+    const now = new Date();
+    // Only auto-scroll if the current date is today
+    if (!isToday(currentDate)) return;
+
+    const minutesSinceStart = differenceInMinutes(now, startOfDay(now));
+  
+    const HALF_HOUR_HEIGHT = 24; // must match your grid
+    const top = (minutesSinceStart / 30) * HALF_HOUR_HEIGHT;
+  
+    // Scroll so current time is ~2 hours from top for context
+    scrollRef.current.scrollTo({
+      top: Math.max(top - 2 * (60 / 30) * HALF_HOUR_HEIGHT, 0),
+      behavior: "smooth",
+    });
+  }, [view, currentDate]);
+
+
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
@@ -287,7 +309,7 @@ export function FamilyCalendar() {
               </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
+            <div ref={scrollRef} className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
               {/* Time Column */}
               <div className="sticky left-0 z-20 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
                 {hours.map((hour, index) => (
@@ -345,3 +367,5 @@ export function FamilyCalendar() {
     </div>
   );
 }
+
+    
