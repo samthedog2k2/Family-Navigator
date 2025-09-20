@@ -61,8 +61,8 @@ const weatherCodeMap: Record<WeatherCode, { description: string, icon: 'sun' | '
     95: { description: "Thunderstorm", icon: 'thunderstorm' },
 };
 
-function getWeatherInfo(code: WeatherCode) {
-    return weatherCodeMap[code] || { description: "Unknown", icon: 'cloud' };
+function getWeatherInfo(code: number) {
+    return weatherCodeMap[code as WeatherCode] || { description: "Unknown", icon: 'cloud' };
 }
 
 
