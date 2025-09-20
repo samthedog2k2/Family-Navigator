@@ -92,13 +92,13 @@ export function Chat() {
                     className={`rounded-lg p-3 text-sm ${
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
+                        : "bg-muted"
                     }`}
                   >
                     {message.text}
                   </div>
                    {message.role === "user" && (
-                    <div className="p-2 bg-muted rounded-full text-muted-foreground">
+                    <div className="p-2 bg-muted rounded-full">
                       <User size={20} />
                     </div>
                   )}
@@ -109,7 +109,7 @@ export function Chat() {
                     <div className="p-2 bg-primary rounded-full text-primary-foreground">
                       <Bot size={20} />
                     </div>
-                    <div className="rounded-lg p-3 text-sm bg-muted text-muted-foreground">
+                    <div className="rounded-lg p-3 text-sm bg-muted">
                        <Loader2 className="h-5 w-5 animate-spin" />
                     </div>
                  </div>

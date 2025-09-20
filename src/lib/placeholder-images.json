@@ -23,6 +23,12 @@
       "description": "Abstract representation of a health chart.",
       "imageUrl": "https://picsum.photos/seed/health/600/400",
       "imageHint": "health chart"
+    },
+    {
+      "id": "hero-family",
+      "description": "A family enjoying a day at the park.",
+      "imageUrl": "https://picsum.photos/seed/family/1600/900",
+      "imageHint": "family park"
     }
   ]
 }

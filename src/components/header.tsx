@@ -3,15 +3,18 @@ import Link from "next/link";
 import { Compass } from "lucide-react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
+import { cn } from "@/lib/utils";
 
-export function Header() {
+export function Header({ className }: { className?: string}) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-2">
+    <header className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
             <Compass className="h-6 w-6" />
-            <span className="inline-block font-bold">Family Navigator</span>
+            <span className="hidden font-bold sm:inline-block">
+              Family Navigator
+            </span>
           </Link>
           <MainNav />
         </div>
