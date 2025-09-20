@@ -14,7 +14,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { mainNavItems, isNavMenu, type NavItem } from "@/lib/menu-data";
+import { mainNavItems, isNavMenu, NavItem } from "@/lib/menu-data";
 
 export function MainNav({
   className,
