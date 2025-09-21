@@ -37,10 +37,10 @@ async function readData(): Promise<FullAppData> {
     // If the file doesn't exist or is corrupt, return a default structure
     return { 
       healthData: {
-        Adam: { height: "", age: "", gender: "", weight: "", glucose: "", notes: "" },
-        Holly: { height: "", age: "", gender: "", weight: "", glucose: "", notes: "" },
-        Ethan: { height: "", age: "", gender: "", weight: "", glucose: "", notes: "" },
-        Elle: { height: "", age: "", gender: "", weight: "", glucose: "", notes: "" },
+        Adam: { height: "", age: 0, gender: "Male", weight: "", glucose: "", notes: "" },
+        Holly: { height: "", age: 0, gender: "Female", weight: "", glucose: "", notes: "" },
+        Ethan: { height: "", age: 0, gender: "Male", weight: "", glucose: "", notes: "" },
+        Elle: { height: "", age: 0, gender: "Female", weight: "", glucose: "", notes: "" },
       }, 
       calendarEvents: [] 
     };

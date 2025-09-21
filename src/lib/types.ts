@@ -2,7 +2,7 @@ export type FamilyMember = "Adam" | "Holly" | "Ethan" | "Elle";
 
 export type HealthData = {
   height: string;
-  age: string;
+  age: number;
   gender: "Male" | "Female" | "Other" | "";
   weight: string;
   glucose: string;

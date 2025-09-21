@@ -4,13 +4,14 @@
 import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
 import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 import { app } from '@/firebase';
-import * as JSONService from "./data-service.json";
+import fs from 'fs/promises';
+import path from 'path';
 
 const db = getFirestore(app);
 
 const emptyHealthData: HealthData = {
   height: "",
-  age: "",
+  age: 0,
   gender: "",
   weight: "",
   glucose: "",
@@ -25,21 +26,19 @@ const defaultState: AppState = {
 };
 
 async function seedHealthData() {
-    console.log("Seeding initial health data to Firestore from JSON file...");
-    const { source, ...healthDataToSeed } = await JSONService.getHealthData();
-    
-    const promises = Object.keys(healthDataToSeed).map(member => {
-        const memberKey = member as FamilyMember;
-        const memberData = healthDataToSeed[memberKey];
-        if (memberData) {
-            const docRef = doc(db, "healthData", memberKey);
-            return setDoc(docRef, memberData);
-        }
-    });
-    await Promise.all(promises);
-    console.log("Seeding complete.");
+  console.log("Seeding initial health data to Firestore from app-data.json...");
+  const dataPath = path.join(process.cwd(), 'src', 'data', 'app-data.json');
+  const fileContent = await fs.readFile(dataPath, 'utf-8');
+  const appData = JSON.parse(fileContent);
+  
+  const healthDataToSeed = appData.healthData;
+  const promises = Object.entries(healthDataToSeed).map(([member, memberData]) => {
+    const memberKey = member as FamilyMember;
+    return setDoc(doc(db, "healthData", memberKey), memberData as HealthData);
+  });
+  await Promise.all(promises);
+  console.log("Seeding complete.");
 }
-
 
 export async function getHealthData(): Promise<AppState & { source: string }> {
   try {
@@ -63,8 +62,7 @@ export async function getHealthData(): Promise<AppState & { source: string }> {
     return { ...healthData, source: "firebase" };
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
-    const { source, ...jsonState} = await JSONService.getHealthData();
-    return { ...jsonState, source: "firebase-error" };
+    return { ...defaultState, source: "firebase-error" };
   }
 }
 
