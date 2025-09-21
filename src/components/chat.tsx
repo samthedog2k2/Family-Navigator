@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -88,8 +89,9 @@ export function ChatInterface() {
 
       // If there are previous messages, add them to the history for context
       const conversationForHistory = conversations.find(c => c.id === currentConversationId);
-      if (conversationForHistory && conversationForHistory.messages.length > 0) {
-         chatInput.history = conversationForHistory.messages.map(m => {
+      if (conversationForHistory && conversationForHistory.messages.length > 1) {
+         // The history should only contain messages before the current user message
+         chatInput.history = conversationForHistory.messages.slice(0, -1).map(m => {
             if (m.role === 'user') return { user: m.text };
             return { bot: m.text };
          });
