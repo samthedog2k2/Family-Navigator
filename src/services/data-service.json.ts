@@ -66,9 +66,9 @@ async function writeData(data: FullAppData): Promise<void> {
  * Retrieves all health data for every family member.
  * @returns A promise that resolves to the health data records.
  */
-export async function getHealthData(): Promise<AppState> {
+export async function getHealthData(): Promise<AppState & { source: string }> {
   const data = await readData();
-  return data.healthData;
+  return { ...data.healthData, source: "json" };
 }
 
 /**

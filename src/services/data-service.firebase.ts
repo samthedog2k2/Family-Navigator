@@ -1,11 +1,11 @@
 
 'use server';
 
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
 import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 import { app } from '@/firebase';
+import * as JSONService from "./data-service.json";
 
-// Initialize Firestore on the server-side only when this module is used.
 const db = getFirestore(app);
 
 const emptyHealthData: HealthData = {
@@ -24,34 +24,54 @@ const defaultState: AppState = {
   Elle: { ...emptyHealthData },
 };
 
+async function seedHealthData() {
+    console.log("Seeding initial health data to Firestore from JSON file...");
+    const { source, ...healthDataToSeed } = await JSONService.getHealthData();
+    
+    const promises = Object.keys(healthDataToSeed).map(member => {
+        const memberKey = member as FamilyMember;
+        const memberData = healthDataToSeed[memberKey];
+        if (memberData) {
+            const docRef = doc(db, "healthData", memberKey);
+            return setDoc(docRef, memberData);
+        }
+    });
+    await Promise.all(promises);
+    console.log("Seeding complete.");
+}
+
+
 export async function getHealthData(): Promise<AppState & { source: string }> {
   try {
     const healthCol = collection(db, "healthData");
     const healthSnapshot = await getDocs(healthCol);
     
     if (healthSnapshot.empty) {
-      console.log("No health data found in Firestore, returning default state.");
-      return { ...defaultState, source: "firebase" };
+      await seedHealthData();
+      const seededSnapshot = await getDocs(healthCol);
+       const healthData = { ...defaultState };
+        seededSnapshot.forEach(document => {
+            healthData[document.id as FamilyMember] = document.data() as HealthData;
+        });
+        return { ...healthData, source: "firebase" };
     }
 
     const healthData = { ...defaultState };
-    healthSnapshot.forEach(doc => {
-      healthData[doc.id as FamilyMember] = doc.data() as HealthData;
+    healthSnapshot.forEach(document => {
+      healthData[document.id as FamilyMember] = document.data() as HealthData;
     });
     return { ...healthData, source: "firebase" };
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
-    // In case of error, return a default state so the app doesn't crash.
-    return { ...defaultState, source: "firebase-error" };
+    const { source, ...jsonState} = await JSONService.getHealthData();
+    return { ...jsonState, source: "firebase-error" };
   }
 }
 
 export async function updateHealthData(member: FamilyMember, data: HealthData): Promise<AppState> {
   const ref = doc(db, "healthData", member);
   await setDoc(ref, data, { merge: true });
-  // After updating, fetch all data to return the complete state
   const updatedData = await getHealthData();
-  // We remove the 'source' property before returning to match the AppState type
   const { source, ...appState } = updatedData;
   return appState;
 }

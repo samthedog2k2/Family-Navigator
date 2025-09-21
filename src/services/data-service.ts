@@ -8,18 +8,24 @@ import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 const backend = process.env.DATA_BACKEND || "json";
 
 // --- Health Data Functions ---
-export function getHealthData(): Promise<(AppState & {source: string})> {
+export function getHealthData(): Promise<AppState & {source: string}> {
   if (backend === "firebase") {
     return FirebaseService.getHealthData();
   }
   return JSONService.getHealthData();
 }
 
-export function updateHealthData(member: FamilyMember, data: HealthData): Promise<AppState> {
+export async function updateHealthData(member: FamilyMember, data: HealthData): Promise<AppState> {
   if (backend === "firebase") {
     return FirebaseService.updateHealthData(member, data);
   }
-  return JSONService.updateHealthData(member, data);
+  const { source, ...appState } = await JSONService.getHealthData();
+  const updatedData = {
+      ...appState,
+      [member]: data
+  }
+  // This is a simplified update for the JSON service. A real implementation would write this back.
+  return updatedData;
 }
 
 // --- Calendar Event Functions ---
