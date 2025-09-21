@@ -1,0 +1,10 @@
+src/components/health-tracker.tsx(62,5): error TS2322: Type 'Resolver<{ height: string; age: number; gender: "Male" | "Female" | "Other"; weight: string; glucose: string; notes?: string | undefined; }>' is not assignable to type 'Resolver<HealthData, any, HealthData>'.
+  Types of parameters 'values' and 'values' are incompatible.
+    Type 'HealthData' is not assignable to type '{ height: string; age: number; gender: "Male" | "Female" | "Other"; weight: string; glucose: string; notes?: string | undefined; }'.
+      Types of property 'gender' are incompatible.
+        Type '"" | "Male" | "Female" | "Other"' is not assignable to type '"Male" | "Female" | "Other"'.
+          Type '""' is not assignable to type '"Male" | "Female" | "Other"'.
+src/components/health-tracker.tsx(71,34): error TS2345: Argument of type '(formData: HealthData) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'formData' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type 'HealthData'.
+      Type 'FieldValues' is missing the following properties from type 'HealthData': height, age, gender, weight, and 2 more.
