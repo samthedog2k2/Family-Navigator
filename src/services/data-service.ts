@@ -1,4 +1,3 @@
-
 'use server';
 
 import * as JSONService from "./data-service.json";
@@ -10,7 +9,6 @@ const backend = process.env.DATA_BACKEND || "json";
 // --- Health Data Functions ---
 export function getHealthData(): Promise<AppState> {
   if (backend === "firebase") {
-    // @ts-ignore
     return FirebaseService.getHealthData();
   }
   return JSONService.getHealthData();
