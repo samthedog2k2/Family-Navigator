@@ -13,6 +13,10 @@ import {z} from 'genkit';
 
 const ChatInputSchema = z.object({
   message: z.string().describe('The user message.'),
+  history: z.array(z.object({
+    user: z.string().optional(),
+    bot: z.string().optional(),
+  })).optional().describe('The conversation history.'),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
@@ -30,6 +34,17 @@ const chatPrompt = ai.definePrompt({
   input: {schema: ChatInputSchema},
   output: {schema: ChatOutputSchema},
   prompt: `You are a helpful assistant. You are having a conversation with a user.
+
+{{#if history}}
+{{#each history}}
+{{#if this.user}}
+User: {{{this.user}}}
+{{/if}}
+{{#if this.bot}}
+AI: {{{this.bot}}}
+{{/if}}
+{{/each}}
+{{/if}}
 
 User: {{{message}}}
 AI:`,

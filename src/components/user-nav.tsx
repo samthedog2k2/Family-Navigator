@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { signOutUser } from "@/services/auth-service";
-import { auth } from "@/firebase";
+import { auth } from "@/firebase.client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 

@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, User, Bot, PlusCircle } from "lucide-react";
 import { useChatState } from "@/hooks/use-chat-state";
 import { v4 as uuidv4 } from 'uuid';
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -63,43 +64,57 @@ export function ChatInterface() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     let currentConversationId = activeConversationId;
-
+    
+    // Create a new conversation if one isn't active, or add the message to the existing one.
     if (!currentConversationId) {
       const newConversation = createNewConversation(data.message);
       currentConversationId = newConversation.id;
     } else {
-       addMessage(currentConversationId, {
-         id: uuidv4(),
-         role: "user",
-         text: data.message,
-       });
+      addMessage(currentConversationId, {
+        id: uuidv4(),
+        role: "user",
+        text: data.message,
+      });
     }
-    
+
     reset();
 
     try {
-      const chatInput: ChatInput = { message: data.message };
-      // If there are previous messages, add them to the input for context
-      if (activeConversation && activeConversation.messages.length > 1) {
-        chatInput.history = activeConversation.messages.slice(0, -1).map(m => ({
-          role: m.role,
-          parts: [{ text: m.text }],
-        }));
-      }
+      // Prepare the input for the AI flow
+      const chatInput: ChatInput = {
+        message: data.message,
+        history: [],
+      };
 
+      // If there are previous messages, add them to the history for context
+      const conversationForHistory = conversations.find(c => c.id === currentConversationId);
+      if (conversationForHistory && conversationForHistory.messages.length > 0) {
+         chatInput.history = conversationForHistory.messages.map(m => {
+            if (m.role === 'user') return { user: m.text };
+            return { bot: m.text };
+         });
+      }
+      
+      // Get response from the AI
       const result = await chat(chatInput);
-      addMessage(currentConversationId, {
-        id: uuidv4(),
-        role: "bot",
-        text: result.message,
-      });
+      
+      // Add the AI's response to the conversation
+      if(currentConversationId) {
+        addMessage(currentConversationId, {
+            id: uuidv4(),
+            role: "bot",
+            text: result.message || "Response received",
+        });
+      }
     } catch (error) {
-      console.error("Error with chat:", error);
-      addMessage(currentConversationId, {
-        id: uuidv4(),
-        role: "bot",
-        text: "Sorry, I encountered an error. Please try again.",
-      });
+      console.error("Chat error:", error);
+      if (currentConversationId) {
+        addMessage(currentConversationId, {
+          id: uuidv4(),
+          role: "bot",
+          text: "Sorry, I encountered an error. Please try again.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -135,9 +150,7 @@ export function ChatInterface() {
               {activeConversation?.messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex items-start gap-3 ${
-                    message.role === "user" ? "justify-end" : ""
-                  }`}
+                  className={cn("flex items-start gap-3", message.role === "user" && "justify-end")}
                 >
                   {message.role === "bot" && (
                     <div className="p-2 bg-primary rounded-full text-primary-foreground">
@@ -145,11 +158,10 @@ export function ChatInterface() {
                     </div>
                   )}
                   <div
-                    className={`rounded-lg p-3 text-sm max-w-[80%] whitespace-pre-wrap ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
+                    className={cn(
+                        "rounded-lg p-3 text-sm max-w-[80%] whitespace-pre-wrap",
+                        message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                    )}
                   >
                     {message.text}
                   </div>

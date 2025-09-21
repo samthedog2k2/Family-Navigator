@@ -1,12 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    // CORS fix
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
+  webpack(config) {
+    return config;
   },
 };
-
 export default nextConfig;

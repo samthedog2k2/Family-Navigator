@@ -1,5 +1,5 @@
-
 "use client";
+
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ import { Logo } from "@/components/logo";
 import { toast } from "@/hooks/use-toast";
 import { signInWithGoogle } from "@/services/auth-service";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/firebase";
+import { auth } from "@/firebase.client";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -68,13 +68,13 @@ export function ChatHistory() {
                 </SidebarMenuButton>
                 <SidebarMenuAction
                   onClick={() => archiveConversation(convo.id)}
-                  tooltip="Archive"
+                  title="Archive"
                 >
                   <Archive />
                 </SidebarMenuAction>
                 <SidebarMenuAction
                   onClick={() => deleteConversation(convo.id)}
-                  tooltip="Delete"
+                  title="Delete"
                   className="right-8"
                 >
                   <Trash2 />
@@ -102,13 +102,13 @@ export function ChatHistory() {
                 </SidebarMenuButton>
                  <SidebarMenuAction
                   onClick={() => archiveConversation(convo.id, false)}
-                  tooltip="Unarchive"
+                  title="Unarchive"
                 >
                   <Archive />
                 </SidebarMenuAction>
                 <SidebarMenuAction
                   onClick={() => deleteConversation(convo.id)}
-                  tooltip="Delete"
+                  title="Delete"
                   className="right-8"
                 >
                   <Trash2 />

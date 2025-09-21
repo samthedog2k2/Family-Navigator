@@ -3,7 +3,7 @@
 
 import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
 import type { HealthData, FamilyMember, AppState } from '@/lib/types';
-import app from "@/firebase";
+import { app } from "@/firebase";
 import fs from 'fs/promises';
 import path from 'path';
 
