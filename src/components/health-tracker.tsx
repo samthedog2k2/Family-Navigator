@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -28,6 +29,7 @@ import { toast } from "@/hooks/use-toast";
 import type { FamilyMember, HealthData, AppState } from "@/lib/types";
 import { getHealthData, updateHealthData } from "@/services/data-service";
 import { Loader2 } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 const familyMembers: FamilyMember[] = ["Adam", "Holly", "Ethan", "Elle"];
 
@@ -158,6 +160,7 @@ function HealthForm({
 
 export function HealthTracker() {
   const [appState, setAppState] = useState<AppState | null>(null);
+  const [dataSource, setDataSource] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -166,7 +169,9 @@ export function HealthTracker() {
       setIsLoading(true);
       try {
         const data = await getHealthData();
-        setAppState(data);
+        const { source, ...healthData } = data;
+        setAppState(healthData);
+        setDataSource(source);
       } catch (error) {
         toast({
           title: "Error Loading Data",
@@ -213,24 +218,31 @@ export function HealthTracker() {
   }
 
   return (
-    <Tabs defaultValue={familyMembers[0]} className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+    <div className="relative">
+        {dataSource && (
+            <Badge variant="outline" className="absolute top-0 right-0">
+                Data Source: {dataSource}
+            </Badge>
+        )}
+        <Tabs defaultValue={familyMembers[0]} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+            {familyMembers.map((member) => (
+            <TabsTrigger key={member} value={member}>
+                {member}
+            </TabsTrigger>
+            ))}
+        </TabsList>
         {familyMembers.map((member) => (
-          <TabsTrigger key={member} value={member}>
-            {member}
-          </TabsTrigger>
+            <TabsContent key={member} value={member}>
+            <HealthForm
+                member={member}
+                data={appState[member]}
+                onSave={handleSave}
+                isSaving={isSaving}
+            />
+            </TabsContent>
         ))}
-      </TabsList>
-      {familyMembers.map((member) => (
-        <TabsContent key={member} value={member}>
-          <HealthForm
-            member={member}
-            data={appState[member]}
-            onSave={handleSave}
-            isSaving={isSaving}
-          />
-        </TabsContent>
-      ))}
-    </Tabs>
+        </Tabs>
+    </div>
   );
 }

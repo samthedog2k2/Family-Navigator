@@ -34,24 +34,24 @@ const defaultState: AppState = {
   Elle: { ...emptyHealthData },
 };
 
-export async function getHealthData(): Promise<AppState> {
+export async function getHealthData(): Promise<AppState & { source: string }> {
   try {
     const healthCol = collection(db, "healthData");
     const healthSnapshot = await getDocs(healthCol);
     
     if (healthSnapshot.empty) {
       console.log("No health data found in Firestore, returning default state.");
-      return defaultState;
+      return { ...defaultState, source: "firebase" };
     }
 
     const healthData = { ...defaultState };
     healthSnapshot.forEach(doc => {
       healthData[doc.id as FamilyMember] = doc.data() as HealthData;
     });
-    return healthData;
+    return { ...healthData, source: "firebase" };
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
-    return defaultState;
+    return { ...defaultState, source: "firebase" };
   }
 }
 
@@ -59,7 +59,10 @@ export async function updateHealthData(member: FamilyMember, data: HealthData): 
   const ref = doc(db, "healthData", member);
   await setDoc(ref, data, { merge: true });
   // After updating, fetch all data to return the complete state
-  return await getHealthData();
+  const updatedData = await getHealthData();
+  // We remove the 'source' property before returning to match the AppState type
+  const { source, ...appState } = updatedData;
+  return appState;
 }
 
 // NOTE: Calendar functions are not yet migrated. They will do nothing.
@@ -77,3 +80,4 @@ export async function deleteCalendarEvent(eventId: string): Promise<any[]> {
   console.warn("deleteCalendarEvent is not implemented for Firebase backend yet.");
   return [];
 }
+
