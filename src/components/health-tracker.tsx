@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFormState } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -56,11 +56,18 @@ function HealthForm({
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    reset,
   } = useForm<HealthData>({
     resolver: zodResolver(healthSchema),
     defaultValues: data,
   });
+  
+  const { errors } = useFormState({ control });
+
+  useEffect(() => {
+    reset(data);
+  }, [data, reset]);
+
 
   const onSubmit = (formData: HealthData) => {
     onSave(member, formData);
@@ -162,6 +169,7 @@ export function HealthTracker() {
   const [dataSource, setDataSource] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<FamilyMember>(familyMembers[0]);
 
   useEffect(() => {
     async function loadData() {
@@ -223,7 +231,7 @@ export function HealthTracker() {
                 Data Source: {dataSource}
             </Badge>
         )}
-        <Tabs defaultValue={familyMembers[0]} className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FamilyMember)} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
             {familyMembers.map((member) => (
             <TabsTrigger key={member} value={member}>
@@ -232,13 +240,13 @@ export function HealthTracker() {
             ))}
         </TabsList>
         {familyMembers.map((member) => (
-            <TabsContent key={member} value={member}>
-            <HealthForm
-                member={member}
-                data={appState[member]}
-                onSave={handleSave}
-                isSaving={isSaving}
-            />
+            <TabsContent key={member} value={member} forceMount={true} hidden={activeTab !== member}>
+              <HealthForm
+                  member={member}
+                  data={appState[member]}
+                  onSave={handleSave}
+                  isSaving={isSaving}
+              />
             </TabsContent>
         ))}
         </Tabs>

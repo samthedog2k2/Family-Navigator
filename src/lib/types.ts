@@ -6,7 +6,7 @@ export type HealthData = {
   gender: "Male" | "Female" | "Other";
   weight: string;
   glucose: string;
-  notes: string;
+  notes?: string;
 };
 
 export type AppState = {

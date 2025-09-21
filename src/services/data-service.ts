@@ -19,14 +19,8 @@ export async function updateHealthData(member: FamilyMember, data: HealthData): 
   if (backend === "firebase") {
     return await FirebaseService.updateHealthData(member, data);
   }
-  const { source, ...appState } = await JSONService.getHealthData();
-  const updatedData = {
-    ...appState,
-    [member]: data
-  };
-  // This is a simplified update for the JSON service. 
-  // A real implementation would write this back to the file.
-  return updatedData;
+  // This was incorrect. It should call the JSON service's update function.
+  return await JSONService.updateHealthData(member, data);
 }
 
 // --- Calendar Event Functions ---
