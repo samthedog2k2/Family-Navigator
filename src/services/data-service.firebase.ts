@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
@@ -12,17 +11,17 @@ const db = getFirestore(app);
 const emptyHealthData: HealthData = {
   height: "",
   age: 0,
-  gender: "",
+  gender: "Other",
   weight: "",
   glucose: "",
   notes: "",
 };
 
 const defaultState: AppState = {
-  Adam: { ...emptyHealthData },
-  Holly: { ...emptyHealthData },
-  Ethan: { ...emptyHealthData },
-  Elle: { ...emptyHealthData },
+  Adam: { ...emptyHealthData, gender: "Male" },
+  Holly: { ...emptyHealthData, gender: "Female" },
+  Ethan: { ...emptyHealthData, gender: "Male" },
+  Elle: { ...emptyHealthData, gender: "Female" },
 };
 
 async function seedHealthData() {
