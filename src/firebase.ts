@@ -10,8 +10,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Initialize and export Auth for client-side use
 const auth = getAuth(app);
 
 export { app, auth };

@@ -1,11 +1,11 @@
 
 'use server';
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 import { app } from '@/firebase';
 
+// Initialize Firestore on the server-side only when this module is used.
 const db = getFirestore(app);
 
 const emptyHealthData: HealthData = {
@@ -41,7 +41,8 @@ export async function getHealthData(): Promise<AppState & { source: string }> {
     return { ...healthData, source: "firebase" };
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
-    return { ...defaultState, source: "firebase" };
+    // In case of error, return a default state so the app doesn't crash.
+    return { ...defaultState, source: "firebase-error" };
   }
 }
 
