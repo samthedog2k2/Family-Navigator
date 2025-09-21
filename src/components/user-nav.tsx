@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, signOutUser } from "@/services/auth-service";
+import { signOutUser } from "@/services/auth-service";
+import { auth } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 

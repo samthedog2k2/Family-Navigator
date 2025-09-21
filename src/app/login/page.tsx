@@ -14,8 +14,9 @@ import {
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
 import { toast } from "@/hooks/use-toast";
-import { auth, signInWithGoogle } from "@/services/auth-service";
+import { signInWithGoogle } from "@/services/auth-service";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
