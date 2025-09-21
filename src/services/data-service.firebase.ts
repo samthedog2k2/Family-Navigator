@@ -1,9 +1,7 @@
 'use server';
 
-import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
-import type { HealthData, FamilyMember, AppState } from '@/lib/types';
-import app from "@/firebase"; // This is for client-side Firestore, which we will phase out.
 import { adminDb } from '@/firebase.admin';
+import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -25,18 +23,27 @@ const defaultState: AppState = {
 
 async function seedHealthData() {
   console.log("Seeding initial health data to Firestore from app-data.json...");
-  const dataPath = path.join(process.cwd(), 'src', 'data', 'app-data.json');
-  const fileContent = await fs.readFile(dataPath, 'utf-8');
-  const appData = JSON.parse(fileContent);
-  
-  const healthDataToSeed = appData.healthData;
-  const promises = Object.entries(healthDataToSeed).map(([member, memberData]) => {
-    const memberKey = member as FamilyMember;
-    // Use adminDb for server-side writes
-    return adminDb.collection("healthData").doc(memberKey).set(memberData as HealthData);
-  });
-  await Promise.all(promises);
-  console.log("Seeding complete.");
+  try {
+    const dataPath = path.join(process.cwd(), 'src', 'data', 'app-data.json');
+    const fileContent = await fs.readFile(dataPath, 'utf-8');
+    const appData = JSON.parse(fileContent);
+    
+    const healthDataToSeed = appData.healthData;
+    if (!healthDataToSeed) {
+      console.log("No healthData found in app-data.json to seed.");
+      return;
+    }
+
+    const promises = Object.entries(healthDataToSeed).map(([member, memberData]) => {
+      const memberKey = member as FamilyMember;
+      return adminDb.collection("healthData").doc(memberKey).set(memberData as HealthData);
+    });
+    await Promise.all(promises);
+    console.log("Seeding complete.");
+  } catch (error) {
+    console.error("Error seeding data:", error);
+    // Don't re-throw, allow the app to continue with an empty/default state.
+  }
 }
 
 export async function getHealthData(): Promise<AppState & { source: string }> {
@@ -46,23 +53,23 @@ export async function getHealthData(): Promise<AppState & { source: string }> {
     
     if (healthSnapshot.empty) {
       await seedHealthData();
+      // Re-fetch after seeding
       const seededSnapshot = await healthCol.get();
-      const healthData = { ...defaultState };
-      seededSnapshot.forEach(document => {
-          healthData[document.id as FamilyMember] = document.data() as HealthData;
+       const healthData = { ...defaultState };
+       seededSnapshot.forEach(doc => {
+          healthData[doc.id as FamilyMember] = doc.data() as HealthData;
       });
-      return { ...healthData, source: "firebase" };
+      return { ...healthData, source: "firebase-seeded" };
     }
 
     const healthData = { ...defaultState };
-    healthSnapshot.forEach(document => {
-      healthData[document.id as FamilyMember] = document.data() as HealthData;
+    healthSnapshot.forEach(doc => {
+      healthData[doc.id as FamilyMember] = doc.data() as HealthData;
     });
     return { ...healthData, source: "firebase" };
+
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
-    // In case of error, return default state but indicate the source of the error.
-    // This helps in debugging without crashing the entire app.
     return { ...defaultState, source: "firebase-error" };
   }
 }
