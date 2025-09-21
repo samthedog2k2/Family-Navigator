@@ -1,3 +1,4 @@
+
 'use server';
 
 import { adminDb } from '@/firebase.admin';
@@ -52,14 +53,8 @@ export async function getHealthData(): Promise<AppState & { source: string }> {
     const healthSnapshot = await healthCol.get();
     
     if (healthSnapshot.empty) {
-      await seedHealthData();
-      // Re-fetch after seeding
-      const seededSnapshot = await healthCol.get();
-       const healthData = { ...defaultState };
-       seededSnapshot.forEach(doc => {
-          healthData[doc.id as FamilyMember] = doc.data() as HealthData;
-      });
-      return { ...healthData, source: "firebase-seeded" };
+      // The collection is empty, return default state. Seeding should be a separate, deliberate process.
+      return { ...defaultState, source: "firebase-empty" };
     }
 
     const healthData = { ...defaultState };
@@ -70,6 +65,7 @@ export async function getHealthData(): Promise<AppState & { source: string }> {
 
   } catch (error) {
     console.error("Error fetching health data from Firestore:", error);
+    // On error, return a default state so the app doesn't crash.
     return { ...defaultState, source: "firebase-error" };
   }
 }
