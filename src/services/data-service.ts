@@ -1,3 +1,4 @@
+
 'use server';
 
 import * as JSONService from "./data-service.json";
@@ -7,7 +8,7 @@ import type { HealthData, FamilyMember, AppState } from '@/lib/types';
 const backend = process.env.DATA_BACKEND || "json";
 
 // --- Health Data Functions ---
-export function getHealthData(): Promise<AppState> {
+export function getHealthData(): Promise<(AppState & {source: string})> {
   if (backend === "firebase") {
     return FirebaseService.getHealthData();
   }

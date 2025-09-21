@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,35 +11,47 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
+import { toast } from "@/hooks/use-toast";
+import { auth, signInWithGoogle } from "@/services/auth-service";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [user, loading] = useAuthState(auth);
 
-  const handleLogin = () => {
-    // Basic validation
-    if (!email || !password) {
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
+
+  const handleLogin = async () => {
+    try {
+      await signInWithGoogle();
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+      router.push("/");
+    } catch (error) {
+      console.error("Google sign-in error", error);
       toast({
         title: "Login Failed",
-        description: "Please enter both email and password.",
+        description: "Could not sign in with Google. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-    // Simulate login
-    localStorage.setItem("isLoggedIn", "true");
-    toast({
-      title: "Login Successful",
-      description: "Welcome back!",
-    });
-    router.push("/");
   };
+  
+  if (loading || user) {
+    return (
+        <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">
+            <p>Loading...</p>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -51,42 +62,15 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
                <Logo className="h-10 w-10" />
             </div>
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl">Welcome</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account.
+              Sign in with Google to continue.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@family.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
             <Button onClick={handleLogin} className="w-full mt-2">
-              Login
+              Sign in with Google
             </Button>
-             <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link href="#" className="underline" onClick={handleLogin}>
-                    Sign up
-                </Link>
-            </div>
           </CardContent>
         </Card>
       </main>

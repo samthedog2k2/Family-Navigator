@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,31 +13,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, signOutUser } from "@/services/auth-service";
+import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 
 export function UserNav() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
 
-  useEffect(() => {
-    const storedLoginState = localStorage.getItem("isLoggedIn");
-    if (storedLoginState === "true") {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await signOutUser();
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully signed out.",
+    });
+    router.push("/login");
   };
+  
+  if (loading) {
+    return <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />;
+  }
 
-  if (!isLoggedIn) {
+  if (!user) {
     return (
       <div className="flex items-center space-x-2">
         <Button asChild>
             <Link href="/login">Login</Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/login">Sign Up</Link>
         </Button>
       </div>
     );
@@ -50,20 +51,20 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src="https://picsum.photos/seed/user-avatar/40/40"
-              alt="User"
+              src={user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`}
+              alt={user.displayName || "User"}
               data-ai-hint="user avatar"
             />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{user.displayName?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Family User</p>
+            <p className="text-sm font-medium leading-none">{user.displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              user@family.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
