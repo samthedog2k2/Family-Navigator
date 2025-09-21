@@ -1,4 +1,3 @@
-
 'use server';
 
 import * as JSONService from "./data-service.json";
@@ -19,7 +18,6 @@ export async function updateHealthData(member: FamilyMember, data: HealthData): 
   if (backend === "firebase") {
     return await FirebaseService.updateHealthData(member, data);
   }
-  // This was incorrect. It should call the JSON service's update function.
   return await JSONService.updateHealthData(member, data);
 }
 

@@ -9,6 +9,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID,
 };
 
+// Initialize Firebase for client-side usage
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export default app;
