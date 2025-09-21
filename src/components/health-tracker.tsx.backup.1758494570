@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import type { FamilyMember, HealthData, AppState } from "@/lib/types";
-import { getHealthData, updateHealthData } from "@/services/client-data-service";
+import { getHealthData, updateHealthData } from "@/services/data-service";
 import { Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 
