@@ -1,4 +1,3 @@
-
 'use server';
 
 import * as JSONService from "./data-service.json";
@@ -24,30 +23,27 @@ export async function updateHealthData(member: FamilyMember, data: HealthData): 
     ...appState,
     [member]: data
   };
-  // This is a simplified update for the JSON service. 
-  // A real implementation would write this back to the file.
   return updatedData;
 }
 
 // --- Calendar Event Functions ---
-// These currently only support the JSON backend.
 export async function getCalendarEvents() {
-    if (backend === "firebase") {
-        return await FirebaseService.getCalendarEvents();
-    }
-    return await JSONService.getCalendarEvents();
+  if (backend === "firebase") {
+    return await FirebaseService.getCalendarEvents();
+  }
+  return await JSONService.getCalendarEvents();
 }
 
 export async function addCalendarEvent(newEvent: any) {
-    if (backend === "firebase") {
-        return await FirebaseService.addCalendarEvent(newEvent);
-    }
-    return await JSONService.addCalendarEvent(newEvent);
+  if (backend === "firebase") {
+    return await FirebaseService.addCalendarEvent(newEvent);
+  }
+  return await JSONService.addCalendarEvent(newEvent);
 }
 
 export async function deleteCalendarEvent(eventId: string) {
-    if (backend === "firebase") {
-        return await FirebaseService.deleteCalendarEvent(eventId);
-    }
-    return await JSONService.deleteCalendarEvent(eventId);
+  if (backend === "firebase") {
+    return await FirebaseService.deleteCalendarEvent(eventId);
+  }
+  return await JSONService.deleteCalendarEvent(eventId);
 }

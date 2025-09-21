@@ -1,9 +1,8 @@
+
 'use server';
 
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import { app } from "@/firebase";
-
-const auth = getAuth(app);
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { auth } from "@/firebase";
 
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
