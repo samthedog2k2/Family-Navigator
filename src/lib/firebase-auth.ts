@@ -1,5 +1,6 @@
 
-"use client"
+"use client";
+
 /**
  * SP Enhanced Firebase Authentication Integration
  * For Family Navigator - Builds on existing Firebase setup
@@ -26,7 +27,7 @@ import {
 } from 'firebase/firestore';
 
 // Import your existing Firebase configuration
-import { auth, db } from './firebase-client'; // Your existing config
+import { auth, db } from './firebase-client'; // Using the new unified client config
 
 // Enhanced Google Auth Provider with better security
 const googleProvider = new GoogleAuthProvider();
@@ -290,7 +291,7 @@ export class FamilyNavigatorAuth {
     return docSnap.exists() ? docSnap.data() : null;
   }
 
-  private async getEnhancedUser(user: User): Promise<FamilyNavigatorUser> {
+  public async getEnhancedUser(user: User): Promise<FamilyNavigatorUser> {
     const profile = await this.getUserProfile(user.uid);
     
     return {
