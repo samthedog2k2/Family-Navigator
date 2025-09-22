@@ -13,18 +13,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { signOutUser } from "@/services/auth-service";
-import { auth } from "@/lib/firebase-client";
+import { useFamilyAuth } from "@/lib/firebase-auth";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
+import { Badge } from "./ui/badge";
 
 export function UserNav() {
-  const [user, loading] = useAuthState(auth);
+  const { user, loading, signOut } = useFamilyAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOutUser();
+    await signOut();
     toast({
       title: "Logged Out",
       description: "You have been successfully signed out.",
@@ -38,11 +37,9 @@ export function UserNav() {
 
   if (!user) {
     return (
-      <div className="flex items-center space-x-2">
-        <Button asChild>
-            <Link href="/login">Login</Link>
-        </Button>
-      </div>
+      <Button asChild>
+        <Link href="/login">Login</Link>
+      </Button>
     );
   }
 
@@ -71,8 +68,17 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">Profile</Link>
+          </DropdownMenuItem>
+          {user.role === "admin" && (
+            <DropdownMenuItem asChild>
+                 <Link href="/admin">Admin</Link>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+             <Link href="/settings">Settings</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
