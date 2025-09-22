@@ -29,14 +29,6 @@ const nextConfig = {
       },
     ],
   },
-  ...(process.env.NODE_ENV === 'development' && {
-      experimental: {
-          serverActions: {
-              bodySizeLimit: '2mb',
-          },
-      },
-      allowedDevOrigins: ['*'],
-  })
 };
 
 export default nextConfig;
