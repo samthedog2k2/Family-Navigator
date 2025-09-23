@@ -79,10 +79,14 @@ type CalendarContextType = {
   setView: React.Dispatch<React.SetStateAction<CalendarView>>;
   activeCalendars: (FamilyMember | "Family")[];
   setActiveCalendars: React.Dispatch<React.SetStateAction<(FamilyMember | "Family")[]>>;
+  calendars: (FamilyMember | "Family")[];
   toggleCalendar: (calendar: FamilyMember | "Family") => void;
   isLoading: boolean;
   showWorkHours: boolean;
   setShowWorkHours: React.Dispatch<React.SetStateAction<boolean>>;
+  businessHoursStart: number;
+  businessHoursEnd: number;
+  setBusinessHours: (start: number, end: number) => void;
 };
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -98,7 +102,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     }
     return startOfToday();
   });
-  
+
   const [view, setView] = useState<CalendarView>(() => {
     if (typeof window !== "undefined") {
       const savedView = localStorage.getItem("calendarView");
@@ -115,7 +119,24 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     return true;
   });
 
-  const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(["Family", "Adam", "Holly", "Ethan", "Elle"]);
+  const [businessHoursStart, setBusinessHoursStart] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("businessHoursStart");
+        return saved !== null ? JSON.parse(saved) : 8; // 8 AM default
+    }
+    return 8;
+  });
+
+  const [businessHoursEnd, setBusinessHoursEnd] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("businessHoursEnd");
+        return saved !== null ? JSON.parse(saved) : 18; // 6 PM default
+    }
+    return 18;
+  });
+
+  const calendars: (FamilyMember | "Family")[] = ["Family", "Adam", "Holly", "Ethan", "Elle"];
+  const [activeCalendars, setActiveCalendars] = useState<(FamilyMember | "Family")[]>(calendars);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -145,6 +166,18 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      localStorage.setItem("businessHoursStart", JSON.stringify(businessHoursStart));
+    }
+  }, [businessHoursStart]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("businessHoursEnd", JSON.stringify(businessHoursEnd));
+    }
+  }, [businessHoursEnd]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
       localStorage.setItem("calendarDate", currentDate.toISOString());
     }
   }, [currentDate]);
@@ -157,6 +190,11 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const setBusinessHours = useCallback((start: number, end: number) => {
+    setBusinessHoursStart(start);
+    setBusinessHoursEnd(end);
+  }, []);
+
   const value = useMemo(() => ({
     events,
     setEvents,
@@ -166,11 +204,15 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     setView,
     activeCalendars,
     setActiveCalendars,
+    calendars,
     toggleCalendar,
     isLoading,
     showWorkHours,
     setShowWorkHours,
-  }), [events, currentDate, view, activeCalendars, toggleCalendar, isLoading, showWorkHours]);
+    businessHoursStart,
+    businessHoursEnd,
+    setBusinessHours,
+  }), [events, currentDate, view, activeCalendars, calendars, toggleCalendar, isLoading, showWorkHours, businessHoursStart, businessHoursEnd, setBusinessHours]);
 
   return (
     <CalendarContext.Provider value={value}>

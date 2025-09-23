@@ -20,11 +20,11 @@ import { useCalendar } from "@/hooks/use-calendar";
 import type { CalendarEvent, FamilyMember } from "@/hooks/use-calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
+export function NewEventDialog({ defaultDate, defaultCalendar }: { defaultDate?: Date; defaultCalendar?: FamilyMember | "Family" }) {
   const { setEvents } = useCalendar();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [calendar, setCalendar] = useState<FamilyMember | "Family">("Family");
+  const [calendar, setCalendar] = useState<FamilyMember | "Family">(defaultCalendar || "Family");
   const [start, setStart] = useState(
     defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : ""
   );
@@ -47,6 +47,7 @@ export function NewEventDialog({ defaultDate }: { defaultDate?: Date }) {
 
     // Reset form and close dialog
     setTitle("");
+    setCalendar(defaultCalendar || "Family");
     setStart(defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "");
     setEnd(
       defaultDate

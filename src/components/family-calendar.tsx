@@ -22,7 +22,7 @@ import {
   differenceInMinutes,
   setHours,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, GanttChartSquare, View, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,18 +32,19 @@ import { Skeleton } from "./ui/skeleton";
 import type { CalendarEvent as TCalendarEvent } from "@/hooks/use-calendar";
 import { NewEventDialog } from "./new-event-dialog";
 import { EventDetailDialog } from "./event-detail-dialog";
-import { getHoliday } from "@/lib/holidays";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { getHoliday, getHolidayInfo } from "@/lib/holidays";
+import { getDayInfo } from "@/lib/astronomy";
+import { getMoonPhaseIcon, getSunriseIcon, getSunsetIcon, getHolidayIcon, getMoonPhaseDescription } from "@/lib/calendar-icons";
+import { CalendarSidebar } from "./calendar-sidebar";
+import { ClickEventDialog } from "./click-event-dialog";
 
-const calendarColors: { [key: string]: { background: string; darkBackground: string; border: string; } } = {
-  Adam:   { background: 'bg-blue-100',   darkBackground: 'dark:bg-blue-900/40',   border: 'border-blue-500' },
-  Holly:  { background: 'bg-pink-100',   darkBackground: 'dark:bg-pink-900/40',   border: 'border-pink-500' },
-  Ethan:  { background: 'bg-green-100',  darkBackground: 'dark:bg-green-900/40',  border: 'border-green-500' },
-  Elle:   { background: 'bg-purple-100', darkBackground: 'dark:bg-purple-900/40', border: 'border-purple-500' },
-  default: { background: 'bg-gray-100', darkBackground: 'dark:bg-gray-900/40', border: 'border-gray-500' },
+const calendarColors: { [key: string]: { background: string; darkBackground: string; border: string; color: string; lightBg: string; } } = {
+  Adam:   { background: 'bg-[#0078d4]/20',   darkBackground: 'dark:bg-[#0078d4]/40',   border: 'border-[#0078d4]', color: '#0078d4', lightBg: 'bg-[#0078d4]/10' },
+  Holly:  { background: 'bg-[#8764b8]/20',   darkBackground: 'dark:bg-[#8764b8]/40',   border: 'border-[#8764b8]', color: '#8764b8', lightBg: 'bg-[#8764b8]/10' },
+  Ethan:  { background: 'bg-[#107c10]/20',  darkBackground: 'dark:bg-[#107c10]/40',  border: 'border-[#107c10]', color: '#107c10', lightBg: 'bg-[#107c10]/10' },
+  Elle:   { background: 'bg-[#e3008c]/20', darkBackground: 'dark:bg-[#e3008c]/40', border: 'border-[#e3008c]', color: '#e3008c', lightBg: 'bg-[#e3008c]/10' },
+  Family: { background: 'bg-[#605e5c]/20', darkBackground: 'dark:bg-[#605e5c]/40', border: 'border-[#605e5c]', color: '#605e5c', lightBg: 'bg-[#605e5c]/10' },
+  default: { background: 'bg-transparent', darkBackground: 'bg-transparent', border: 'border-gray-500', color: '#6b7280', lightBg: 'bg-transparent' },
 };
 export const getCalendarColor = (calendar: string) => calendarColors[calendar] || calendarColors.default;
 
@@ -75,8 +76,23 @@ function NowLine() {
 
   return (
     <>
-      <div className="absolute left-0 right-0 h-[2px] bg-red-500 z-20" style={{ top }} />
-      <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 z-20" style={{ top: top - 3 }}/>
+      {/* Main time line */}
+      <div
+        className="absolute left-0 right-0 h-[2px] bg-red-500 z-30 shadow-sm"
+        style={{ top }}
+      />
+      {/* Time indicator circle */}
+      <div
+        className="absolute -left-1 w-3 h-3 rounded-full bg-red-500 border-2 border-white z-30 shadow-md"
+        style={{ top: top - 6 }}
+      />
+      {/* Time label */}
+      <div
+        className="absolute -left-12 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded font-medium z-30"
+        style={{ top: top - 10 }}
+      >
+        {format(now, 'h:mm a')}
+      </div>
     </>
   );
 }
@@ -107,8 +123,13 @@ function groupOverlappingEvents(events: TCalendarEvent[]) {
 }
 
 export function FamilyCalendar() {
-  const { events, currentDate, setCurrentDate, view, setView, activeCalendars, calendars, toggleCalendar, isLoading } = useCalendar();
+  const { events, setEvents, currentDate, setCurrentDate, view, setView, activeCalendars, calendars, toggleCalendar, isLoading, showWorkHours, businessHoursStart, businessHoursEnd } = useCalendar();
   const [selectedEvent, setSelectedEvent] = React.useState<TCalendarEvent | null>(null);
+  const [clickEventDialog, setClickEventDialog] = React.useState<{ isOpen: boolean; date: Date; time?: string }>({ isOpen: false, date: new Date() });
+
+  const handleDeleteEvent = (eventToDelete: TCalendarEvent) => {
+    setEvents((prev) => prev.filter(event => event.id !== eventToDelete.id));
+  };
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -135,48 +156,35 @@ export function FamilyCalendar() {
   let days = eachDayOfInterval({ start: viewIntervals[view].start(currentDate), end: viewIntervals[view].end(currentDate) });
   if (view === "workWeek") days = days.slice(0, 5); // Mon-Fri
 
-  const dayHours = eachHourOfInterval({ start: startOfDay(today), end: endOfDay(today) });
+  const allDayHours = eachHourOfInterval({ start: startOfDay(today), end: endOfDay(today) });
+  const dayHours = showWorkHours && view !== 'month'
+    ? allDayHours.filter((hour) => {
+        const hourNum = hour.getHours();
+        return hourNum >= businessHoursStart && hourNum <= businessHoursEnd;
+      })
+    : allDayHours;
   const getPeriod = () => ({ weeks: view.includes("Week") ? 1 : 0, days: view === "day" ? 1 : 0, months: view === "month" ? 1 : 0 });
 
   const filteredEvents = events.filter((event) => activeCalendars.includes(event.calendar));
   const colStartClasses = ["", "col-start-2", "col-start-3", "col-start-4", "col-start-5", "col-start-6", "col-start-7"];
-  const weekDays = view === "workWeek" ? ["Mon", "Tue", "Wed", "Thu", "Fri"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekDays = view === "workWeek" ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full">
+      <CalendarSidebar />
+      <div className="flex h-full flex-col flex-1">
       <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-1 border-b">
         <div className="flex items-center gap-2 w-full">
-            <NewEventDialog defaultDate={currentDate} />
+            <NewEventDialog
+              defaultDate={currentDate}
+              defaultCalendar={activeCalendars.length === 1 ? activeCalendars[0] : "Family"}
+            />
             <Button variant="outline" onClick={() => setCurrentDate(today)}>Today</Button>
              <div className="flex items-center rounded-md border">
                 <Button variant="ghost" size="icon" className="border-r rounded-none" onClick={() => setCurrentDate(sub(currentDate, getPeriod()))} aria-label="Previous period"><ChevronLeft className="h-4 w-4" /></Button>
                 <Button variant="ghost" size="icon" className="rounded-none" onClick={() => setCurrentDate(add(currentDate, getPeriod()))} aria-label="Next period"><ChevronRight className="h-4 w-4" /></Button>
             </div>
              <h2 className="ml-2 w-48 text-left text-lg font-semibold">{viewHeaders[view](currentDate)}</h2>
-        </div>
-        <div className="flex items-center gap-2 w-full justify-end">
-            <Popover>
-                <PopoverTrigger asChild><Button variant="outline"><Users className="mr-2 h-4 w-4" /> Calendars</Button></PopoverTrigger>
-                <PopoverContent className="w-56 p-2">
-                    <div className="grid gap-2">
-                        <Label className="px-2 py-1.5 text-sm font-semibold">Show Calendars</Label>
-                        {calendars.map(cal => {
-                            const color = getCalendarColor(cal);
-                            return (
-                                <div key={cal} className="flex items-center space-x-2 rounded-md hover:bg-muted/50 p-2">
-                                    <Checkbox id={cal} checked={activeCalendars.includes(cal)} onCheckedChange={() => toggleCalendar(cal)} className={cn(color.background, color.border, "data-[state=checked]:text-white")}/>
-                                    <Label htmlFor={cal} className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{cal}</Label>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </PopoverContent>
-            </Popover>
-            <ToggleGroup type="single" value={view} onValueChange={(v) => { if(v) setView(v as CalendarView)}} className="border rounded-md">
-                <ToggleGroupItem value="day" aria-label="Day view"><View className="h-4 w-4" /></ToggleGroupItem>
-                <ToggleGroupItem value="workWeek" aria-label="Work week view"><GanttChartSquare className="h-4 w-4" /></ToggleGroupItem>
-                <ToggleGroupItem value="month" aria-label="Month view"><CalendarIcon className="h-4 w-4" /></ToggleGroupItem>
-            </ToggleGroup>
         </div>
       </header>
 
@@ -188,13 +196,47 @@ export function FamilyCalendar() {
             </div>
             <div className="grid grid-cols-7 grid-rows-5 h-full divide-x divide-border">
               {days.map((day, dayIdx) => {
-                const holiday = getHoliday(day);
+                const holiday = getHolidayInfo(day);
+                const dayInfo = getDayInfo(day);
                 return (
-                  <div key={day.toString()} className={cn("relative border-t border-border p-1 pl-1.5", dayIdx === 0 && colStartClasses[getDay(day)], holiday && "bg-sky-50 dark:bg-sky-900/20 border-l-4 border-l-sky-400", !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20")}>
-                    <time dateTime={format(day, "yyyy-MM-dd")} className={cn("h-7 w-7 rounded-full text-sm font-medium flex items-center justify-center", isToday(day) && "bg-primary text-primary-foreground")}>{format(day, "d")}</time>
-                    {holiday && <div className="text-[10px] text-sky-600 dark:text-sky-300 font-semibold mt-0.5">{holiday}</div>}
+                  <div
+                    key={day.toString()}
+                    className={cn(
+                      "relative border-t border-border p-1 pl-1.5 cursor-pointer hover:bg-accent/20 transition-colors",
+                      dayIdx === 0 && colStartClasses[getDay(day)],
+                      holiday && "bg-sky-50 dark:bg-sky-900/20 border-l-4 border-l-sky-400",
+                      !isSameMonth(day, currentDate) && "text-muted-foreground/50 bg-muted/20"
+                    )}
+                    onClick={() => setClickEventDialog({ isOpen: true, date: day })}
+                  >
+                    <div className="flex items-start justify-between">
+                      <time dateTime={format(day, "yyyy-MM-dd")} className={cn("h-7 w-7 rounded-full text-sm font-medium flex items-center justify-center", isToday(day) && "bg-primary text-primary-foreground")}>{format(day, "d")}</time>
+                      <div className="flex flex-col items-end text-[10px] text-muted-foreground gap-0.5">
+                        <div title={getMoonPhaseDescription(dayInfo.moonPhase)}>
+                          {getMoonPhaseIcon(dayInfo.moonPhase, 10)}
+                        </div>
+                        {holiday && (
+                          <div>
+                            {getHolidayIcon(holiday.name, 10)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {holiday && <div className="text-[10px] text-sky-600 dark:text-sky-300 font-semibold mt-0.5 truncate">{holiday.name}</div>}
+                    {dayInfo.sunrise && dayInfo.sunset && (
+                      <div className="text-[9px] text-muted-foreground mt-0.5 space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          {getSunriseIcon(8)}
+                          <span>{dayInfo.sunrise}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {getSunsetIcon(8)}
+                          <span>{dayInfo.sunset}</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-2 flex-1 space-y-1">
-                      {filteredEvents.filter((event) => isSameDay(event.start, day)).map((event) => (<Event key={event.id} event={event} onClick={setSelectedEvent} />))}
+                      {filteredEvents.filter((event) => isSameDay(event.start, day)).map((event) => (<Event key={event.id} event={event} onClick={setSelectedEvent} onDelete={handleDeleteEvent} />))}
                     </div>
                   </div>
                 );
@@ -208,12 +250,44 @@ export function FamilyCalendar() {
                 <div className="w-14"></div>
                 <div className={`grid ${view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'} divide-x divide-border text-center`}>
                   {days.map((day) => {
-                    const holiday = getHoliday(day);
+                    const holiday = getHolidayInfo(day);
+                    const dayInfo = getDayInfo(day);
                     return(
-                    <div key={day.toString()} className={cn("py-2 flex flex-col items-center", holiday && "bg-sky-50 dark:bg-sky-900/20")}>
-                       <span className="text-sm text-muted-foreground">{format(day, "E")}</span>
+                    <div key={day.toString()} className={cn(
+                      "py-2 flex flex-col items-center min-h-[120px]",
+                      holiday && "bg-sky-50 dark:bg-sky-900/20",
+                      isToday(day) && "bg-blue-50/60 dark:bg-blue-900/15"
+                    )}>
+                       <span className="text-sm text-muted-foreground">{format(day, "EEEE")}</span>
                       <span className={cn("text-2xl font-bold mt-1 h-10 w-10 flex items-center justify-center rounded-full", isToday(day) && "bg-primary text-primary-foreground")}>{format(day, "d")}</span>
-                      {holiday && <span className="text-xs text-sky-600 font-semibold truncate px-1">{holiday}</span>}
+
+                      {/* Holiday */}
+                      {holiday && (
+                        <div className="text-xs font-semibold truncate px-1 flex items-center gap-1 mt-1">
+                          {getHolidayIcon(holiday.name, 12)}
+                          <span className="truncate text-sky-600 dark:text-sky-300">{holiday.name}</span>
+                        </div>
+                      )}
+
+                      {/* Moon Phase */}
+                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1" title={getMoonPhaseDescription(dayInfo.moonPhase)}>
+                        {getMoonPhaseIcon(dayInfo.moonPhase, 12)}
+                        <span className="text-[10px]">{dayInfo.moonPhase.split(' ')[0]}</span>
+                      </div>
+
+                      {/* Sunrise/Sunset */}
+                      {dayInfo.sunrise && dayInfo.sunset && (
+                        <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                          <div className="flex items-center gap-1">
+                            {getSunriseIcon(10)}
+                            <span>{dayInfo.sunrise}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {getSunsetIcon(10)}
+                            <span>{dayInfo.sunset}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )})}
                 </div>
@@ -222,20 +296,62 @@ export function FamilyCalendar() {
 
             <div ref={scrollRef} className="flex-1 grid grid-cols-[auto_1fr] overflow-auto">
               <div className="sticky left-0 z-20 w-14 text-xs text-right text-muted-foreground pr-2 bg-background">
-                {dayHours.map((hour, index) => (<div key={hour.toString()} className="h-24 flex justify-end items-start -mt-2.5">{index > 0 ? <span>{format(hour, "ha")}</span> : null}</div>))}
+                {dayHours.map((hour, index) => {
+                  const hourNum = hour.getHours();
+                  const isBusinessHour = hourNum >= businessHoursStart && hourNum <= businessHoursEnd;
+                  return (
+                    <div
+                      key={hour.toString()}
+                      className={cn(
+                        "h-24 flex justify-end items-start -mt-2.5",
+                        showWorkHours && !isBusinessHour && "opacity-50"
+                      )}
+                    >
+                      {index > 0 ? <span className="text-xs">{format(hour, "h a").toLowerCase()}</span> : null}
+                    </div>
+                  );
+                })}
               </div>
               <div className="relative grid flex-1">
                  <div className="absolute inset-0 grid grid-rows-[repeat(48,minmax(0,1fr))] pointer-events-none" >
-                  {Array.from({ length: 48 }).map((_, index) => (<div key={index} className={cn("border-t", index % 2 === 0 ? "border-border" : "border-border/50")}></div>))}
+                  {Array.from({ length: 48 }).map((_, index) => {
+                    const hourIndex = Math.floor(index / 2);
+                    const isBusinessHour = hourIndex >= businessHoursStart && hourIndex <= businessHoursEnd;
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "border-t",
+                          index % 2 === 0 ? "border-border" : "border-border/50",
+                          showWorkHours && !isBusinessHour && "bg-muted/20"
+                        )}
+                      />
+                    );
+                  })}
                 </div>
-                {isToday(currentDate) && <NowLine />}
+                {days.some(day => isToday(day)) && <NowLine />}
                 <div className={`grid ${view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-5'} divide-x divide-border absolute inset-0`}>
                   {days.map((day) => {
                     const dayEvents = filteredEvents.filter((event) => isSameDay(event.start, day));
                     const laidOutEvents = groupOverlappingEvents(dayEvents);
                     return(
-                      <div key={day.toString()} className={cn("relative", isToday(day) && 'bg-accent/20')}>
-                        {laidOutEvents.map((event) => (<TimelineEvent key={event.id} event={event} onClick={setSelectedEvent}/>))}
+                      <div
+                        key={day.toString()}
+                        className={cn(
+                          "relative cursor-pointer hover:bg-accent/30 transition-colors",
+                          isToday(day) && 'bg-blue-50/60 dark:bg-blue-900/15'
+                        )}
+                        onClick={(e) => {
+                          // Calculate the clicked time based on position
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const clickY = e.clientY - rect.top;
+                          const hourHeight = rect.height / 24; // 24 hours in a day
+                          const clickedHour = Math.floor(clickY / hourHeight);
+                          const clickedTime = format(new Date(day.getFullYear(), day.getMonth(), day.getDate(), clickedHour, 0), "yyyy-MM-dd'T'HH:mm");
+                          setClickEventDialog({ isOpen: true, date: day, time: clickedTime });
+                        }}
+                      >
+                        {laidOutEvents.map((event) => (<TimelineEvent key={event.id} event={event} onClick={setSelectedEvent} onDelete={handleDeleteEvent}/>))}
                       </div>
                     )
                   })}
@@ -246,6 +362,14 @@ export function FamilyCalendar() {
         )}
       </div>
        <EventDetailDialog event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+       <ClickEventDialog
+         isOpen={clickEventDialog.isOpen}
+         onClose={() => setClickEventDialog({ isOpen: false, date: new Date() })}
+         date={clickEventDialog.date}
+         time={clickEventDialog.time}
+         selectedCalendar={activeCalendars.length === 1 ? activeCalendars[0] : "All"}
+       />
+      </div>
     </div>
   );
 }

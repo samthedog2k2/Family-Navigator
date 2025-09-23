@@ -34,12 +34,26 @@ const getColorClass = (calendar: string, view: 'month' | 'timeline') => {
 };
 
 
-export function Event({ event, onClick }: { event: TCalendarEvent, onClick?: (event: TCalendarEvent) => void; }) {
+export function Event({ event, onClick, onDelete }: { event: TCalendarEvent, onClick?: (event: TCalendarEvent) => void; onDelete?: (event: TCalendarEvent) => void; }) {
   const colorClass = getColorClass(event.calendar, 'month');
   return (
     <div
-      onClick={() => onClick?.(event)}
+      onClick={(e) => {
+        if (e.shiftKey && onDelete) {
+          e.stopPropagation();
+          onDelete(event);
+        } else {
+          onClick?.(event);
+        }
+      }}
+      onContextMenu={(e) => {
+        if (onDelete) {
+          e.preventDefault();
+          onDelete(event);
+        }
+      }}
       className={cn("rounded-md border p-1.5 text-xs font-medium leading-tight cursor-pointer hover:brightness-95", colorClass)}
+      title="Click to view, Shift+Click or Right-click to delete"
     >
       <p className="truncate">{event.title}</p>
     </div>
@@ -49,9 +63,10 @@ export function Event({ event, onClick }: { event: TCalendarEvent, onClick?: (ev
 type TimelineEventProps = {
   event: TCalendarEvent & { slotIndex?: number; slotCount?: number };
   onClick?: (event: TCalendarEvent) => void;
+  onDelete?: (event: TCalendarEvent) => void;
 };
 
-export function TimelineEvent({ event, onClick }: TimelineEventProps) {
+export function TimelineEvent({ event, onClick, onDelete }: TimelineEventProps) {
   const HALF_HOUR_HEIGHT = 24; // 30min = 24px
 
   const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));
@@ -78,7 +93,21 @@ export function TimelineEvent({ event, onClick }: TimelineEventProps) {
       )}
       style={{ top, height, left: `${left}%`, width: `${width}%` }}
       tabIndex={0}
-      onClick={() => onClick?.(event)}
+      onClick={(e) => {
+        if (e.shiftKey && onDelete) {
+          e.stopPropagation();
+          onDelete(event);
+        } else {
+          onClick?.(event);
+        }
+      }}
+      onContextMenu={(e) => {
+        if (onDelete) {
+          e.preventDefault();
+          onDelete(event);
+        }
+      }}
+      title="Click to view, Shift+Click or Right-click to delete"
     >
       <p className="font-medium truncate">{event.title}</p>
        <div className="text-[10px] opacity-80">

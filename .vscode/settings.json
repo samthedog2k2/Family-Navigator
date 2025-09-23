@@ -1,0 +1,7 @@
+{
+    "claude-dev.enabled": true,
+    "claude-dev.apiKey": "${env:CLAUDE_API_KEY}",
+    "claude-dev.autoStart": true,
+    "claude-dev.showInStatusBar": true,
+    "claude-dev.showWelcomeMessage": true
+}
