@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface FilterData {
     ports: { id: string, name: string }[];
@@ -26,19 +26,25 @@ export function CruiseSearch() {
 
     const [results, setResults] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingFilters, setIsLoadingFilters] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function loadFilters() {
-            try {
-                const res = await fetch('/api/search-filters');
-                if (!res.ok) throw new Error('Failed to load search filters');
-                const data = await res.json();
-                setFilters(data);
-            } catch (err) {
-                setError((err as Error).message);
-            }
+    const loadFilters = async () => {
+        setIsLoadingFilters(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/search-filters');
+            if (!res.ok) throw new Error('Failed to load search filters');
+            const data = await res.json();
+            setFilters(data);
+        } catch (err) {
+            setError((err as Error).message);
+        } finally {
+            setIsLoadingFilters(false);
         }
+    };
+
+    useEffect(() => {
         loadFilters();
     }, []);
 
@@ -79,17 +85,22 @@ export function CruiseSearch() {
                         <CardTitle>Cruise Search</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {error && (
-                            <Alert variant="destructive">
+                        {isLoadingFilters ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Loading filters...</span>
+                            </div>
+                        ) : error ? (
+                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertTitle>Error</AlertTitle>
                                 <AlertDescription>
                                     {error}
+                                    <Button variant="secondary" size="sm" className="mt-2" onClick={loadFilters}>
+                                        Retry
+                                    </Button>
                                 </AlertDescription>
                             </Alert>
-                        )}
-                        {!filters && !error ? (
-                            <p>Loading filters...</p>
                         ) : filters ? (
                             <Accordion type="single" collapsible defaultValue="item-1">
                                 <AccordionItem value="item-1">
@@ -147,7 +158,11 @@ export function CruiseSearch() {
 
             {/* Search Results Column */}
             <div className="lg:col-span-3">
-                {results.length > 0 ? (
+                 {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                ) : results.length > 0 ? (
                     <div className="space-y-4">
                         {results.map((cruise, index) => (
                             <Card key={index}>
