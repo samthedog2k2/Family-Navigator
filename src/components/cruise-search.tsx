@@ -199,12 +199,12 @@ export function CruiseSearch() {
                <div className="space-y-2">
                     <Label>Departure Port (Optional)</Label>
                     <Controller name="departurePort" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={(value) => field.onChange(value === 'any' ? undefined : value)} value={field.value}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Any Port" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Any Port</SelectItem>
+                                <SelectItem value="any">Any Port</SelectItem>
                                 {filters?.ports.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
@@ -215,10 +215,10 @@ export function CruiseSearch() {
                     <div className="space-y-2">
                         <Label>Cruise Line</Label>
                         <Controller name="cruiseLine" control={control} render={({ field }) => (
-                             <Select onValueChange={field.onChange} value={field.value}>
+                             <Select onValueChange={(value) => field.onChange(value === 'any' ? undefined : value)} value={field.value}>
                                 <SelectTrigger><SelectValue placeholder="Any Line" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Any Line</SelectItem>
+                                    <SelectItem value="any">Any Line</SelectItem>
                                     {cruiseLines.map(line => <SelectItem key={line} value={line}>{line}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -227,10 +227,10 @@ export function CruiseSearch() {
                      <div className="space-y-2">
                         <Label>Ship (Optional)</Label>
                         <Controller name="ship" control={control} render={({ field }) => (
-                             <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCruiseLine}>
+                             <Select onValueChange={(value) => field.onChange(value === 'any' ? undefined : value)} value={field.value} disabled={!selectedCruiseLine}>
                                 <SelectTrigger><SelectValue placeholder="Any Ship" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Any Ship</SelectItem>
+                                    <SelectItem value="any">Any Ship</SelectItem>
                                     {availableShips.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.built})</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -280,10 +280,10 @@ export function CruiseSearch() {
                 <div className="space-y-2">
                     <Label>Length of Cruise</Label>
                     <Controller name="length" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={(value) => field.onChange(value === 'any' ? undefined : value)} value={field.value}>
                             <SelectTrigger><SelectValue placeholder="Any length" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Any length</SelectItem>
+                                <SelectItem value="any">Any length</SelectItem>
                                 <SelectItem value="3-5 nights">3-5 Nights</SelectItem>
                                 <SelectItem value="6-9 nights">6-9 Nights</SelectItem>
                                 <SelectItem value="10-14 nights">10-14 Nights</SelectItem>
@@ -433,5 +433,7 @@ export function CruiseSearch() {
     </div>
   );
 }
+
+    
 
     
