@@ -1,43 +1,73 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useState, useEffect, useMemo } from "react";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
-import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, Sailboat } from "lucide-react";
+import { Input } from "./ui/input";
+import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, Trash2, PlusCircle } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar } from "./ui/calendar";
+import { format, addDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { searchCruises, CruiseSearchInput } from "@/ai/flows/cruise-search";
+import type { Cruise } from "@/ai/flows/cruise-search-types";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+
+const cruiseSearchSchema = z.object({
+  destination: z.string().min(1, "Destination is required."),
+  dates: z.object({
+    from: z.date(),
+    to: z.date(),
+  }),
+  length: z.string().optional(),
+  ship: z.string().optional(),
+  passengers: z.object({
+    adults: z.array(z.object({ age: z.coerce.number().min(18) })).min(1),
+    children: z.array(z.object({ age: z.coerce.number().min(0).max(17) })),
+  }),
+  room: z.string().default("interior"),
+});
+
+type CruiseSearchFormData = z.infer<typeof cruiseSearchSchema>;
 
 interface FilterData {
     ports: {id: string, name: string}[];
-}
-
-interface Voyage {
-    id: number;
-    destination_port: string;
-    origin_port: string;
-    ship_id: number;
-    departure_date: string;
-    arrival_date: string;
-    price: string;
-    currency: string;
+    ships: {id: string, name: string}[];
 }
 
 export function CruiseSearch() {
-  const [results, setResults] = useState<Voyage[] | null>(null);
+  const [results, setResults] = useState<Cruise[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
 
-  const { control, handleSubmit } = useForm<{ destination_port: string }>({
-    resolver: zodResolver(z.object({ destination_port: z.string().min(1) })),
+  const { control, handleSubmit, watch, setValue } = useForm<CruiseSearchFormData>({
+    resolver: zodResolver(cruiseSearchSchema),
+    defaultValues: {
+      dates: {
+        from: new Date(),
+        to: addDays(new Date(), 7),
+      },
+      passengers: {
+        adults: [{ age: 40 }, { age: 38 }],
+        children: [{ age: 10 }, { age: 7 }],
+      },
+      room: 'balcony',
+    },
   });
+
+  const { fields: adultFields, append: appendAdult, remove: removeAdult } = useFieldArray({ control, name: "passengers.adults" });
+  const { fields: childFields, append: appendChild, remove: removeChild } = useFieldArray({ control, name: "passengers.children" });
+  const passengerCounts = watch("passengers");
 
   useEffect(() => {
     async function fetchFilters() {
@@ -53,22 +83,29 @@ export function CruiseSearch() {
     fetchFilters();
   }, []);
 
-  const onSubmit = async (data: { destination_port: string }) => {
+  const onSubmit = async (data: CruiseSearchFormData) => {
     setIsLoading(true);
     setResults(null);
     setError(null);
 
+    const passengerSummary = `${data.passengers.adults.length} adults (ages ${data.passengers.adults.map(p => p.age).join(', ')}) and ${data.passengers.children.length} children (ages ${data.passengers.children.map(p => p.age).join(', ')})`;
+
+    const query = `
+      Find a cruise for ${passengerSummary}.
+      Destination: ${data.destination}.
+      Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.
+      ${data.length ? `Trip Length: ${data.length}.` : ''}
+      ${data.ship ? `Preferred Ship: ${data.ship}.` : ''}
+      Room Type: ${data.room}.
+    `;
+
     try {
-        const response = await fetch(`/api/voyages?destination_port=${data.destination_port}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Failed to fetch cruises.");
-        }
-      const searchResult = await response.json();
-      if (!searchResult || searchResult.length === 0) {
-        setError("No cruises found for the selected destination. Please try another port.");
+      const searchResult = await searchCruises({ query });
+      
+      if (!searchResult || searchResult.cruises.length === 0) {
+        setError("No cruises found for your criteria. Please try a different search.");
       } else {
-        setResults(searchResult);
+        setResults(searchResult.cruises);
       }
     } catch (err) {
       console.error("Cruise search failed:", err);
@@ -77,6 +114,12 @@ export function CruiseSearch() {
       setIsLoading(false);
     }
   };
+
+  const passengerSummaryText = useMemo(() => {
+    const adultCount = passengerCounts.adults.length;
+    const childCount = passengerCounts.children.length;
+    return `${adultCount} Adult${adultCount !== 1 ? 's' : ''}, ${childCount} Child${childCount !== 1 ? 'ren' : ''}`;
+  }, [passengerCounts]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -90,18 +133,141 @@ export function CruiseSearch() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Destination Port</Label>
-                    <Controller name="destination_port" control={control} render={({ field }) => (
+               {/* Destination */}
+               <div className="space-y-2">
+                    <Label>Destination</Label>
+                    <Controller name="destination" control={control} render={({ field }) => (
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a destination" />
                             </SelectTrigger>
                             <SelectContent>
-                                {filters?.ports.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                {filters?.ports.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     )} />
+                </div>
+                
+                {/* Dates */}
+                <div className="space-y-2">
+                    <Label>Dates</Label>
+                    <Controller name="dates" control={control} render={({ field }) => (
+                         <Popover>
+                            <PopoverTrigger asChild>
+                               <Button
+                                  variant={"outline"}
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value?.from ? (
+                                    field.value.to ? (
+                                    <>
+                                        {format(field.value.from, "LLL dd, y")} -{" "}
+                                        {format(field.value.to, "LLL dd, y")}
+                                    </>
+                                    ) : (
+                                    format(field.value.from, "LLL dd, y")
+                                    )
+                                ) : (
+                                    <span>Pick a date range</span>
+                                )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="range"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    numberOfMonths={2}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    )} />
+                </div>
+
+                {/* Length */}
+                <div className="space-y-2">
+                    <Label>Length of Cruise</Label>
+                    <Controller name="length" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue placeholder="Any length" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="3-5 nights">3-5 Nights</SelectItem>
+                                <SelectItem value="6-9 nights">6-9 Nights</SelectItem>
+                                <SelectItem value="10-14 nights">10-14 Nights</SelectItem>
+                                <SelectItem value="15+ nights">15+ Nights</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )} />
+                </div>
+
+                {/* Ship */}
+                <div className="space-y-2">
+                    <Label>Ship</Label>
+                    <Controller name="ship" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue placeholder="Any ship" /></SelectTrigger>
+                            <SelectContent>
+                                {filters?.ships.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    )} />
+                </div>
+
+                {/* Passengers */}
+                <div className="space-y-2">
+                    <Label>Passengers</Label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start font-normal">
+                                <Users className="mr-2 h-4 w-4" />
+                                {passengerSummaryText}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-medium">Adults</h4>
+                                    {adultFields.map((field, index) => (
+                                        <div key={field.id} className="flex items-center gap-2 mt-2">
+                                            <Label>Adam</Label>
+                                            <Controller name={`passengers.adults.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20" />} />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeAdult(index)} disabled={adultFields.length <= 1}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendAdult({age: 30})} className="mt-2">Add Adult</Button>
+                                </div>
+                                <div>
+                                    <h4 className="font-medium">Children</h4>
+                                    {childFields.map((field, index) => (
+                                        <div key={field.id} className="flex items-center gap-2 mt-2">
+                                            <Label>Ethan</Label>
+                                            <Controller name={`passengers.children.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20" />} />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeChild(index)}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendChild({age: 10})} className="mt-2">Add Child</Button>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                
+                {/* Room Type */}
+                <div className="space-y-2">
+                    <Label>Room Type</Label>
+                     <Controller
+                        name="room"
+                        control={control}
+                        render={({ field }) => (
+                        <ToggleGroup type="single" variant="outline" onValueChange={field.onChange} defaultValue={field.value} className="w-full grid grid-cols-2">
+                            <ToggleGroupItem value="interior">Interior</ToggleGroupItem>
+                            <ToggleGroupItem value="oceanview">Oceanview</ToggleGroupItem>
+                            <ToggleGroupItem value="balcony">Balcony</ToggleGroupItem>
+                            <ToggleGroupItem value="suite">Suite</ToggleGroupItem>
+                        </ToggleGroup>
+                        )}
+                    />
                 </div>
               
               <Button type="submit" className="w-full" disabled={isLoading || !filters}>
@@ -116,15 +282,15 @@ export function CruiseSearch() {
       <div className="lg:col-span-2">
         <Card className="h-full">
             <CardHeader>
-                <CardTitle>Search Results</CardTitle>
-                <CardDescription>Real cruise data based on your selection.</CardDescription>
+                <CardTitle>AI-Powered Results</CardTitle>
+                <CardDescription>Cruises matching your criteria, generated by an expert AI agent.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-[calc(100vh-16rem)] pr-4 -mr-4">
                     {isLoading && (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                            <p className="text-lg font-semibold">Searching for live cruise data...</p>
+                            <p className="text-lg font-semibold">Our AI agent is searching for the best cruises...</p>
                             <p>This may take a moment.</p>
                         </div>
                     )}
@@ -140,30 +306,37 @@ export function CruiseSearch() {
                     )}
                     {results && (
                         <div className="space-y-4">
-                            {results.map((voyage) => (
-                                <Card key={voyage.id} className="overflow-hidden">
+                            {results.map((cruise, index) => (
+                                <Card key={index} className="overflow-hidden">
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <CardTitle className="text-xl">Voyage to {voyage.destination_port}</CardTitle>
-                                                <CardDescription>Ship ID: {voyage.ship_id}</CardDescription>
+                                                <CardTitle className="text-xl">{cruise.shipName}</CardTitle>
+                                                <CardDescription>{cruise.cruiseLine}</CardDescription>
                                             </div>
-                                             <Badge variant="secondary">{voyage.price} {voyage.currency}</Badge>
+                                             <Badge variant="secondary">{cruise.price}</Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
+                                        <p className="text-sm">{cruise.itinerary}</p>
                                         <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div className="flex items-center gap-2"><Anchor className="text-muted-foreground"/> <span>Departs From: {voyage.origin_port}</span></div>
-                                            <div className="flex items-center gap-2"><MapPin className="text-muted-foreground"/> <span>Arrives At: {voyage.destination_port}</span></div>
-                                            <div className="flex items-center gap-2"><Calendar className="text-muted-foreground"/> <span>Departs: {new Date(voyage.departure_date).toLocaleDateString()}</span></div>
-                                            <div className="flex items-center gap-2"><Calendar className="text-muted-foreground"/> <span>Arrives: {new Date(voyage.arrival_date).toLocaleDateString()}</span></div>
+                                            <div className="flex items-center gap-2"><Anchor className="text-muted-foreground"/> <span>Departs: {cruise.departurePort}</span></div>
+                                            <div className="flex items-center gap-2"><CalendarIcon className="text-muted-foreground"/> <span>Sails: {cruise.date}</span></div>
                                         </div>
+                                         <div className="text-xs text-muted-foreground grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t">
+                                            <span><b>Tonnage:</b> {cruise.tonnage?.toLocaleString()} GRT</span>
+                                            <span><b>Capacity:</b> {cruise.passengerCapacity?.toLocaleString()} pax</span>
+                                            <span><b>Crew:</b> {cruise.crewCapacity?.toLocaleString()}</span>
+                                            <span><b>Refurbished:</b> {cruise.lastRefurb || 'N/A'}</span>
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
                                         <Button asChild className="w-full">
-                                            <a href="#" target="_blank" rel="noopener noreferrer">
-                                                View Deal (Example)
+                                            <a href={cruise.bookingLink} target="_blank" rel="noopener noreferrer">
+                                                View Deal on CruiseDirect
                                             </a>
                                         </Button>
-                                    </CardContent>
+                                    </CardFooter>
                                 </Card>
                             ))}
                         </div>
@@ -175,3 +348,5 @@ export function CruiseSearch() {
     </div>
   );
 }
+
+    
