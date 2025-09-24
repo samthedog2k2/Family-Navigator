@@ -9,7 +9,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
-import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, BedDouble, Wifi, Wine, User, Baby } from "lucide-react";
+import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, BedDouble, Wifi, Wine, User, Baby, Trash2 } from "lucide-react";
 import { searchCruises } from "@/ai/flows/cruise-search";
 import type { CruiseSearchResult, Cruise } from "@/ai/flows/cruise-search-types";
 import { ScrollArea } from "./ui/scroll-area";
