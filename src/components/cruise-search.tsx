@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -173,6 +174,9 @@ export function CruiseSearch() {
     </Card>
   )
 
+  const adultNames = ["Adam", "Holly"];
+  const childNames = ["Ethan", "Elle"];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-1">
@@ -227,7 +231,7 @@ export function CruiseSearch() {
                     {adultFields.map((field, index) => (
                         <div key={field.id} className="flex items-center gap-2">
                             <User className="text-muted-foreground" />
-                            <Label>Adult {index + 1} Age</Label>
+                            <Label>{adultNames[index] || `Adult ${index + 1}`} Age</Label>
                             <Controller name={`passengers.adults.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20" />} />
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeAdult(index)} disabled={adultFields.length <= 1}><Trash2 className="h-4 w-4"/></Button>
                         </div>
@@ -239,7 +243,7 @@ export function CruiseSearch() {
                         {childFields.map((field, index) => (
                             <div key={field.id} className="flex items-center gap-2">
                                 <Baby className="text-muted-foreground" />
-                                <Label>Child {index + 1} Age</Label>
+                                <Label>{childNames[index] || `Child ${index + 1}`} Age</Label>
                                 <Controller name={`passengers.children.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20"/>} />
                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeChild(index)}><Trash2 className="h-4 w-4"/></Button>
                             </div>
@@ -358,3 +362,5 @@ export function CruiseSearch() {
     </div>
   );
 }
+
+    
