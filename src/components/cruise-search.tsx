@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
 import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, BedDouble, Wifi, Wine, User, Baby } from "lucide-react";
-import { searchCruises, CruiseSearchResult, Cruise } from "@/ai/flows/cruise-search";
+import { searchCruises } from "@/ai/flows/cruise-search";
+import type { CruiseSearchResult, Cruise } from "@/ai/flows/cruise-search-types";
 import { ScrollArea } from "./ui/scroll-area";
 import { ShipMap } from "./ShipMap";
 import { Badge } from "./ui/badge";
@@ -34,8 +35,8 @@ const searchSchema = z.object({
   }),
   passengers: z.object({
       type: z.enum(["couple", "family"]),
-      adults: z.array(z.object({ age: z.number().min(18) })),
-      children: z.array(z.object({ age: z.number().min(0).max(17) }))
+      adults: z.array(z.object({ age: z.coerce.number().min(18) })),
+      children: z.array(z.object({ age: z.coerce.number().min(0).max(17) }))
   }),
   roomType: z.string().default("Ocean Facing Balcony"),
   tipsIncluded: z.boolean().default(true),
