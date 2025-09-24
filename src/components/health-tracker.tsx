@@ -49,11 +49,13 @@ function HealthForm({
   data,
   onSave,
   isSaving,
+  dataSource,
 }: {
   member: FamilyMember;
   data: HealthData;
   onSave: (member: FamilyMember, data: HealthData) => void;
   isSaving: boolean;
+  dataSource: string | null;
 }) {
   const {
     register,
@@ -80,10 +82,19 @@ function HealthForm({
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>Log Vitals for {member}</CardTitle>
-          <CardDescription>
-            Enter the latest health information.
-          </CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Log Vitals for {member}</CardTitle>
+              <CardDescription>
+                Enter the latest health information.
+              </CardDescription>
+            </div>
+             {dataSource && (
+              <Badge variant="outline">
+                  Data Source: {dataSource}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -201,6 +212,7 @@ export function HealthTracker() {
       const updatedData = await updateHealthData(member, data);
       const { source, ...healthData } = updatedData;
       setAppState(healthData);
+      setDataSource(source);
       toast({
         title: "Data Saved",
         description: `Health data for ${member} has been updated.`,
@@ -229,12 +241,7 @@ export function HealthTracker() {
   }
 
   return (
-    <div className="relative">
-        {dataSource && (
-            <Badge variant="outline" className="absolute top-0 right-0">
-                Data Source: {dataSource}
-            </Badge>
-        )}
+    <div>
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FamilyMember)} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
             {familyMembers.map((member) => (
@@ -250,6 +257,7 @@ export function HealthTracker() {
                   data={appState[member]}
                   onSave={handleSave}
                   isSaving={isSaving}
+                  dataSource={dataSource}
               />
             </TabsContent>
         ))}
