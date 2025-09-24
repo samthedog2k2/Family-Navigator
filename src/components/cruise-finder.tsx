@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -139,7 +140,7 @@ export function CruiseFinder() {
           <div className="space-y-2">
             <Label>Itinerary Dates</Label>
             <div className="flex items-center space-x-2">
-              <div className="flex items-center w-full">
+              <div className="flex items-center">
                 <div className="p-2.5 border border-r-0 rounded-l-md bg-muted">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                 </div>
@@ -150,7 +151,7 @@ export function CruiseFinder() {
                   className="rounded-l-none"
                 />
               </div>
-              <div className="flex items-center w-full">
+              <div className="flex items-center">
                 <div className="p-2.5 border border-r-0 rounded-l-md bg-muted">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                 </div>
@@ -168,7 +169,7 @@ export function CruiseFinder() {
           <div className="space-y-2">
             <Label>Cruise Length & Type</Label>
             <div className="flex items-center space-x-2">
-                <div className="flex items-center w-full">
+                <div className="flex items-center">
                     <div className="p-2.5 border border-r-0 rounded-l-md bg-muted">
                         <Clock className="h-5 w-5 text-muted-foreground" />
                     </div>
@@ -185,7 +186,7 @@ export function CruiseFinder() {
                         </SelectContent>
                     </Select>
                 </div>
-                 <div className="flex items-center w-full">
+                 <div className="flex items-center">
                     <div className="p-2.5 border border-r-0 rounded-l-md bg-muted">
                         <Wallet className="h-5 w-5 text-muted-foreground" />
                     </div>
