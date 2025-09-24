@@ -15,23 +15,34 @@ async function fetchFilterData(endpoint: string) {
 }
 
 export async function GET() {
+    const endpoints = ['ports', 'lines', 'ships', 'regions'];
+    
     try {
-        // Fetch all filter data in parallel for maximum efficiency
-        const [ports, lines, ships, regions] = await Promise.all([
-            fetchFilterData('port'),
-            fetchFilterData('line'),
-            fetchFilterData('ship'),
-            fetchFilterData('region'),
-        ]);
+        const results = await Promise.allSettled(
+            endpoints.map(ep => fetchFilterData(ep.slice(0, -1))) // 'ports' -> 'port'
+        );
 
-        return NextResponse.json({
-            ports,
-            lines,
-            ships,
-            regions,
+        const data: { [key: string]: any } = {};
+        const errors: string[] = [];
+
+        results.forEach((result, index) => {
+            const endpointName = endpoints[index];
+            if (result.status === 'fulfilled') {
+                data[endpointName] = result.value;
+            } else {
+                console.error(`Error fetching ${endpointName}:`, result.reason);
+                errors.push(result.reason.message || `Failed to load ${endpointName}`);
+            }
         });
 
-    } catch (error) {
+        if (errors.length === endpoints.length) {
+            // All requests failed
+            return NextResponse.json({ error: 'Failed to load any filter data. The external service may be down.' }, { status: 500 });
+        }
+
+        return NextResponse.json({ data, errors: errors.length > 0 ? errors : undefined });
+
+    } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

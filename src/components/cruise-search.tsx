@@ -18,7 +18,7 @@ interface FilterData {
 }
 
 export function CruiseSearch() {
-    const [filters, setFilters] = useState<FilterData | null>(null);
+    const [filters, setFilters] = useState<Partial<FilterData> | null>(null);
     const [selectedLine, setSelectedLine] = useState<string | null>(null);
     const [selectedPort, setSelectedPort] = useState<string | null>(null);
     const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
@@ -34,9 +34,20 @@ export function CruiseSearch() {
         setError(null);
         try {
             const res = await fetch('/api/search-filters');
-            if (!res.ok) throw new Error('Failed to load search filters');
-            const data = await res.json();
-            setFilters(data);
+            const result = await res.json();
+
+            if (!res.ok) {
+                 throw new Error(result.error || 'Failed to load search filters');
+            }
+            
+            if (result.data) {
+                setFilters(result.data);
+            }
+
+            if (result.errors && result.errors.length > 0) {
+                setError(`Could not load some filters: ${result.errors.join(', ')}`);
+            }
+            
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -70,7 +81,7 @@ export function CruiseSearch() {
             const data = await res.json();
             setResults(data.cruises || []); // Assuming the API returns a { cruises: [...] } object
         } catch (err) {
-            setError((err as Error).message);
+             setError((err as Error).message);
         } finally {
             setIsLoading(false);
         }
@@ -85,12 +96,13 @@ export function CruiseSearch() {
                         <CardTitle>Cruise Search</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {isLoadingFilters ? (
-                            <div className="flex items-center gap-2">
+                        {isLoadingFilters && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 <span>Loading filters...</span>
                             </div>
-                        ) : error ? (
+                        )}
+                        {error && !isLoadingFilters && (
                              <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertTitle>Error</AlertTitle>
@@ -101,8 +113,10 @@ export function CruiseSearch() {
                                     </Button>
                                 </AlertDescription>
                             </Alert>
-                        ) : filters ? (
-                            <Accordion type="single" collapsible defaultValue="item-1">
+                        )}
+                        {filters && (
+                            <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+                                {filters.regions && (
                                 <AccordionItem value="item-1">
                                     <AccordionTrigger>Destinations</AccordionTrigger>
                                     <AccordionContent>
@@ -114,6 +128,8 @@ export function CruiseSearch() {
                                         </Select>
                                     </AccordionContent>
                                 </AccordionItem>
+                                )}
+                                {filters.ports && (
                                 <AccordionItem value="item-2">
                                     <AccordionTrigger>Departure Port</AccordionTrigger>
                                     <AccordionContent>
@@ -125,6 +141,8 @@ export function CruiseSearch() {
                                         </Select>
                                     </AccordionContent>
                                 </AccordionItem>
+                                )}
+                                {filters.lines && (
                                 <AccordionItem value="item-3">
                                     <AccordionTrigger>Cruise Line</AccordionTrigger>
                                     <AccordionContent>
@@ -136,6 +154,8 @@ export function CruiseSearch() {
                                         </Select>
                                     </AccordionContent>
                                 </AccordionItem>
+                                )}
+                                {filters.ships && (
                                 <AccordionItem value="item-4">
                                     <AccordionTrigger>Cruise Ship</AccordionTrigger>
                                     <AccordionContent>
@@ -147,10 +167,11 @@ export function CruiseSearch() {
                                         </Select>
                                     </AccordionContent>
                                 </AccordionItem>
+                                )}
                             </Accordion>
-                        ) : null}
-                        <Button onClick={handleSearch} disabled={isLoading || !filters} className="w-full">
-                            {isLoading ? 'Searching...' : 'Search Cruises'}
+                        )}
+                        <Button onClick={handleSearch} disabled={isLoading || isLoadingFilters} className="w-full">
+                            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...</> : 'Search Cruises'}
                         </Button>
                     </CardContent>
                 </Card>
@@ -159,8 +180,8 @@ export function CruiseSearch() {
             {/* Search Results Column */}
             <div className="lg:col-span-3">
                  {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <Loader2 className="h-8 w-8 animate-spin" />
+                    <div className="flex items-center justify-center h-full rounded-lg border-2 border-dashed">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 ) : results.length > 0 ? (
                     <div className="space-y-4">
@@ -168,7 +189,7 @@ export function CruiseSearch() {
                             <Card key={index}>
                                 <CardHeader>
                                     <CardTitle>{cruise.ship.name}</CardTitle>
-                                    <p className="text-sm text-gray-600">{cruise.line.name}</p>
+                                    <p className="text-sm text-muted-foreground">{cruise.line.name}</p>
                                 </CardHeader>
                                 <CardContent>
                                     <p>{cruise.name}</p>
@@ -182,9 +203,9 @@ export function CruiseSearch() {
                         ))}
                     </div>
                 ) : (
-                     <div className="text-center py-10">
-                        <h3 className="text-xl font-semibold">Use the filters to find your next cruise</h3>
-                        <p>Results will be displayed here.</p>
+                     <div className="flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed text-center p-8">
+                        <h3 className="text-xl font-semibold text-foreground">Use the filters to find your next cruise</h3>
+                        <p className="text-muted-foreground mt-2">Your search results will appear here.</p>
                     </div>
                 )}
             </div>
