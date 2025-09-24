@@ -1,18 +1,18 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFamilyAuth } from '@/lib/firebase-auth';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
 
 export default function EnhancedLogin() {
-  const { signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
+  const { user, loading, signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
   const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -21,17 +21,25 @@ export default function EnhancedLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (!loading && user) {
+        router.push('/');
+    }
+  }, [user, loading, router]);
+
+
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     setError('');
+    
     const result = await signInWithGoogle();
-    if (result.success && result.user) {
-      router.push('/');
-    } else if (!result.success && !result.redirect) {
+    
+    if (!result.success && !result.redirect) {
       setError(result.error || 'Google sign-in failed');
+      setIsSubmitting(false);
     }
-    // If redirect is initiated, this component will unmount and no further action is needed here.
-    setIsSubmitting(false);
+    // If redirect is happening, we don't set submitting to false,
+    // as the page will navigate away.
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -47,15 +55,24 @@ export default function EnhancedLogin() {
     }
 
     if (result.success) {
-      router.push('/');
+         router.push('/');
     } else {
       setError(result.error || 'Authentication failed');
       setIsSubmitting(false);
     }
   };
 
+  if (loading || user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="mt-4 text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="flex-1 flex items-center justify-center p-6 bg-background">
+    <main className="flex-1 flex items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -73,7 +90,6 @@ export default function EnhancedLogin() {
             onClick={handleGoogleSignIn}
             disabled={isSubmitting}
             variant="outline"
-            className="w-full"
           >
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -134,9 +150,9 @@ export default function EnhancedLogin() {
               />
             </div>
             
-            {error && <p className="text-sm text-destructive px-1">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === 'signin' ? 'Sign In' : 'Create Account'}
             </Button>
@@ -160,5 +176,3 @@ export default function EnhancedLogin() {
     </main>
   );
 }
-
-    

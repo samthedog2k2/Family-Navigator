@@ -7,6 +7,7 @@ import { useFamilyAuth } from '@/lib/firebase-auth';
 import { Header } from "@/components/header";
 import EnhancedLogin from "@/components/auth/EnhancedLogin";
 import { Loader2 } from 'lucide-react';
+import { LayoutWrapper } from '@/components/layout-wrapper';
 
 export default function LoginPage() {
   const { user, loading } = useFamilyAuth();
@@ -28,11 +29,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <Header />
+    <LayoutWrapper>
       <EnhancedLogin />
-    </div>
+    </LayoutWrapper>
   );
 }
-
-    

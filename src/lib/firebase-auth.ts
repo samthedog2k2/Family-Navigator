@@ -265,11 +265,15 @@ export class FamilyNavigatorAuth {
         language: 'en'
       }
     };
-    await setDoc(doc(db, 'users', user.uid), userProfile);
+    await setDoc(doc(db, 'users', user.uid), userProfile, { merge: true });
   }
 
   private async updateUserProfile(userId: string, updates: any) {
-    await updateDoc(doc(db, 'users', userId), updates);
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      await updateDoc(userRef, updates);
+    }
   }
 
   private async getUserProfile(userId: string) {
@@ -326,7 +330,8 @@ export class FamilyNavigatorAuth {
       'auth/wrong-password': 'Incorrect password.',
       'auth/popup-closed-by-user': 'Sign-in was cancelled.',
       'auth/cancelled-popup-request': 'Sign-in was cancelled.',
-      'auth/popup-blocked': 'Pop-up was blocked by the browser.'
+      'auth/popup-blocked': 'Pop-up was blocked by the browser.',
+      'auth/unauthorized-domain': 'This website is not authorized to use Firebase Authentication. Please contact support.'
     };
     return errorMessages[errorCode] || 'An unexpected error occurred. Please try again.';
   }
@@ -366,5 +371,3 @@ export function useFamilyAuth() {
     hasRole: familyAuth.hasRole.bind(familyAuth)
   };
 }
-
-    
