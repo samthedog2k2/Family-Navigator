@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -8,9 +9,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { useRouter } from 'next/navigation';
 
 export default function EnhancedLogin() {
   const { signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
+  const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,11 +25,13 @@ export default function EnhancedLogin() {
     setIsSubmitting(true);
     setError('');
     const result = await signInWithGoogle();
-    if (!result.success && !result.redirect) {
+    if (result.success && result.user) {
+      router.push('/');
+    } else if (!result.success && !result.redirect) {
       setError(result.error || 'Google sign-in failed');
-      setIsSubmitting(false);
     }
-    // On success or redirect, the parent component will handle the state change.
+    // If redirect is initiated, this component will unmount and no further action is needed here.
+    setIsSubmitting(false);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -41,11 +46,12 @@ export default function EnhancedLogin() {
       result = await signInWithEmail(email, password);
     }
 
-    if (!result.success) {
+    if (result.success) {
+      router.push('/');
+    } else {
       setError(result.error || 'Authentication failed');
       setIsSubmitting(false);
     }
-    // On success, the parent component will handle the state change.
   };
 
   return (
