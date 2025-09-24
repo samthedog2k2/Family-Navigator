@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "./ui/button";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, Trash2, PlusCircle, Wand2 } from "lucide-react";
+import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, Trash2, PlusCircle, Wand2, SearchIcon } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -18,14 +17,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { searchCruises, CruiseSearchInput } from "@/ai/flows/cruise-search";
-import type { Cruise } from "@/ai/flows/cruise-search-types";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { shipData } from "@/data/cruise-ship-data";
 import { InsiderTips } from "./insider-tips";
 import { PackingGuide } from "./packing-guide";
 import { BudgetEstimator } from "./budget-estimator";
 import { ShipDetails } from "./ShipDetails";
+import type { ScrapedCruiseData } from "@/services/cruise-critic-scraper";
+
 
 const cruiseSearchSchema = z.object({
   tripType: z.enum(["family", "couple"]).default("family"),
@@ -55,7 +54,7 @@ interface FilterData {
 const cruiseLines = [...new Set(shipData.map(ship => ship.cruiseLine))].sort();
 
 export function CruiseSearch() {
-  const [results, setResults] = useState<Cruise[] | null>(null);
+  const [results, setResults] = useState<ScrapedCruiseData[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
@@ -118,32 +117,31 @@ export function CruiseSearch() {
     setResults(null);
     setError(null);
 
-    const passengerSummary = `${data.passengers.adults.length} adults (ages ${data.passengers.adults.map(p => p.age).join(', ')}) and ${data.passengers.children.length} children (ages ${data.passengers.children.map(p => p.age).join(', ')})`;
-    const destinationName = filters?.regions.find(r => r.id === data.destination)?.name || data.destination;
-    const selectedShip = shipData.find(s => s.id === data.ship);
-
-    const query = `
-      Find a cruise for a ${data.tripType} trip with ${passengerSummary}.
-      Destination Region: ${destinationName}.
-      ${data.departurePort ? `Departure Port: ${data.departurePort}.` : ''}
-      ${data.dates?.from && data.dates?.to ? `Travel Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.`: ''}
-      ${data.length ? `Trip Length: ${data.length}.` : ''}
-      ${selectedCruiseLine ? `Cruise Line: ${selectedCruiseLine}.` : ''}
-      ${selectedShip ? `Preferred Ship: ${selectedShip.name}.` : ''}
-      Room Type: ${data.room.replace(/-/g, ' ')}.
-      Provide realistic itineraries and pricing based on this criteria, using your knowledge of real-world cruise data.
-    `;
-
     try {
-      // AI search is temporarily disabled to focus on UI.
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // const searchResult = await searchCruises({ query });
-      // if (!searchResult || searchResult.cruises.length === 0) {
-      //   setError("No cruises found for your criteria. Please try a different search.");
-      // } else {
-      //   setResults(searchResult.cruises);
-      // }
-      setError("Live search functionality is not yet connected. This is a UI demonstration.");
+      const response = await fetch('/api/scrape-cruise-critic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          destination: data.destination,
+          length: data.length,
+          cruiseLine: data.cruiseLine,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Scraping failed');
+      }
+
+      const result = await response.json();
+      
+      if (!result || result.cruises.length === 0) {
+        setError("No cruises found for your criteria. Please try a different search.");
+      } else {
+        setResults(result.cruises);
+      }
     } catch (err) {
       console.error("Cruise search failed:", err);
       setError((err as Error).message || "Failed to find cruises. Please try a different search.");
@@ -345,9 +343,9 @@ export function CruiseSearch() {
                     />
                 </div>
               
-              <Button type="submit" className="w-full" disabled={true}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                Find Cruises (Next Step)
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SearchIcon className="mr-2 h-4 w-4" />}
+                Find Cruises
               </Button>
             </form>
           </CardContent>
@@ -359,30 +357,30 @@ export function CruiseSearch() {
       <div className="lg:col-span-2 space-y-6">
         <Card className="h-full">
             <CardHeader>
-                <CardTitle>AI-Powered Results</CardTitle>
-                <CardDescription>Cruises matching your criteria will appear here.</CardDescription>
+                <CardTitle>Search Results</CardTitle>
+                <CardDescription>Real cruise data based on your selection.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-[calc(100vh-16rem)] pr-4 -mr-4">
                     {isLoading && (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                            <p className="text-lg font-semibold">Our AI agent is searching for the best cruises...</p>
+                            <p className="text-lg font-semibold">Scraping live data from Cruise Critic...</p>
                             <p>This may take a moment.</p>
                         </div>
                     )}
                     {error && (
                          <div className="flex flex-col items-center justify-center h-full text-destructive text-center p-4">
-                            <p className='font-semibold'>Live Search Not Connected</p>
+                            <p className='font-semibold'>Scraping Error</p>
                              <p>{error}</p>
-                             <p className='mt-2 text-xs text-muted-foreground'>This is a UI demonstration. The next step is to connect a live API.</p>
+                             <p className='mt-2 text-xs text-muted-foreground'>The website may be blocking the request. Try a different search.</p>
                          </div>
                     )}
                     {!isLoading && !results && !error && (
                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center p-4">
                             <Sailboat className="h-16 w-16 mb-4"/>
-                            <p className='font-semibold text-lg'>Your cruise results will appear here.</p>
-                            <p>Fill out the form and click "Find Cruises" to start.</p>
+                            <p className='font-semibold text-lg'>Your cruise search results will appear here.</p>
+                            <p>Fill out the form and click "Find Cruises" to start a live search.</p>
                         </div>
                     )}
                     {results && (
@@ -392,29 +390,19 @@ export function CruiseSearch() {
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <CardTitle className="text-xl">{cruise.shipName}</CardTitle>
-                                                <CardDescription>{cruise.cruiseLine}</CardDescription>
+                                                <CardTitle className="text-xl">{cruise.title}</CardTitle>
+                                                <CardDescription>{cruise.duration}</CardDescription>
                                             </div>
                                              <Badge variant="secondary">{cruise.price}</Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <p className="text-sm">{cruise.itinerary}</p>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div className="flex items-center gap-2"><Anchor className="text-muted-foreground"/> <span>Departs: {cruise.departurePort}</span></div>
-                                            <div className="flex items-center gap-2"><CalendarIcon className="text-muted-foreground"/> <span>Sails: {cruise.date}</span></div>
-                                        </div>
-                                         <div className="text-xs text-muted-foreground grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t">
-                                            <span><b>Tonnage:</b> {cruise.tonnage?.toLocaleString()} GRT</span>
-                                            <span><b>Capacity:</b> {cruise.passengerCapacity?.toLocaleString()} pax</span>
-                                            <span><b>Crew:</b> {cruise.crewCapacity?.toLocaleString()}</span>
-                                            <span><b>Refurbished:</b> {cruise.lastRefurb || 'N/A'}</span>
-                                        </div>
                                     </CardContent>
                                     <CardFooter>
                                         <Button asChild className="w-full">
-                                            <a href={cruise.bookingLink} target="_blank" rel="noopener noreferrer">
-                                                View Deal
+                                            <a href={cruise.url} target="_blank" rel="noopener noreferrer">
+                                                View on Cruise Critic
                                             </a>
                                         </Button>
                                     </CardFooter>
@@ -433,7 +421,3 @@ export function CruiseSearch() {
     </div>
   );
 }
-
-    
-
-    
