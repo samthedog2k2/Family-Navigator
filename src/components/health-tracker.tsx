@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, Controller, useFormState, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, useFormState, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ function HealthForm({
     control,
     reset,
   } = useForm<HealthData>({
-    resolver: zodResolver(healthSchema),
+    resolver: zodResolver(healthSchema) as Resolver<HealthData>,
     defaultValues: data,
   });
   
@@ -70,7 +70,7 @@ function HealthForm({
   }, [data, reset]);
 
 
-  const onSubmit: SubmitHandler<HealthData> = (formData) => {
+  const onSubmit = (formData: HealthData) => {
     onSave(member, formData);
   };
 
@@ -110,7 +110,7 @@ function HealthForm({
                 name="gender"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <SelectTrigger id={`gender-${member}`}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
