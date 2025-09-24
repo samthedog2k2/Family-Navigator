@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -204,7 +203,7 @@ export function CruiseSearch() {
                             <PopoverContent className="w-auto p-0" align="start">
                                 <CalendarPicker mode="range" selected={field.value} onSelect={field.onChange} numberOfMonths={2} />
                                 <div className="p-2 border-t flex gap-2">
-                                    {durationFilters.map(d => <Button key={d.label} size="sm" variant="ghost" onClick={() => setValue('dateRange.to', addDays(field.value.from, d.days))}>{d.label}</Button>)}
+                                    {durationFilters.map(d => <Button key={d.label} size="sm" variant="ghost" onClick={() => field.value.from && setValue('dateRange.to', addDays(field.value.from, d.days))}>{d.label}</Button>)}
                                 </div>
                             </PopoverContent>
                         </Popover>

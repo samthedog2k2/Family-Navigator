@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -64,9 +63,7 @@ export function TravelPlanner() {
     setIsLoading(true);
     setRecommendations("");
     try {
-      // The AI flow for travel recommendations needs 'cruise' as a valid type
-      // but we filter it out on the frontend for this component.
-      const result = await getTravelRecommendations({ preferences: {...data, destinationType: data.destinationType } });
+      const result = await getTravelRecommendations({ preferences: data });
       setRecommendations(result.recommendations);
     } catch (error) {
       console.error("Error getting travel recommendations:", error);
