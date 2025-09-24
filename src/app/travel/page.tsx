@@ -1,31 +1,54 @@
-
 "use client";
 
 import { TravelPlanner } from "@/components/travel-planner";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CruiseFinder } from "@/components/cruise-finder";
+import { CruiseSelector } from "@/components/cruise-selector";
+import { DealFinder } from "@/components/deal-finder";
+import { InsiderTips } from "@/components/insider-tips";
+import { PackingGuide } from "@/components/packing-guide";
+import { BudgetEstimator } from "@/components/budget-estimator";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export default function TravelPage() {
   return (
-    <LayoutWrapper>
-      <PageHeader
-        title="Travel Planner"
-        description="Plan your next family adventure, from road trips to cruises."
-      />
-      <Tabs defaultValue="planner" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="planner">AI Travel Planner</TabsTrigger>
-          <TabsTrigger value="cruises">Cruise Finder</TabsTrigger>
-        </TabsList>
-        <TabsContent value="planner" className="mt-4">
-          <TravelPlanner />
-        </TabsContent>
-        <TabsContent value="cruises" className="mt-4">
-          <CruiseFinder />
-        </TabsContent>
-      </Tabs>
-    </LayoutWrapper>
+    <QueryClientProvider client={queryClient}>
+      <LayoutWrapper>
+        <PageHeader
+          title="Travel Hub"
+          description="Plan your next family adventure, from road trips to cruises."
+        />
+        <Tabs defaultValue="cruises" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="cruises">Cruise Planner</TabsTrigger>
+            <TabsTrigger value="planner">AI Road Trip & Lodging</TabsTrigger>
+          </TabsList>
+          <TabsContent value="planner" className="mt-4">
+            <TravelPlanner />
+          </TabsContent>
+          <TabsContent value="cruises" className="mt-4 space-y-6">
+            <CruiseSelector />
+            <div className="grid md:grid-cols-2 gap-6">
+                <DealFinder />
+                <div className="grid gap-6">
+                    <BudgetEstimator mode="family" />
+                    <BudgetEstimator mode="couple" />
+                </div>
+            </div>
+             <div className="grid md:grid-cols-2 gap-6">
+                <PackingGuide mode="family" />
+                <InsiderTips mode="family" />
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+                <PackingGuide mode="couple" />
+                <InsiderTips mode="couple" />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </LayoutWrapper>
+    </QueryClientProvider>
   );
 }
