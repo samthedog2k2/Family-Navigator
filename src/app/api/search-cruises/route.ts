@@ -1,27 +1,30 @@
-
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
+    const apiKey = process.env.RAPIDAPI_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "API key not configured" }, { status: 500 });
+    }
+
     try {
         const searchCriteria = await request.json();
 
-        const response = await fetch('https://www.cruisemapper.com/api/v2/c/c', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            },
-            body: JSON.stringify(searchCriteria),
-        });
+        // This uses an AI flow as the actual API does not support complex search.
+        // We will replace this with a direct API call if a suitable endpoint is found.
+        const { searchCruises } = await import('@/ai/flows/cruise-search');
+        
+        // Convert structured criteria to a natural language query for the AI.
+        const query = `
+            Find cruises with the following criteria:
+            - Query: ${searchCriteria.query || 'any cruise'}
+            - For a realistic response, please generate valid latitude and longitude coordinates.
+        `;
 
-        if (!response.ok) {
-            throw new Error('Failed to execute cruise search');
-        }
-
-        const results = await response.json();
+        const results = await searchCruises({ query });
         return NextResponse.json(results);
 
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: any) {
+        console.error("Error in search-cruises route:", error);
+        return NextResponse.json({ error: error.message || "An unknown error occurred" }, { status: 500 });
     }
 }

@@ -42,11 +42,25 @@ export function CruiseSearch() {
     setResults(null);
     setError(null);
     try {
-      const searchResult = await searchCruises({ query: data.query });
+      const response = await fetch('/api/search-cruises', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch from search API');
+      }
+      
+      const searchResult = await response.json();
+      if (searchResult.error) {
+        throw new Error(searchResult.error);
+      }
       setResults(searchResult);
+
     } catch (err) {
       console.error("Cruise search failed:", err);
-      setError("The AI failed to find cruises based on your query. Please try being more specific or try a different search.");
+      setError((err as Error).message || "The AI failed to find cruises. Please try a different search.");
     } finally {
       setIsLoading(false);
     }
