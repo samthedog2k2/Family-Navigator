@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -24,8 +23,7 @@ import { InsiderTips } from "./insider-tips";
 import { PackingGuide } from "./packing-guide";
 import { BudgetEstimator } from "./budget-estimator";
 import { ShipDetails } from "./ShipDetails";
-import type { ScrapedCruiseData } from "@/services/cruise-critic-scraper";
-
+import { searchCruises, CruiseSearchResult, Cruise } from "@/ai/flows/cruise-search";
 
 const cruiseSearchSchema = z.object({
   tripType: z.enum(["family", "couple"]).default("family"),
@@ -54,8 +52,9 @@ interface FilterData {
 
 const cruiseLines = [...new Set(shipData.map(ship => ship.cruiseLine))].sort();
 
+
 export function CruiseSearch() {
-  const [results, setResults] = useState<ScrapedCruiseData[] | null>(null);
+  const [results, setResults] = useState<Cruise[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
@@ -112,42 +111,41 @@ export function CruiseSearch() {
   useEffect(() => {
     resetField("ship");
   }, [selectedCruiseLine, resetField]);
-
+  
   const onSubmit = async (data: CruiseSearchFormData) => {
     setIsLoading(true);
     setResults(null);
     setError(null);
+    
+    // Construct a natural language query for the AI
+    let query = `Find a cruise for a ${data.tripType}. `;
+    query += `They are interested in going to ${filters?.regions.find(r => r.id === data.destination)?.name}. `;
+    if (data.departurePort) query += `They want to depart from ${data.departurePort}. `;
+    if (data.cruiseLine) query += `They prefer ${data.cruiseLine} cruise line. `;
+    if (data.ship) {
+        const shipName = shipData.find(s => s.id === data.ship)?.name;
+        if(shipName) query += `Specifically, they are interested in the ship ${shipName}. `;
+    }
+    if (data.dates?.from) {
+        const from = format(data.dates.from, "MMMM yyyy");
+        let to;
+        if (data.dates.to) {
+            to = format(data.dates.to, "MMMM yyyy");
+        }
+        query += `They want to travel between ${from} and ${to ? to : 'the end of ' + from}. `;
+    }
+    if (data.length) query += `The cruise should be around ${data.length} long. `;
+
+    query += `There will be ${data.passengers.adults.length} adults and ${data.passengers.children.length} children. They prefer an ${data.room.replace('-', ' ')} room.`;
 
     try {
-      const response = await fetch('/api/scrape-cruise-critic', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          destination: data.destination,
-          length: data.length,
-          cruiseLine: data.cruiseLine,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Scraping failed');
-      }
-
-      const result = await response.json();
-      
-      if (!result || result.cruises.length === 0) {
-        setError("No cruises found for your criteria. Please try a different search.");
-      } else {
-        setResults(result.cruises);
-      }
-    } catch (err) {
-      console.error("Cruise search failed:", err);
-      setError((err as Error).message || "Failed to find cruises. Please try a different search.");
+        const aiResults = await searchCruises({ query });
+        setResults(aiResults.cruises);
+    } catch(err) {
+        console.error("AI Cruise search failed:", err);
+        setError((err as Error).message || "The AI failed to find cruises for your request. Please try again.");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -345,8 +343,8 @@ export function CruiseSearch() {
                 </div>
               
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SearchIcon className="mr-2 h-4 w-4" />}
-                Find Cruises
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                Find Cruises with AI
               </Button>
             </form>
           </CardContent>
@@ -358,30 +356,29 @@ export function CruiseSearch() {
       <div className="lg:col-span-2 space-y-6">
         <Card className="h-full">
             <CardHeader>
-                <CardTitle>Search Results</CardTitle>
-                <CardDescription>Real cruise data based on your selection.</CardDescription>
+                <CardTitle>AI Generated Results</CardTitle>
+                <CardDescription>Plausible cruise options based on your selection.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-[calc(100vh-16rem)] pr-4 -mr-4">
                     {isLoading && (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                            <p className="text-lg font-semibold">Scraping live data from Cruise Critic...</p>
+                            <p className="text-lg font-semibold">Our AI Travel Agent is searching for you...</p>
                             <p>This may take a moment.</p>
                         </div>
                     )}
                     {error && (
                          <div className="flex flex-col items-center justify-center h-full text-destructive text-center p-4">
-                            <p className='font-semibold'>Scraping Error</p>
+                            <p className='font-semibold'>Search Error</p>
                              <p>{error}</p>
-                             <p className='mt-2 text-xs text-muted-foreground'>The website may be blocking the request. Try a different search.</p>
                          </div>
                     )}
                     {!isLoading && !results && !error && (
                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center p-4">
                             <Sailboat className="h-16 w-16 mb-4"/>
                             <p className='font-semibold text-lg'>Your cruise search results will appear here.</p>
-                            <p>Fill out the form and click "Find Cruises" to start a live search.</p>
+                            <p>Fill out the form and click "Find Cruises" to start an AI-powered search.</p>
                         </div>
                     )}
                     {results && (
@@ -391,19 +388,22 @@ export function CruiseSearch() {
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <CardTitle className="text-xl">{cruise.title}</CardTitle>
-                                                <CardDescription>{cruise.duration}</CardDescription>
+                                                <CardTitle className="text-xl">{cruise.shipName}</CardTitle>
+                                                <CardDescription>{cruise.cruiseLine} - {cruise.itinerary}</CardDescription>
                                             </div>
                                              <Badge variant="secondary">{cruise.price}</Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <p className="text-sm">{cruise.itinerary}</p>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <div className="flex items-center gap-2"><Anchor /><span>{cruise.departurePort}</span></div>
+                                            <div className="flex items-center gap-2"><CalendarIcon /><span>{cruise.date}</span></div>
+                                        </div>
                                     </CardContent>
                                     <CardFooter>
                                         <Button asChild className="w-full">
-                                            <a href={cruise.url} target="_blank" rel="noopener noreferrer">
-                                                View on Cruise Critic
+                                            <a href={cruise.bookingLink} target="_blank" rel="noopener noreferrer">
+                                                View Deal
                                             </a>
                                         </Button>
                                     </CardFooter>
@@ -422,5 +422,3 @@ export function CruiseSearch() {
     </div>
   );
 }
-
-    
