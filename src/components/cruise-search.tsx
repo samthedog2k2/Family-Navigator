@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -29,10 +30,11 @@ const cruiseSearchSchema = z.object({
   tripType: z.enum(["family", "couple"]).default("family"),
   destination: z.string().min(1, "Destination is required."),
   departurePort: z.string().optional(),
+  cruiseLine: z.string().optional(),
   dates: z.object({
-    from: z.date(),
-    to: z.date(),
-  }),
+    from: z.date().optional(),
+    to: z.date().optional(),
+  }).optional(),
   length: z.string().optional(),
   ship: z.string().optional(),
   passengers: z.object({
@@ -46,39 +48,44 @@ type CruiseSearchFormData = z.infer<typeof cruiseSearchSchema>;
 
 interface FilterData {
     ports: {id: string, name: string}[];
-    ships: {id: string, name: string}[];
     regions: {id: string, name: string}[];
+    lines: {id: string, name: string}[];
 }
+
+const cruiseLines = [...new Set(shipData.map(ship => ship.cruiseLine))];
 
 export function CruiseSearch() {
   const [results, setResults] = useState<Cruise[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
-  const [tripType, setTripType] = useState<'family' | 'couple'>('family');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-
-  const { control, handleSubmit, watch, setValue } = useForm<CruiseSearchFormData>({
+  const { control, handleSubmit, watch, setValue, resetField } = useForm<CruiseSearchFormData>({
     resolver: zodResolver(cruiseSearchSchema),
     defaultValues: {
       tripType: 'family',
-      destination: 'CARIB', // Default to Caribbean
-      dates: {
-        from: new Date(),
-        to: addDays(new Date(), 7),
-      },
+      destination: 'CARIB', 
       passengers: {
         adults: [{ age: 40 }, { age: 38 }],
         children: [{ age: 10 }, { age: 7 }],
       },
-      room: 'balcony',
-      ship: 'MSCCoast' // Default to MSC Magnifica
+      room: 'ocean-facing-balcony',
     },
   });
 
   const { fields: adultFields, append: appendAdult, remove: removeAdult } = useFieldArray({ control, name: "passengers.adults" });
   const { fields: childFields, append: appendChild, remove: removeChild } = useFieldArray({ control, name: "passengers.children" });
+  
+  const selectedCruiseLine = watch("cruiseLine");
   const passengerCounts = watch("passengers");
+  const tripType = watch("tripType");
+
+  const availableShips = useMemo(() => {
+    if (!selectedCruiseLine) return [];
+    return shipData.filter(ship => ship.cruiseLine === selectedCruiseLine);
+  }, [selectedCruiseLine]);
+
 
   useEffect(() => {
     async function fetchFilters() {
@@ -94,6 +101,11 @@ export function CruiseSearch() {
     fetchFilters();
   }, []);
 
+  // Reset ship selection when cruise line changes
+  useEffect(() => {
+    resetField("ship");
+  }, [selectedCruiseLine, resetField]);
+
   const onSubmit = async (data: CruiseSearchFormData) => {
     setIsLoading(true);
     setResults(null);
@@ -101,15 +113,17 @@ export function CruiseSearch() {
 
     const passengerSummary = `${data.passengers.adults.length} adults (ages ${data.passengers.adults.map(p => p.age).join(', ')}) and ${data.passengers.children.length} children (ages ${data.passengers.children.map(p => p.age).join(', ')})`;
     const destinationName = filters?.regions.find(r => r.id === data.destination)?.name || data.destination;
+    const selectedShip = shipData.find(s => s.id === data.ship);
 
     const query = `
       Find a cruise for a ${data.tripType} trip with ${passengerSummary}.
       Destination Region: ${destinationName}.
       ${data.departurePort ? `Departure Port: ${data.departurePort}.` : ''}
-      Travel Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.
+      ${data.dates?.from && data.dates?.to ? `Travel Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.`: ''}
       ${data.length ? `Trip Length: ${data.length}.` : ''}
-      ${data.ship ? `Preferred Ship: ${data.ship}.` : ''}
-      Room Type: ${data.room}.
+      ${selectedCruiseLine ? `Cruise Line: ${selectedCruiseLine}.` : ''}
+      ${selectedShip ? `Preferred Ship: ${selectedShip.name}.` : ''}
+      Room Type: ${data.room.replace(/-/g, ' ')}.
       Provide realistic itineraries and pricing based on this criteria, using your knowledge of real-world cruise data.
     `;
 
@@ -147,14 +161,14 @@ export function CruiseSearch() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-               {/* Trip Type */}
+              {/* Trip Type */}
               <div className="space-y-2">
                   <Label>Trip Type</Label>
                     <Controller
                       name="tripType"
                       control={control}
                       render={({ field }) => (
-                      <ToggleGroup type="single" variant="outline" onValueChange={(value) => { if(value) { field.onChange(value); setTripType(value as 'family' | 'couple')}}} defaultValue={field.value} className="w-full grid grid-cols-2">
+                      <ToggleGroup type="single" variant="outline" onValueChange={(value) => { if(value) field.onChange(value); }} defaultValue={field.value} className="w-full grid grid-cols-2">
                           <ToggleGroupItem value="family">Family</ToggleGroupItem>
                           <ToggleGroupItem value="couple">Couple</ToggleGroupItem>
                       </ToggleGroup>
@@ -181,7 +195,7 @@ export function CruiseSearch() {
                <div className="space-y-2">
                     <Label>Departure Port (Optional)</Label>
                     <Controller name="departurePort" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Any Port" />
                             </SelectTrigger>
@@ -191,68 +205,84 @@ export function CruiseSearch() {
                         </Select>
                     )} />
                 </div>
+
+                {/* Cascading Line / Ship */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Cruise Line</Label>
+                        <Controller name="cruiseLine" control={control} render={({ field }) => (
+                             <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Any Line" /></SelectTrigger>
+                                <SelectContent>
+                                    {cruiseLines.map(line => <SelectItem key={line} value={line}>{line}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Ship</Label>
+                        <Controller name="ship" control={control} render={({ field }) => (
+                             <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCruiseLine}>
+                                <SelectTrigger><SelectValue placeholder="Any Ship" /></SelectTrigger>
+                                <SelectContent>
+                                    {availableShips.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.built})</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                    </div>
+                </div>
                 
                 {/* Dates */}
                 <div className="space-y-2">
                     <Label>Dates</Label>
-                    <Controller name="dates" control={control} render={({ field }) => (
-                         <Popover>
-                            <PopoverTrigger asChild>
-                               <Button
-                                  variant={"outline"}
-                                  className="w-full justify-start text-left font-normal"
-                                >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value?.from ? (
-                                    field.value.to ? (
-                                    <>
-                                        {format(field.value.from, "LLL dd, y")} -{" "}
-                                        {format(field.value.to, "LLL dd, y")}
-                                    </>
-                                    ) : (
-                                    format(field.value.from, "LLL dd, y")
-                                    )
-                                ) : (
-                                    <span>Pick a date range</span>
-                                )}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="range"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    numberOfMonths={2}
-                                />
-                            </PopoverContent>
-                        </Popover>
-                    )} />
+                     <Controller
+                        name="dates"
+                        control={control}
+                        render={({ field }) => (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {dateRange?.from ? (
+                                            dateRange.to ? (
+                                                <>
+                                                    {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                                                </>
+                                            ) : (
+                                                format(dateRange.from, "LLL dd, y")
+                                            )
+                                        ) : (
+                                            <span>Pick a date range</span>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="range"
+                                        selected={dateRange}
+                                        onSelect={(range) => {
+                                            setDateRange(range);
+                                            field.onChange(range);
+                                        }}
+                                        numberOfMonths={2}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        )}
+                    />
                 </div>
 
                 {/* Length */}
                 <div className="space-y-2">
                     <Label>Length of Cruise</Label>
                     <Controller name="length" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger><SelectValue placeholder="Any length" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="3-5 nights">3-5 Nights</SelectItem>
                                 <SelectItem value="6-9 nights">6-9 Nights</SelectItem>
                                 <SelectItem value="10-14 nights">10-14 Nights</SelectItem>
                                 <SelectItem value="15+ nights">15+ Nights</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )} />
-                </div>
-
-                {/* Ship */}
-                <div className="space-y-2">
-                    <Label>Ship (Optional)</Label>
-                    <Controller name="ship" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue placeholder="Any ship" /></SelectTrigger>
-                            <SelectContent>
-                                {shipData.map(s => <SelectItem key={s.id} value={s.name}>{s.name} ({s.cruiseLine})</SelectItem>)}
                             </SelectContent>
                         </Select>
                     )} />
@@ -306,8 +336,8 @@ export function CruiseSearch() {
                         render={({ field }) => (
                         <ToggleGroup type="single" variant="outline" onValueChange={field.onChange} defaultValue={field.value} className="w-full grid grid-cols-2">
                             <ToggleGroupItem value="interior">Interior</ToggleGroupItem>
-                            <ToggleGroupItem value="oceanview">Oceanview</ToggleGroupItem>
-                            <ToggleGroupItem value="balcony">Balcony</ToggleGroupItem>
+                            <ToggleGroupItem value="ocean-view">Ocean View</ToggleGroupItem>
+                            <ToggleGroupItem value="ocean-facing-balcony">Balcony</ToggleGroupItem>
                             <ToggleGroupItem value="suite">Suite</ToggleGroupItem>
                         </ToggleGroup>
                         )}
