@@ -1,25 +1,33 @@
-import "./globals.css";
-import { cookies } from "next/headers";
+
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { Header } from "@/components/header";
+import { Toaster } from "@/components/ui/toaster";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Family Navigator",
-  description: "Simplify your family’s life",
+  description: "A smart dashboard for modern families",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  const cookieStore = await cookies();
-  const layoutCookie = cookieStore.get("react-resizable-panels:layout");
-  const defaultLayout = layoutCookie ? JSON.parse(layoutCookie.value) : undefined;
-
+}>) {
   return (
     <html lang="en">
-      <body>
-        {children}
+      <body className={inter.className}>
+        <AuthProvider>
+          <div className="flex min-h-screen w-full flex-col bg-muted/40">
+            <Header />
+            {children}
+          </div>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

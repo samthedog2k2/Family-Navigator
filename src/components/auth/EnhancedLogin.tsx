@@ -1,14 +1,7 @@
-
-/**
- * Enhanced Login Component for Family Navigator
- * Replaces basic Google OAuth with full authentication system
- */
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useFamilyAuth } from '@/lib/firebase-auth';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -17,8 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default function EnhancedLogin() {
-  const { user, loading, signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
-  const router = useRouter();
+  const { signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,26 +18,15 @@ export default function EnhancedLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!loading && user) {
-        router.push('/');
-    }
-  }, [user, loading, router]);
-
-
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     setError('');
-    
     const result = await signInWithGoogle();
-    
-    if (!result.success) {
+    if (!result.success && !result.redirect) {
       setError(result.error || 'Google sign-in failed');
-    } else {
-      router.push('/');
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
+    // On success or redirect, the parent component will handle the state change.
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -62,24 +43,13 @@ export default function EnhancedLogin() {
 
     if (!result.success) {
       setError(result.error || 'Authentication failed');
-    } else {
-         router.push('/');
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
+    // On success, the parent component will handle the state change.
   };
 
-  if (loading || user) {
-    return (
-      <div className="flex min-h-screen w-full flex-col bg-background items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="mt-4 text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
   return (
-    <main className="flex-1 flex items-center justify-center p-6">
+    <main className="flex-1 flex items-center justify-center p-6 bg-background">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -97,6 +67,7 @@ export default function EnhancedLogin() {
             onClick={handleGoogleSignIn}
             disabled={isSubmitting}
             variant="outline"
+            className="w-full"
           >
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -157,9 +128,9 @@ export default function EnhancedLogin() {
               />
             </div>
             
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive px-1">{error}</p>}
             
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === 'signin' ? 'Sign In' : 'Create Account'}
             </Button>

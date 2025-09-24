@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { Droplet, Loader2, Wind, Sun, Thermometer, Sunrise, Sunset, Gauge, Waves, Umbrella } from "lucide-react";
@@ -122,21 +121,21 @@ export default function WeatherPage() {
   
   if (loading) {
     return (
-      <LayoutWrapper>
-        <PageHeader title="Weather" description="Loading weather data..." />
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </LayoutWrapper>
+        <main className="flex-1 p-4 sm:p-6">
+            <PageHeader title="Weather" description="Loading weather data..." />
+            <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        </main>
     );
   }
 
   if (!weather) {
     return (
-      <LayoutWrapper>
-        <PageHeader title="Weather" description={locationName} />
-        <p>Could not fetch weather data. Please try again later.</p>
-      </LayoutWrapper>
+        <main className="flex-1 p-4 sm:p-6">
+            <PageHeader title="Weather" description={locationName} />
+            <p>Could not fetch weather data. Please try again later.</p>
+        </main>
     );
   }
   
@@ -165,7 +164,7 @@ export default function WeatherPage() {
   );
 
   return (
-    <LayoutWrapper>
+    <main className="flex-1 p-4 sm:p-6">
         <div className="flex justify-between items-start mb-6">
             <div>
                  <PageHeader
@@ -268,6 +267,6 @@ export default function WeatherPage() {
             </CardContent>
         </Card>
       </div>
-    </LayoutWrapper>
+    </main>
   );
 }

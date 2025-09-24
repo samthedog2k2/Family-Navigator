@@ -1,5 +1,4 @@
 
-import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Clapperboard } from "lucide-react";
@@ -15,7 +14,7 @@ const subscriptionLinks = [
 
 export default function EntertainmentPage() {
   return (
-    <LayoutWrapper>
+    <main className="flex-1 p-4 sm:p-6">
       <PageHeader
         title="Entertainment"
         description="Manage your subscriptions and watchlists."
@@ -35,6 +34,6 @@ export default function EntertainmentPage() {
             </Card>
         ))}
       </div>
-    </LayoutWrapper>
+    </main>
   );
 }

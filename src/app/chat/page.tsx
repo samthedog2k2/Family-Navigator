@@ -1,6 +1,5 @@
 
 import { ChatInterface } from "@/components/chat";
-import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import {
   Sidebar,
@@ -16,13 +15,11 @@ export default function ChatPage() {
         <ChatHistory />
       </Sidebar>
       <SidebarInset>
-        <LayoutWrapper>
-          <PageHeader
-            title="Chat Agent"
-            description="Chat with an AI to improve the app."
-          />
-          <ChatInterface />
-        </LayoutWrapper>
+        <PageHeader
+          title="Chat Agent"
+          description="Chat with an AI to improve the app."
+        />
+        <ChatInterface />
       </SidebarInset>
     </SidebarProvider>
   );

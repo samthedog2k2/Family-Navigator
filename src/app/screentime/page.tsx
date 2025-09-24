@@ -1,5 +1,4 @@
 
-import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -7,7 +6,7 @@ import { Clock } from "lucide-react";
 
 export default function ScreenTimePage() {
   return (
-    <LayoutWrapper>
+    <main className="flex-1 p-4 sm:p-6">
       <PageHeader
         title="Screen Time"
         description="Monitor and manage your family's device usage."
@@ -36,7 +35,7 @@ export default function ScreenTimePage() {
           </Link>
         </Card>
       </div>
-    </LayoutWrapper>
+    </main>
   );
 }
 

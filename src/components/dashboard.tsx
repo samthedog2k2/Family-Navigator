@@ -2,7 +2,6 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { TravelPlanner } from "@/components/travel-planner";
 import { FinanceTools } from "@/components/finance-tools";
 import { HealthTracker } from "@/components/health-tracker";
 import { WebAgentForm } from "@/components/web-agent-form";
@@ -14,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { cn } from "@/lib/utils";
 
 const featureMap: { [key: string]: React.ComponentType } = {
-  travel: TravelPlanner,
   finance: FinanceTools,
   health: HealthTracker,
   agents: WebAgentForm,
@@ -24,7 +22,6 @@ const featureMap: { [key: string]: React.ComponentType } = {
 };
 
 const featureTitles: { [key: string]: string } = {
-    travel: "Travel Planner",
     finance: "Financial Tools",
     health: "Health Tracker",
     agents: "Webpages Agent",
