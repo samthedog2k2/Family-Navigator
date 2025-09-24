@@ -30,7 +30,7 @@ export default function Home() {
   }
 
   return (
-    <LayoutWrapper>
+    <LayoutWrapper hideHeader={true}>
        <Suspense fallback={<div>Loading dashboard...</div>}>
         <Dashboard />
       </Suspense>
