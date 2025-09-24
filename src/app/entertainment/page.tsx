@@ -3,19 +3,32 @@
 
 import { useState } from 'react';
 import { PageHeader } from "@/components/page-header";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Clapperboard, Tv, Dribbble, ThumbsUp, Star } from 'lucide-react';
+import { Loader2, Clapperboard, Tv, Dribbble, ThumbsUp, Star, Video } from 'lucide-react';
 import { getEntertainmentRecommendations, EntertainmentRecommendationsInput, EntertainmentRecommendation } from '@/ai/flows/entertainment-recommendations';
 import { LayoutWrapper } from '@/components/layout-wrapper';
 import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 type Category = 'movies' | 'tv-shows' | 'sports';
 
+interface StreamingService {
+    name: string;
+    type: string;
+    quality: string;
+    link: string;
+}
+
+interface EnrichedRecommendation extends EntertainmentRecommendation {
+    streamingServices?: StreamingService[];
+    isFetchingServices?: boolean;
+}
+
 export default function EntertainmentPage() {
   const [category, setCategory] = useState<Category>('movies');
-  const [recommendations, setRecommendations] = useState<EntertainmentRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<EnrichedRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGetRecommendations = async () => {
@@ -43,13 +56,45 @@ export default function EntertainmentPage() {
       case 'tv-shows': return <Tv className="h-5 w-5 mr-2" />;
       case 'sports': return <Dribbble className="h-5 w-5 mr-2" />;
     }
-  }
+  };
+
+  const fetchStreamingServices = async (recIndex: number) => {
+    const recommendation = recommendations[recIndex];
+    if (!recommendation) return;
+
+    // Set loading state for this specific card
+    setRecommendations(prev => prev.map((rec, index) => 
+        index === recIndex ? { ...rec, isFetchingServices: true } : rec
+    ));
+
+    try {
+        const response = await fetch(`/api/streaming-availability?title=${encodeURIComponent(recommendation.title)}`);
+        if (!response.ok) throw new Error('Failed to fetch streaming info');
+        
+        const data = await response.json();
+
+        setRecommendations(prev => prev.map((rec, index) => 
+            index === recIndex ? { ...rec, streamingServices: data.services, isFetchingServices: false } : rec
+        ));
+
+    } catch (error) {
+        console.error("Failed to get streaming services:", error);
+        toast({
+            title: 'API Error',
+            description: 'Could not fetch streaming services. Make sure your API key is set in .env.',
+            variant: 'destructive',
+        });
+        setRecommendations(prev => prev.map((rec, index) => 
+            index === recIndex ? { ...rec, isFetchingServices: false } : rec
+        ));
+    }
+  };
 
   return (
     <LayoutWrapper>
       <PageHeader
         title="Entertainment Hub"
-        description="Discover AI-powered recommendations for movies, TV shows, and sports."
+        description="Discover AI-powered recommendations and find where to watch them."
       />
       <Card>
         <CardHeader>
@@ -103,7 +148,33 @@ export default function EntertainmentPage() {
                                         <span>{item.audienceScore}%</span>
                                     </div>
                                 </div>
+                                {item.streamingServices && (
+                                    <div className='pt-2'>
+                                        <h4 className="text-xs font-semibold mb-2">Available on:</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {item.streamingServices.length > 0 ? item.streamingServices.map(service => (
+                                                <a key={service.name} href={service.link} target="_blank" rel="noopener noreferrer">
+                                                    <Badge variant="outline">{service.name}</Badge>
+                                                </a>
+                                            )) : <p className="text-xs text-muted-foreground">Not currently available for streaming.</p>}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
+                             <CardFooter>
+                                <Button 
+                                    className="w-full" 
+                                    onClick={() => fetchStreamingServices(index)} 
+                                    disabled={item.isFetchingServices || category === 'sports'}
+                                >
+                                    {item.isFetchingServices ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Video className="mr-2 h-4 w-4" />
+                                    )}
+                                    {item.isFetchingServices ? 'Checking...' : 'Find where to watch'}
+                                </Button>
+                            </CardFooter>
                         </Card>
                     ))}
                 </div>
