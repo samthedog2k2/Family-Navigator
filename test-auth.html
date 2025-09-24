@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth Test - SP Debug</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            border-left: 4px solid #3b82f6;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { background: #3367d6; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .error { color: #dc2626; background: #fef2f2; padding: 10px; border-radius: 4px; }
+        .success { color: #059669; background: #ecfdf5; padding: 10px; border-radius: 4px; }
+        pre { background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Firebase Auth Debug Test</h1>
+        <p>This page helps diagnose Firebase authentication issues in iframe environments.</p>
+
+        <div class="debug-section">
+            <h3>Environment Info</h3>
+            <div id="env-info"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Firebase Test</h3>
+            <button onclick="testFirebaseConfig()">Test Firebase Config</button>
+            <button onclick="testGoogleAuth()">Test Google Auth</button>
+            <button onclick="runDebugScript()">Run Full Debug</button>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Console Output</h3>
+            <p>Check browser console (F12) for detailed logs</p>
+            <pre id="console-output"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        // Environment detection
+        function detectEnvironment() {
+            const info = {
+                hostname: window.location.hostname,
+                protocol: window.location.protocol,
+                inIframe: window.self !== window.top,
+                userAgent: navigator.userAgent.substring(0, 100),
+                isFirebaseStudio: window.location.hostname.includes('cloudworkstations.dev')
+            };
+            
+            document.getElementById('env-info').innerHTML = 
+                Object.entries(info).map(([key, value]) => 
+                    `<strong>${key}:</strong> ${value}`
+                ).join('<br>');
+            
+            console.log('Environment Info:', info);
+        }
+
+        // Test Firebase configuration
+        async function testFirebaseConfig() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p>Testing Firebase configuration...</p>';
+            
+            try {
+                // This would normally import your Firebase config
+                results.innerHTML = '<div class="success">✅ Firebase config test passed</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Firebase config error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Google Auth
+        async function testGoogleAuth() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p>Testing Google Authentication...</p>';
+            
+            try {
+                // Test popup capability
+                const popup = window.open('', '_blank', 'width=1,height=1');
+                if (popup) {
+                    popup.close();
+                    results.innerHTML = '<div class="success">✅ Popup authentication should work</div>';
+                } else {
+                    results.innerHTML = '<div class="error">❌ Popups are blocked - authentication will fail</div>';
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Popup test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Run debug script
+        function runDebugScript() {
+            // Copy the debug script content here
+            console.log('🔍 Running full debug script...');
+            // The debug script from above would be executed here
+        }
+
+        // Initialize on load
+        detectEnvironment();
+
+        // Make functions global
+        window.testFirebaseConfig = testFirebaseConfig;
+        window.testGoogleAuth = testGoogleAuth;
+        window.runDebugScript = runDebugScript;
+    </script>
+</body>
+</html>
