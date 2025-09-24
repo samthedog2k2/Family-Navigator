@@ -1,7 +1,8 @@
+
 'use server';
 
 import puppeteer from 'puppeteer';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 export interface ScrapedCruiseData {
   title: string;
