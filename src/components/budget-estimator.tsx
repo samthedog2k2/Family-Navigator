@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +28,7 @@ export function BudgetEstimator({ mode }: BudgetEstimatorProps) {
   };
 
   return (
-    <Card className={mode === 'family' ? 'bg-family-green/10' : 'bg-couple-purple/10'}>
+    <Card>
       <CardHeader>
         <CardTitle>Budget Estimator: {mode === 'family' ? 'Family of 4' : 'Adult Couple'}</CardTitle>
       </CardHeader>

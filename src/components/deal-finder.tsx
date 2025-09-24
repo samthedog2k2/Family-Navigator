@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -5,10 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 // This is a placeholder for the actual API call. 
-// We will replace this with a secure Cloud Function proxy later.
 const fetchDeals = async (query: string) => {
   console.log(`Searching for deals with query: ${query}`);
   // Simulate an API call with a delay
@@ -46,6 +46,7 @@ export function DealFinder() {
             onChange={(e) => setQuery(e.target.value)}
           />
           <Button onClick={() => refetch()} disabled={isFetching}>
+            {isFetching ? <Loader2 className="animate-spin mr-2" /> : null}
             {isFetching ? 'Searching...' : 'Find Deals'}
           </Button>
         </div>

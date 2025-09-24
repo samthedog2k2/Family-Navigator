@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,7 @@ export function InsiderTips({ mode }: InsiderTipsProps) {
   const tips = mode === 'family' ? familyTips : coupleTips;
 
   return (
-    <Card className="bg-yellow-100/50">
+    <Card>
       <CardHeader>
         <CardTitle>Insider Tips</CardTitle>
       </CardHeader>
