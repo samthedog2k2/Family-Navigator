@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, Controller, useFormState, Resolver } from "react-hook-form";
+import { useForm, Controller, useFormState, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,8 @@ const healthSchema = z.object({
   notes: z.string().max(140, "Notes must be 140 characters or less").optional(),
 });
 
+type HealthFormData = z.infer<typeof healthSchema>;
+
 function HealthForm({
   member,
   data,
@@ -58,8 +60,8 @@ function HealthForm({
     handleSubmit,
     control,
     reset,
-  } = useForm<HealthData>({
-    resolver: zodResolver(healthSchema) as Resolver<HealthData>,
+  } = useForm<HealthFormData>({
+    resolver: zodResolver(healthSchema),
     defaultValues: data,
   });
   
@@ -70,7 +72,7 @@ function HealthForm({
   }, [data, reset]);
 
 
-  const onSubmit = (formData: HealthData) => {
+  const onSubmit: SubmitHandler<HealthFormData> = (formData) => {
     onSave(member, formData);
   };
 
@@ -197,7 +199,8 @@ export function HealthTracker() {
     setIsSaving(true);
     try {
       const updatedData = await updateHealthData(member, data);
-      setAppState(updatedData);
+      const { source, ...healthData } = updatedData;
+      setAppState(healthData);
       toast({
         title: "Data Saved",
         description: `Health data for ${member} has been updated.`,
