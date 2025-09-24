@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -10,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, Trash2, PlusCircle } from "lucide-react";
+import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, Trash2, PlusCircle, Wand2 } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -21,9 +20,15 @@ import type { DateRange } from "react-day-picker";
 import { searchCruises, CruiseSearchInput } from "@/ai/flows/cruise-search";
 import type { Cruise } from "@/ai/flows/cruise-search-types";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { shipData } from "@/data/cruise-ship-data";
+import { InsiderTips } from "./insider-tips";
+import { PackingGuide } from "./packing-guide";
+import { BudgetEstimator } from "./budget-estimator";
 
 const cruiseSearchSchema = z.object({
+  tripType: z.enum(["family", "couple"]).default("family"),
   destination: z.string().min(1, "Destination is required."),
+  departurePort: z.string().optional(),
   dates: z.object({
     from: z.date(),
     to: z.date(),
@@ -34,7 +39,7 @@ const cruiseSearchSchema = z.object({
     adults: z.array(z.object({ age: z.coerce.number().min(18) })).min(1),
     children: z.array(z.object({ age: z.coerce.number().min(0).max(17) })),
   }),
-  room: z.string().default("interior"),
+  room: z.string().default("balcony"),
 });
 
 type CruiseSearchFormData = z.infer<typeof cruiseSearchSchema>;
@@ -42,6 +47,7 @@ type CruiseSearchFormData = z.infer<typeof cruiseSearchSchema>;
 interface FilterData {
     ports: {id: string, name: string}[];
     ships: {id: string, name: string}[];
+    regions: {id: string, name: string}[];
 }
 
 export function CruiseSearch() {
@@ -49,10 +55,14 @@ export function CruiseSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
+  const [tripType, setTripType] = useState<'family' | 'couple'>('family');
+
 
   const { control, handleSubmit, watch, setValue } = useForm<CruiseSearchFormData>({
     resolver: zodResolver(cruiseSearchSchema),
     defaultValues: {
+      tripType: 'family',
+      destination: 'CARIB', // Default to Caribbean
       dates: {
         from: new Date(),
         to: addDays(new Date(), 7),
@@ -62,6 +72,7 @@ export function CruiseSearch() {
         children: [{ age: 10 }, { age: 7 }],
       },
       room: 'balcony',
+      ship: 'MSCCoast' // Default to MSC Magnifica
     },
   });
 
@@ -89,14 +100,17 @@ export function CruiseSearch() {
     setError(null);
 
     const passengerSummary = `${data.passengers.adults.length} adults (ages ${data.passengers.adults.map(p => p.age).join(', ')}) and ${data.passengers.children.length} children (ages ${data.passengers.children.map(p => p.age).join(', ')})`;
+    const destinationName = filters?.regions.find(r => r.id === data.destination)?.name || data.destination;
 
     const query = `
-      Find a cruise for ${passengerSummary}.
-      Destination: ${data.destination}.
-      Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.
+      Find a cruise for a ${data.tripType} trip with ${passengerSummary}.
+      Destination Region: ${destinationName}.
+      ${data.departurePort ? `Departure Port: ${data.departurePort}.` : ''}
+      Travel Dates: Between ${format(data.dates.from, 'LLLL d, yyyy')} and ${format(data.dates.to, 'LLLL d, yyyy')}.
       ${data.length ? `Trip Length: ${data.length}.` : ''}
       ${data.ship ? `Preferred Ship: ${data.ship}.` : ''}
       Room Type: ${data.room}.
+      Provide realistic itineraries and pricing based on this criteria, using your knowledge of real-world cruise data.
     `;
 
     try {
@@ -123,7 +137,7 @@ export function CruiseSearch() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1">
+      <div className="lg:col-span-1 space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Cruise Finder</CardTitle>
@@ -133,13 +147,43 @@ export function CruiseSearch() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-               {/* Destination */}
+               {/* Trip Type */}
+              <div className="space-y-2">
+                  <Label>Trip Type</Label>
+                    <Controller
+                      name="tripType"
+                      control={control}
+                      render={({ field }) => (
+                      <ToggleGroup type="single" variant="outline" onValueChange={(value) => { if(value) { field.onChange(value); setTripType(value as 'family' | 'couple')}}} defaultValue={field.value} className="w-full grid grid-cols-2">
+                          <ToggleGroupItem value="family">Family</ToggleGroupItem>
+                          <ToggleGroupItem value="couple">Couple</ToggleGroupItem>
+                      </ToggleGroup>
+                      )}
+                  />
+              </div>
+              
+              {/* Destination */}
                <div className="space-y-2">
                     <Label>Destination</Label>
                     <Controller name="destination" control={control} render={({ field }) => (
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a destination" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {filters?.regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    )} />
+                </div>
+
+                 {/* Departure Port */}
+               <div className="space-y-2">
+                    <Label>Departure Port (Optional)</Label>
+                    <Controller name="departurePort" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Any Port" />
                             </SelectTrigger>
                             <SelectContent>
                                 {filters?.ports.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
@@ -203,12 +247,12 @@ export function CruiseSearch() {
 
                 {/* Ship */}
                 <div className="space-y-2">
-                    <Label>Ship</Label>
+                    <Label>Ship (Optional)</Label>
                     <Controller name="ship" control={control} render={({ field }) => (
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <SelectTrigger><SelectValue placeholder="Any ship" /></SelectTrigger>
                             <SelectContent>
-                                {filters?.ships.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
+                                {shipData.map(s => <SelectItem key={s.id} value={s.name}>{s.name} ({s.cruiseLine})</SelectItem>)}
                             </SelectContent>
                         </Select>
                     )} />
@@ -230,23 +274,23 @@ export function CruiseSearch() {
                                     <h4 className="font-medium">Adults</h4>
                                     {adultFields.map((field, index) => (
                                         <div key={field.id} className="flex items-center gap-2 mt-2">
-                                            <Label>Adam</Label>
-                                            <Controller name={`passengers.adults.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20" />} />
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeAdult(index)} disabled={adultFields.length <= 1}><Trash2 className="h-4 w-4"/></Button>
+                                            <Label className="w-20">{index === 0 ? 'Adam' : `Holly`}</Label>
+                                            <Controller name={`passengers.adults.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-24" />} />
+                                            {adultFields.length > 1 && <Button type="button" variant="ghost" size="icon" onClick={() => removeAdult(index)}><Trash2 className="h-4 w-4"/></Button>}
                                         </div>
                                     ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={() => appendAdult({age: 30})} className="mt-2">Add Adult</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendAdult({age: 30})} className="mt-2 text-xs h-7"><PlusCircle className="mr-2 h-3 w-3"/>Add Adult</Button>
                                 </div>
                                 <div>
                                     <h4 className="font-medium">Children</h4>
                                     {childFields.map((field, index) => (
                                         <div key={field.id} className="flex items-center gap-2 mt-2">
-                                            <Label>Ethan</Label>
-                                            <Controller name={`passengers.children.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-20" />} />
+                                            <Label className="w-20">{index === 0 ? 'Ethan' : `Elle`}</Label>
+                                            <Controller name={`passengers.children.${index}.age`} control={control} render={({ field }) => <Input type="number" {...field} className="w-24" />} />
                                             <Button type="button" variant="ghost" size="icon" onClick={() => removeChild(index)}><Trash2 className="h-4 w-4"/></Button>
                                         </div>
                                     ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={() => appendChild({age: 10})} className="mt-2">Add Child</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendChild({age: 10})} className="mt-2 text-xs h-7"><PlusCircle className="mr-2 h-3 w-3"/>Add Child</Button>
                                 </div>
                             </div>
                         </PopoverContent>
@@ -271,15 +315,17 @@ export function CruiseSearch() {
                 </div>
               
               <Button type="submit" className="w-full" disabled={isLoading || !filters}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-                Find Cruises
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                Find Cruises with AI
               </Button>
             </form>
           </CardContent>
         </Card>
+
+        <BudgetEstimator mode={tripType} />
       </div>
 
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 space-y-6">
         <Card className="h-full">
             <CardHeader>
                 <CardTitle>AI-Powered Results</CardTitle>
@@ -344,6 +390,10 @@ export function CruiseSearch() {
                 </ScrollArea>
             </CardContent>
         </Card>
+        <div className="grid md:grid-cols-2 gap-6">
+            <InsiderTips mode={tripType} />
+            <PackingGuide mode={tripType} />
+        </div>
       </div>
     </div>
   );
