@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFamilyAuth } from '@/lib/firebase-auth';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default function EnhancedLogin() {
-  const { user, loading, signInWithGoogle, signInWithEmail, createAccount } = useFamilyAuth();
+  const { user, loading, signInWithGoogle, signInWithEmail, createAccount } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -34,12 +34,12 @@ export default function EnhancedLogin() {
     
     const result = await signInWithGoogle();
     
+    // If sign-in is successful and it's not a redirect flow, router.push will be handled by the useEffect.
+    // If it's a redirect, the page will navigate away, so we don't need to do anything.
     if (!result.success && !result.redirect) {
       setError(result.error || 'Google sign-in failed');
       setIsSubmitting(false);
     }
-    // If redirect is happening, we don't set submitting to false,
-    // as the page will navigate away.
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -54,12 +54,11 @@ export default function EnhancedLogin() {
       result = await signInWithEmail(email, password);
     }
 
-    if (result.success) {
-         router.push('/');
-    } else {
+    if (!result.success) {
       setError(result.error || 'Authentication failed');
       setIsSubmitting(false);
     }
+    // On success, the useEffect will handle the redirect to '/'
   };
 
   if (loading || user) {

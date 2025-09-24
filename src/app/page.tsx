@@ -5,7 +5,6 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { Dashboard } from "@/components/dashboard";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { Loader2 } from "lucide-react";
-import EnhancedLogin from "@/components/auth/EnhancedLogin";
 import { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

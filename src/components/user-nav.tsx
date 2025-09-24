@@ -13,13 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useFamilyAuth } from "@/lib/firebase-auth";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
-import { Badge } from "./ui/badge";
 
 export function UserNav() {
-  const { user, loading, signOut } = useFamilyAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -71,7 +70,7 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/profile">Profile</Link>
           </DropdownMenuItem>
-          {user.role === "admin" && (
+          {(user as any).role === "admin" && (
             <DropdownMenuItem asChild>
                  <Link href="/admin">Admin</Link>
             </DropdownMenuItem>

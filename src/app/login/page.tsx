@@ -3,14 +3,13 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFamilyAuth } from '@/lib/firebase-auth';
-import { Header } from "@/components/header";
+import { useAuth } from '@/components/auth/AuthProvider';
 import EnhancedLogin from "@/components/auth/EnhancedLogin";
 import { Loader2 } from 'lucide-react';
 import { LayoutWrapper } from '@/components/layout-wrapper';
 
 export default function LoginPage() {
-  const { user, loading } = useFamilyAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
