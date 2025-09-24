@@ -5,8 +5,6 @@ import { useState, useEffect } from 'react';
 import { 
   User,
   signInWithPopup, 
-  signInWithRedirect,
-  getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
@@ -18,9 +16,7 @@ import {
   getDoc, 
   setDoc, 
   updateDoc,
-  serverTimestamp,
-  collection,
-  addDoc
+  serverTimestamp
 } from 'firebase/firestore';
 
 // Import the unified Firebase configuration
@@ -50,25 +46,6 @@ export class FamilyNavigatorAuth {
     return FamilyNavigatorAuth.instance;
   }
 
-  constructor() {
-    this.processRedirectResult();
-  }
-
-  private async processRedirectResult() {
-    try {
-      const result = await getRedirectResult(auth);
-      if (result && result.user) {
-        const user = result.user;
-        const userProfile = await this.getUserProfile(user.uid);
-        if (!userProfile) {
-          await this.createUserProfile(user, 'readonly');
-        }
-      }
-    } catch (error: any) {
-      console.error('Error handling redirect result:', error);
-    }
-  }
-
   async signInWithGoogle(): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string, redirect?: boolean}> {
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -87,15 +64,9 @@ export class FamilyNavigatorAuth {
       return { success: true, user: enhancedUser };
 
     } catch (error: any) {
-      const popupErrors = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/popup-blocked'];
-      if (popupErrors.includes(error.code)) {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return { success: true, redirect: true };
-        } catch (redirectError: any) {
-           return { success: false, error: this.getReadableError(redirectError.code) };
-        }
-      }
+      // We will no longer use signInWithRedirect as it's unsupported in this environment.
+      // We will simply report the popup error.
+      console.error("Google Sign-In Error:", error);
       return { success: false, error: this.getReadableError(error.code) };
     }
   }
@@ -120,6 +91,7 @@ export class FamilyNavigatorAuth {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
+      await this.updateUserProfile(user.uid, { lastSignIn: serverTimestamp() });
       const enhancedUser = await this.getEnhancedUser(user);
       return { success: true, user: enhancedUser };
     } catch (error: any) {
@@ -178,7 +150,10 @@ export class FamilyNavigatorAuth {
   private getReadableError(errorCode: string): string {
     const defaultError = 'An unexpected error occurred. Please try again.';
     const errorMessages: Record<string, string> = {
-      'auth/unauthorized-domain': 'This website is not authorized to use Firebase Authentication. Please contact support.',
+      'auth/popup-closed-by-user': 'The sign-in window was closed before completion.',
+      'auth/popup-blocked': 'The sign-in window was blocked by your browser. Please allow popups for this site.',
+      'auth/unauthorized-domain': 'This website is not authorized for authentication. Please contact support.',
+      'auth/operation-not-supported-in-this-environment': 'Sign-in is not supported in this environment. Try opening the app in a new browser tab.',
       'auth/email-already-in-use': 'This email address is already registered.',
       'auth/invalid-email': 'Please enter a valid email address.',
       'auth/weak-password': 'Password should be at least 6 characters.',

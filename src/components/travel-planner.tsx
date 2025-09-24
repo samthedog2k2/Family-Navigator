@@ -66,7 +66,7 @@ export function TravelPlanner() {
     try {
       // The AI flow for travel recommendations needs 'cruise' as a valid type
       // but we filter it out on the frontend for this component.
-      const result = await getTravelRecommendations({ preferences: {...data, destinationType: data.destinationType as "road trip" | "lodging" | "cruise" } });
+      const result = await getTravelRecommendations({ preferences: {...data, destinationType: data.destinationType } });
       setRecommendations(result.recommendations);
     } catch (error) {
       console.error("Error getting travel recommendations:", error);

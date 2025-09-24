@@ -34,12 +34,12 @@ export default function EnhancedLogin() {
     
     const result = await signInWithGoogle();
     
-    // If sign-in is successful and it's not a redirect flow, router.push will be handled by the useEffect.
-    // If it's a redirect, the page will navigate away, so we don't need to do anything.
-    if (!result.success && !result.redirect) {
+    if (!result.success) {
       setError(result.error || 'Google sign-in failed');
-      setIsSubmitting(false);
     }
+    
+    // On success, the useEffect will handle the redirect.
+    setIsSubmitting(false);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
