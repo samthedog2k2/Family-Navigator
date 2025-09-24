@@ -1,26 +1,15 @@
 import { NextResponse } from 'next/server';
+import { searchCruises, CruiseSearchInput } from '@/ai/flows/cruise-search';
 
 export async function POST(request: Request) {
-    const apiKey = process.env.RAPIDAPI_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "API key not configured" }, { status: 500 });
-    }
-
     try {
-        const searchCriteria = await request.json();
+        const body: { query: string } = await request.json();
 
-        // This uses an AI flow as the actual API does not support complex search.
-        // We will replace this with a direct API call if a suitable endpoint is found.
-        const { searchCruises } = await import('@/ai/flows/cruise-search');
+        if (!body.query) {
+            return NextResponse.json({ error: "A query is required to search for cruises." }, { status: 400 });
+        }
         
-        // Convert structured criteria to a natural language query for the AI.
-        const query = `
-            Find cruises with the following criteria:
-            - Query: ${searchCriteria.query || 'any cruise'}
-            - For a realistic response, please generate valid latitude and longitude coordinates.
-        `;
-
-        const results = await searchCruises({ query });
+        const results = await searchCruises({ query: body.query });
         return NextResponse.json(results);
 
     } catch (error: any) {
