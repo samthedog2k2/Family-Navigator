@@ -9,7 +9,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
-import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, BedDouble, Wifi, Wine, User, Baby, Trash2 } from "lucide-react";
+import { Loader2, Ship, Anchor, Calendar, Users, DollarSign, Search, MapPin, BedDouble, Wifi, Wine, User, Baby, Trash2, Sailboat } from "lucide-react";
 import { searchCruises } from "@/ai/flows/cruise-search";
 import type { CruiseSearchResult, Cruise } from "@/ai/flows/cruise-search-types";
 import { ScrollArea } from "./ui/scroll-area";
@@ -29,6 +29,8 @@ const searchSchema = z.object({
   region: z.string().optional(),
   port: z.string().optional(),
   line: z.string().optional(),
+  ship: z.string().optional(),
+  length: z.string().optional(),
   dateRange: z.object({
     from: z.date(),
     to: z.date(),
@@ -57,7 +59,9 @@ const durationFilters = [
     { label: "3-4 Days", days: 4 },
     { label: "5-7 Days", days: 7 },
     { label: "7+ Days", days: 10 },
-]
+];
+
+const lengthFilters = ["3-5 nights", "6-9 nights", "10-14 nights", "15+ nights"];
 
 export function CruiseSearch() {
   const [results, setResults] = useState<CruiseSearchResult | null>(null);
@@ -65,7 +69,7 @@ export function CruiseSearch() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterData | null>(null);
 
-  const { control, handleSubmit, watch, setValue } = useForm<SearchFormData>({
+  const { control, handleSubmit, watch, setValue, register } = useForm<SearchFormData>({
     resolver: zodResolver(searchSchema),
     defaultValues: {
         dateRange: {
@@ -124,12 +128,11 @@ export function CruiseSearch() {
     if(data.region) queryParts.push(`to the ${data.region}`);
     if(data.port) queryParts.push(`departing from ${data.port}`);
     if(data.line) queryParts.push(`on the ${data.line} cruise line`);
+    if(data.ship) queryParts.push(`on the ship ${data.ship}`);
+    if(data.length) queryParts.push(`for ${data.length}`);
     
     queryParts.push(`between ${format(data.dateRange.from, 'PPP')} and ${format(data.dateRange.to, 'PPP')}`);
     
-    const duration = differenceInDays(data.dateRange.to, data.dateRange.from);
-    queryParts.push(`for about ${duration} days`);
-
     const adultAges = data.passengers.adults.map(a => a.age).join(', ');
     const childAges = data.passengers.children.map(c => c.age).join(', ');
     queryParts.push(`for ${data.passengers.adults.length} adults (ages ${adultAges}) and ${data.passengers.children.length} children (ages ${childAges})`);
@@ -166,7 +169,7 @@ export function CruiseSearch() {
             </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center gap-2"><Ship size={16} className="text-muted-foreground"/> <span>Tonnage: {cruise.tonnage || 'N/A'}</span></div>
+            <div className="flex items-center gap-2"><Sailboat size={16} className="text-muted-foreground"/> <span>Tonnage: {cruise.tonnage || 'N/A'}</span></div>
             <div className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground"/> <span>Last Refurb: {cruise.lastRefurb || 'N/A'}</span></div>
             <div className="flex items-center gap-2"><Users size={16} className="text-muted-foreground"/> <span>Passengers: {cruise.passengerCapacity || 'N/A'}</span></div>
             <div className="flex items-center gap-2"><Users size={16} className="text-muted-foreground"/> <span>Crew: {cruise.crewCapacity || 'N/A'}</span></div>
@@ -193,6 +196,29 @@ export function CruiseSearch() {
                 <div className="space-y-2">
                     <Label>Destination</Label>
                     <Controller name="region" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue placeholder="Any Destination" /></SelectTrigger><SelectContent>{filters?.regions.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}</SelectContent></Select>)} />
+                </div>
+                 <div className="space-y-2">
+                    <Label>Departure Port</Label>
+                    <Controller name="port" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue placeholder="Any Port" /></SelectTrigger><SelectContent>{filters?.ports.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}</SelectContent></Select>)} />
+                </div>
+                 <div className="space-y-2">
+                    <Label>Cruise Line</Label>
+                    <Controller name="line" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue placeholder="Any Line" /></SelectTrigger><SelectContent>{filters?.lines.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select>)} />
+                </div>
+                 <div className="space-y-2">
+                    <Label>Ship</Label>
+                    <Controller name="ship" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue placeholder="Any Ship" /></SelectTrigger><SelectContent>{filters?.ships.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent></Select>)} />
+                </div>
+                <div className="space-y-2">
+                    <Label>Length of Cruise</Label>
+                    <Controller name="length" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue placeholder="Any Length" /></SelectTrigger>
+                            <SelectContent>
+                                {lengthFilters.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    )} />
                 </div>
                 <div className="space-y-2">
                     <Label>Date Range</Label>
@@ -270,8 +296,8 @@ export function CruiseSearch() {
                     )} />
                 </div>
                 <div className="space-y-2">
-                    <Controller name="tipsIncluded" control={control} render={({ field }) => ( <div className="flex items-center space-x-2"><Switch id="tips-included" checked={field.value} onCheckedChange={field.onChange} /><Label htmlFor="tips-included">Tips Included</Label></div> )} />
-                    <Controller name="drinkPackage" control={control} render={({ field }) => ( <div className="flex items-center space-x-2"><Switch id="drink-package" checked={field.value} onCheckedChange={field.onChange} /><Label htmlFor="drink-package">Drink Package</Label></div> )} />
+                    <Controller name="tipsIncluded" control={control} render={({ field }) => ( <div className="flex items-center space-x-2"><Switch id="tips-included" {...register("tipsIncluded")} /><Label htmlFor="tips-included">Tips Included</Label></div> )} />
+                    <Controller name="drinkPackage" control={control} render={({ field }) => ( <div className="flex items-center space-x-2"><Switch id="drink-package" {...register("drinkPackage")} /><Label htmlFor="drink-package">Drink Package</Label></div> )} />
                 </div>
                  <div className="space-y-2">
                     <Label>Wi-Fi Package</Label>
@@ -362,5 +388,3 @@ export function CruiseSearch() {
     </div>
   );
 }
-
-    
