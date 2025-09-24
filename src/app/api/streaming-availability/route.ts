@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
 
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
+    console.error('RAPIDAPI_KEY is not configured in .env file.');
     return NextResponse.json({ error: 'API key is not configured.' }, { status: 500 });
   }
 
   try {
-    // First, search for the show by title to get its ID
-    const searchUrl = `https://streaming-availability.p.rapidapi.com/search/title?title=${encodeURIComponent(title)}&country=us&show_type=all&output_language=en`;
-    const searchOptions = {
+    const url = `https://streaming-availability.p.rapidapi.com/search/basic?country=us&service=netflix&type=movie&query=${encodeURIComponent(title)}`;
+    const options = {
       method: 'GET',
       headers: {
         'x-rapidapi-key': apiKey,
@@ -26,51 +26,38 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    const searchResponse = await fetch(searchUrl, searchOptions);
-    if (!searchResponse.ok) {
-        const errorBody = await searchResponse.text();
-        console.error('RapidAPI Search Error:', errorBody);
-        throw new Error(`Failed to search for show. Status: ${searchResponse.status}`);
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`RapidAPI Error (status: ${response.status}):`, errorBody);
+        throw new Error(`Failed to fetch streaming data. The external API may be down or the key is invalid.`);
     }
-    const searchData = await searchResponse.json();
+
+    const data = await response.json();
     
-    const show = searchData.result?.[0];
-    if (!show) {
-      return NextResponse.json({ services: [] });
+    // The search/basic endpoint returns results differently. 
+    // We'll look through the results for a close match.
+    const show = data.results?.[0];
+
+    if (!show || !show.streamingInfo || !show.streamingInfo.us) {
+        console.log(`No streaming info found for title: ${title}`);
+        return NextResponse.json({ services: [] });
     }
 
-    // Now, get streaming availability using the ID
-    const showId = show.tmdbId;
-    const showType = show.type;
-    const detailsUrl = `https://streaming-availability.p.rapidapi.com/shows/v2/${showType}/${showId}?output_language=en&country=us`;
-    const detailsOptions = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': apiKey,
-        'x-rapidapi-host': 'streaming-availability.p.rapidapi.com'
-      }
-    };
-    
-    const detailsResponse = await fetch(detailsUrl, detailsOptions);
-    if (!detailsResponse.ok) {
-        const errorBody = await detailsResponse.text();
-        console.error('RapidAPI Details Error:', errorBody);
-        throw new Error(`Failed to get show details. Status: ${detailsResponse.status}`);
-    }
-    const detailsData = await detailsResponse.json();
-
-    const services = detailsData.result?.streamingInfo?.us?.map((service: any) => ({
-        name: service.service,
-        type: service.streamingType,
-        quality: service.quality,
-        link: service.link
-    })) || [];
-
+    const services = Object.entries(show.streamingInfo.us).flatMap(([service, availability]) => 
+        (availability as any[]).map((item: any) => ({
+            name: service,
+            type: item.type,
+            quality: item.quality,
+            link: item.link
+        }))
+    );
 
     return NextResponse.json({ services });
 
   } catch (error: any) {
-    console.error(`Streaming availability error:`, error);
+    console.error(`Streaming availability route error:`, error);
     return NextResponse.json({ error: error.message || 'Failed to fetch streaming availability.' }, { status: 500 });
   }
 }

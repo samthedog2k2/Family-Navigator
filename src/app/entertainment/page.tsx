@@ -24,6 +24,7 @@ interface StreamingService {
 interface EnrichedRecommendation extends EntertainmentRecommendation {
     streamingServices?: StreamingService[];
     isFetchingServices?: boolean;
+    servicesFetched?: boolean;
 }
 
 export default function EntertainmentPage() {
@@ -37,7 +38,7 @@ export default function EntertainmentPage() {
     try {
       const input: EntertainmentRecommendationsInput = { category };
       const result = await getEntertainmentRecommendations(input);
-      setRecommendations(result.recommendations);
+      setRecommendations(result.recommendations.map(rec => ({ ...rec, servicesFetched: false })));
     } catch (error) {
       console.error("Failed to get entertainment recommendations:", error);
       toast({
@@ -62,30 +63,33 @@ export default function EntertainmentPage() {
     const recommendation = recommendations[recIndex];
     if (!recommendation) return;
 
-    // Set loading state for this specific card
     setRecommendations(prev => prev.map((rec, index) => 
         index === recIndex ? { ...rec, isFetchingServices: true } : rec
     ));
 
     try {
         const response = await fetch(`/api/streaming-availability?title=${encodeURIComponent(recommendation.title)}`);
-        if (!response.ok) throw new Error('Failed to fetch streaming info');
+        if (!response.ok) throw new Error('Failed to fetch streaming info from our server.');
         
         const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
 
         setRecommendations(prev => prev.map((rec, index) => 
-            index === recIndex ? { ...rec, streamingServices: data.services, isFetchingServices: false } : rec
+            index === recIndex ? { ...rec, streamingServices: data.services, isFetchingServices: false, servicesFetched: true } : rec
         ));
 
     } catch (error) {
         console.error("Failed to get streaming services:", error);
         toast({
             title: 'API Error',
-            description: 'Could not fetch streaming services. Make sure your API key is set in .env.',
+            description: (error as Error).message || 'Could not fetch streaming services. Your API key might be invalid or the service is down.',
             variant: 'destructive',
         });
         setRecommendations(prev => prev.map((rec, index) => 
-            index === recIndex ? { ...rec, isFetchingServices: false } : rec
+            index === recIndex ? { ...rec, isFetchingServices: false, servicesFetched: true, streamingServices: [] } : rec
         ));
     }
   };
@@ -148,15 +152,15 @@ export default function EntertainmentPage() {
                                         <span>{item.audienceScore}%</span>
                                     </div>
                                 </div>
-                                {item.streamingServices && (
+                                {item.servicesFetched && (
                                     <div className='pt-2'>
                                         <h4 className="text-xs font-semibold mb-2">Available on:</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {item.streamingServices.length > 0 ? item.streamingServices.map(service => (
+                                            {item.streamingServices && item.streamingServices.length > 0 ? item.streamingServices.map(service => (
                                                 <a key={service.name} href={service.link} target="_blank" rel="noopener noreferrer">
-                                                    <Badge variant="outline">{service.name}</Badge>
+                                                    <Badge variant="outline" className="capitalize">{service.name}</Badge>
                                                 </a>
-                                            )) : <p className="text-xs text-muted-foreground">Not currently available for streaming.</p>}
+                                            )) : <p className="text-xs text-muted-foreground">Not currently available on major streaming services.</p>}
                                         </div>
                                     </div>
                                 )}
@@ -165,14 +169,14 @@ export default function EntertainmentPage() {
                                 <Button 
                                     className="w-full" 
                                     onClick={() => fetchStreamingServices(index)} 
-                                    disabled={item.isFetchingServices || category === 'sports'}
+                                    disabled={item.isFetchingServices || category === 'sports' || item.servicesFetched}
                                 >
                                     {item.isFetchingServices ? (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     ) : (
                                         <Video className="mr-2 h-4 w-4" />
                                     )}
-                                    {item.isFetchingServices ? 'Checking...' : 'Find where to watch'}
+                                    {item.isFetchingServices ? 'Checking...' : item.servicesFetched ? 'Services Checked' : 'Find where to watch'}
                                 </Button>
                             </CardFooter>
                         </Card>
