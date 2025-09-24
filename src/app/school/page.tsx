@@ -1,4 +1,5 @@
 
+import { LayoutWrapper } from "@/components/layout-wrapper";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import { School } from "lucide-react";
 
 export default function SchoolPage() {
   return (
-    <main className="flex-1 p-4 sm:p-6">
+    <LayoutWrapper>
       <PageHeader
         title="School"
         description="Monitor your family's school activities."
@@ -35,6 +36,6 @@ export default function SchoolPage() {
           </Link>
         </Card>
       </div>
-    </main>
+    </LayoutWrapper>
   );
 }

@@ -1,9 +1,12 @@
+
 'use client';
 
 import { useAuth } from "@/components/auth/AuthProvider";
-import EnhancedLogin from "@/components/auth/EnhancedLogin";
 import { Dashboard } from "@/components/dashboard";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 import { Loader2 } from "lucide-react";
+import EnhancedLogin from "@/components/auth/EnhancedLogin";
+import { Suspense } from "react";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -17,5 +20,23 @@ export default function Home() {
     );
   }
 
-  return user ? <Dashboard /> : <EnhancedLogin />;
+  if (!user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-background">
+         <LayoutWrapper>
+          <EnhancedLogin />
+        </LayoutWrapper>
+      </div>
+    )
+  }
+
+  return (
+    <LayoutWrapper>
+       <Suspense fallback={<div>Loading dashboard...</div>}>
+        <Dashboard />
+      </Suspense>
+    </LayoutWrapper>
+  );
 }
+
+    
