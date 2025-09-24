@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,6 +14,7 @@ import { z } from 'genkit';
 
 const EntertainmentInputSchema = z.object({
   category: z.enum(['movies', 'tv-shows', 'sports']).describe('The category for recommendations.'),
+  promptAugmentation: z.string().optional().describe('An optional string to augment the prompt, e.g., "specifically on Netflix".'),
 });
 export type EntertainmentRecommendationsInput = z.infer<typeof EntertainmentInputSchema>;
 
@@ -40,7 +42,7 @@ const prompt = ai.definePrompt({
   name: 'entertainmentRecommendationsPrompt',
   input: { schema: EntertainmentInputSchema },
   output: { schema: EntertainmentOutputSchema },
-  prompt: `You are an expert curator of entertainment. A user wants recommendations for the following category: {{{category}}}.
+  prompt: `You are an expert curator of entertainment. A user wants recommendations for the following category: {{{category}}} {{{promptAugmentation}}}.
 
 Provide a list of 3 diverse and interesting recommendations. For each item, provide a realistic title, year, genre, a short engaging description, a plausible rating, and a realistic audience score percentage.
 Make the recommendations interesting and not just the most popular items.
