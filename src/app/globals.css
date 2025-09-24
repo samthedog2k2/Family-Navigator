@@ -74,25 +74,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Custom fixes for react-day-picker component */
-.rdp-table {
-    display: table;
-    width: 100%;
-}
-
-.rdp-head {
-    display: table-header-group;
-}
-
-.rdp-head_row {
-    display: table-row;
-}
-
-.rdp-head_cell {
-    display: table-cell;
-    text-align: center;
-    padding: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-}
