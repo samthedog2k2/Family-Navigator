@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -166,7 +167,7 @@ export function CruiseFinder() {
           {/* Cruise Length & Type */}
           <div className="space-y-2">
             <Label>Cruise Length & Type</Label>
-            <div className="flex items-center space-x-2">
+            <div className="flex w-full items-center space-x-2">
               <div className="w-full">
                 <div className="flex items-center">
                   <div className="p-2.5 border border-r-0 rounded-l-md bg-muted">

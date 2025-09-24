@@ -29,7 +29,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  destinationType: z.enum(["cruise", "road trip", "lodging"]),
+  destinationType: z.enum(["road trip", "lodging"]),
   interests: z.string().min(3, "Please describe your interests."),
   budget: z.string().min(3, "Please specify your budget."),
   travelers: z.coerce.number().min(1, "At least one traveler is required."),
@@ -64,7 +64,9 @@ export function TravelPlanner() {
     setIsLoading(true);
     setRecommendations("");
     try {
-      const result = await getTravelRecommendations({ preferences: data });
+      // The AI flow for travel recommendations needs 'cruise' as a valid type
+      // but we filter it out on the frontend for this component.
+      const result = await getTravelRecommendations({ preferences: {...data, destinationType: data.destinationType as "road trip" | "lodging" | "cruise" } });
       setRecommendations(result.recommendations);
     } catch (error) {
       console.error("Error getting travel recommendations:", error);
@@ -82,7 +84,7 @@ export function TravelPlanner() {
     <Card>
         <CardHeader>
             <CardTitle>AI-Powered Travel Recommendations</CardTitle>
-            <CardDescription>Fill out your preferences and let our AI find the perfect trip for you.</CardDescription>
+            <CardDescription>Fill out your preferences for a road trip or lodging and let our AI find the perfect trip for you.</CardDescription>
         </CardHeader>
         <div className="grid gap-6 lg:grid-cols-5 p-6">
             <div className="lg:col-span-2">
@@ -99,7 +101,6 @@ export function TravelPlanner() {
                                 <SelectValue placeholder="Select a type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="cruise">Cruise</SelectItem>
                                 <SelectItem value="road trip">Road Trip</SelectItem>
                                 <SelectItem value="lodging">Lodging</SelectItem>
                             </SelectContent>
@@ -175,4 +176,3 @@ export function TravelPlanner() {
     </Card>
   );
 }
-
