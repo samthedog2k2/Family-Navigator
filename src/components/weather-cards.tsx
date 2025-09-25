@@ -4,6 +4,7 @@ import { getUVIndexInfo } from "@/lib/weather-helpers";
 import { format, parseISO } from "date-fns";
 import { Wind, Droplets, Sunrise, Sunset } from "lucide-react";
 import { degreesToCompass } from "@/lib/weather-helpers";
+import { cn } from "@/lib/utils";
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <Card className={cn("bg-msn-card shadow-msn p-4", className)}>
