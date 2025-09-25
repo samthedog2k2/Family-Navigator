@@ -190,7 +190,8 @@ export default function WeatherPage() {
         formattedTime: dataIndex === startIndex ? 'Now' : format(time, 'h a'),
         temp: Math.round(weather.hourly.temperature_2m[dataIndex]),
         precip: weather.hourly.precipitation_probability[dataIndex],
-        icon: getWeatherIcon(weather.hourly.weathercode[dataIndex], true)
+        icon: getWeatherIcon(weather.hourly.weathercode[dataIndex], true),
+        weathercode: weather.hourly.weathercode[dataIndex]
       }
     });
   }, [weather]);
@@ -277,15 +278,14 @@ export default function WeatherPage() {
             <CardContent>
               <div className="overflow-x-auto pb-4">
                 <div className="flex space-x-2">
-                {dailyForecasts.map((day, i) => (
-                  <div key={day.date} className={cn(
+                {hourlyChartData.map((hour, i) => (
+                  <div key={hour.time} className={cn(
                     "flex flex-col items-center p-3 rounded-lg border min-w-[80px] cursor-pointer",
                     i === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/50"
                     )}>
-                      <p className="font-bold text-sm">{day.dayName}</p>
-                      <div className="w-10 h-10 my-2">{getWeatherIcon(day.weathercode, true, 40)}</div>
-                      <p className="font-bold">{day.maxTemp}°</p>
-                      <p className="text-xs opacity-80">{day.minTemp}°</p>
+                      <p className="font-bold text-sm">{hour.formattedTime}</p>
+                      <div className="w-10 h-10 my-2">{getWeatherIcon(hour.weathercode, true, 40)}</div>
+                      <p className="font-bold">{hour.temp}°</p>
                   </div>
                 ))}
                 </div>
