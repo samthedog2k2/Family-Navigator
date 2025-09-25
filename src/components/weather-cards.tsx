@@ -8,14 +8,14 @@ import { degreesToCompass } from "@/lib/weather-helpers";
 import { cn } from "@/lib/utils";
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <Card className={cn("bg-msn-card shadow-msn p-4", className)}>
+    <Card className={cn("bg-msn-bg/50 shadow-inner p-4", className)}>
         {children}
     </Card>
 );
 
 export const WindCard = ({ weather }: { weather: any }) => {
     const windDirectionStyle = {
-        transform: `rotate(${weather.current.wind_direction_10m}deg)`
+        transform: `rotate(${weather.current.windDirection}deg)`
     };
 
     return (
@@ -32,8 +32,8 @@ export const WindCard = ({ weather }: { weather: any }) => {
                     </div>
                 </div>
                 <div className="flex-1">
-                    <p className="text-xs text-msn-text-secondary">From {degreesToCompass(weather.current.wind_direction_10m)}</p>
-                    <p><span className="text-3xl font-bold">{Math.round(weather.current.wind_speed_10m)}</span> mph</p>
+                    <p className="text-xs text-msn-text-secondary">From {degreesToCompass(weather.current.windDirection)}</p>
+                    <p><span className="text-3xl font-bold">{Math.round(weather.current.windSpeed)}</span> mph</p>
                 </div>
             </div>
         </WeatherCard>
@@ -42,7 +42,7 @@ export const WindCard = ({ weather }: { weather: any }) => {
 
 
 export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyIndex: number }) => {
-    if (!weather?.hourly?.relative_humidity_2m) {
+    if (!weather?.hourly?.humidity) {
         return (
             <WeatherCard>
                 <h2 className="text-sm text-msn-text-secondary mb-2">Humidity</h2>
@@ -55,13 +55,13 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
             <h2 className="text-sm text-msn-text-secondary mb-2">Humidity</h2>
             <div className="flex justify-between items-start">
                  <div>
-                    <p className="text-3xl font-bold">{weather.current.relative_humidity_2m}%</p>
+                    <p className="text-3xl font-bold">{weather.current.humidity}%</p>
                     <p className="text-xs text-msn-text-secondary">Relative</p>
                 </div>
-                <div className="flex gap-1">
-                    {weather.hourly.temperature_2m.slice(hourlyIndex, hourlyIndex + 5).map((h: number, i: number) => (
+                <div className="flex gap-1 pt-1">
+                    {weather.hourly.temperature.slice(hourlyIndex, hourlyIndex + 5).map((h: number, i: number) => (
                         <div key={i} className="w-2 rounded-full bg-gray-200 dark:bg-gray-700 h-12 flex flex-col-reverse">
-                           {(weather.hourly.relative_humidity_2m && weather.hourly.relative_humidity_2m[hourlyIndex + i]) && <div className="bg-msn-blue w-full rounded-full" style={{ height: `${weather.hourly.relative_humidity_2m[hourlyIndex + i]}%` }}></div>}
+                           {(weather.hourly.humidity && weather.hourly.humidity[hourlyIndex + i]) && <div className="bg-msn-blue w-full rounded-full" style={{ height: `${weather.hourly.humidity[hourlyIndex + i]}%` }}></div>}
                         </div>
                     ))}
                 </div>
@@ -94,7 +94,7 @@ export const SunCard = ({ weather }: { weather: any }) => {
 };
 
 export const UvCard = ({ weather }: { weather: any }) => {
-    const uvIndex = weather.current.uv_index;
+    const uvIndex = weather.current.uvIndex;
     const { level, color } = getUVIndexInfo(uvIndex);
     const maxUv = 11;
     const angle = (uvIndex / maxUv) * 180;
@@ -121,3 +121,5 @@ export const UvCard = ({ weather }: { weather: any }) => {
         </WeatherCard>
     );
 };
+
+    

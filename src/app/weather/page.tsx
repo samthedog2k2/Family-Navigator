@@ -2,188 +2,252 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, AlertTriangle, RefreshCw } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { RadarMap } from "@/components/RadarMap";
 import { WindCard, HumidityCard, SunCard, UvCard } from "@/components/weather-cards";
-import { Droplets } from "lucide-react";
+import { weatherService, type ComprehensiveWeatherData } from "@/lib/weather-api-free";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card } from "@/components/ui/card";
+import { Droplets } from 'lucide-react';
 
-type WeatherData = {
-  current: {
-    temperature_2m: number;
-    relative_humidity_2m: number;
-    apparent_temperature: number;
-    is_day: 0 | 1;
-    weather_code: number;
-    wind_speed_10m: number;
-    wind_direction_10m: number;
-    wind_gusts_10m: number;
-    uv_index: number;
-  };
-  hourly: {
-    time: string[];
-    temperature_2m: number[];
-    weather_code: number[];
-    precipitation_probability: number[];
-    relative_humidity_2m: number[];
-  };
-  daily: {
-    time: string[];
-    weather_code: number[];
-    temperature_2m_max: number[];
-    temperature_2m_min: number[];
-    sunrise: string[];
-    sunset: string[];
-    precipitation_probability_max: number[];
-  };
-};
-
-export default function WeatherPage() {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [locationName, setLocationName] = useState("your location");
+export default function WeatherDashboard() {
+  const [weatherData, setWeatherData] = useState<ComprehensiveWeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Get user location
   useEffect(() => {
-    async function fetchLocationAndWeather(lat: number, lon: number) {
-      setLoading(true);
-      try {
-        const geoRes = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
-        );
-        if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            setLocationName(geoData.city || geoData.principalSubdivision || "Current Location");
-        } else {
-            setLocationName("Current Location");
-        }
-        
-        const params = new URLSearchParams({
-            latitude: lat.toString(),
-            longitude: lon.toString(),
-            current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index",
-            hourly: "temperature_2m,weather_code,precipitation_probability,relative_humidity_2m",
-            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max",
-            temperature_unit: "fahrenheit",
-            wind_speed_unit: "mph",
-            precipitation_unit: "inch",
-            timezone: "auto",
-        });
-
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
-        const data = await res.json();
-        
-        if (!data.error) {
-          setWeather(data);
-        } else {
-          console.error("Weather API error:", data.reason);
-          setWeather(null);
-        }
-      } catch (err) {
-        console.error("Failed to fetch weather data:", err);
-      } finally {
-        setLoading(false);
-      }
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by this browser');
+      setLoading(false);
+      return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => fetchLocationAndWeather(pos.coords.latitude, pos.coords.longitude),
-      () => {
-          console.log("Geolocation permission denied, using fallback.");
-          fetchLocationAndWeather(39.6137, -86.1067) // Fallback to Greenwood, IN
-      }
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        });
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        // Default to New York if location access denied
+        setLocation({ lat: 40.7128, lon: -74.0060 });
+      },
+      { timeout: 10000, maximumAge: 300000 }
     );
   }, []);
 
-  if (loading || !weather) {
+  const fetchWeather = async (loc: { lat: number; lon: number; }) => {
+      try {
+        const data = await weatherService.getComprehensiveWeather(
+          loc.lat,
+          loc.lon
+        );
+        setWeatherData(data);
+      } catch (err) {
+        console.error('Weather fetch error:', err);
+        setError('Failed to load weather data. Please try again.');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+  };
+
+  // Fetch weather data when location is available
+  useEffect(() => {
+    if (!location) return;
+    
+    setLoading(true);
+    setError(null);
+    fetchWeather(location);
+
+  }, [location]);
+
+  const handleRefresh = async () => {
+    if (!location || refreshing) return;
+    setRefreshing(true);
+    fetchWeather(location);
+  };
+
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-msn-bg">
-        <Loader2 className="h-12 w-12 animate-spin text-msn-blue" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-msn-text-secondary">Loading weather data...</p>
+        </div>
       </div>
     );
   }
   
+  if (error || !weatherData) {
+    return (
+      <div className="min-h-screen bg-msn-bg p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Weather Dashboard</h1>
+            <p className="text-msn-text-secondary mt-2">Real-time weather conditions and forecasts</p>
+          </div>
+          <Alert variant="destructive" className="max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {error || 'Unable to load weather data'}
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
+  }
+
   const now = new Date();
-  const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t).getHours() === now.getHours());
-  const hourlyIndex = currentHourIndex === -1 ? 0 : currentHourIndex;
+  const currentHourIndex = weatherData.hourly.time.findIndex(t => new Date(t) > now) -1;
+  const hourlyIndex = currentHourIndex < 0 ? 0 : currentHourIndex;
 
   return (
-    <div className="min-h-screen bg-msn-bg text-msn-text font-sans">
-      <header className="bg-msn-card shadow-msn px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-msn-blue">
-          {locationName}
-        </h1>
-        <span className="text-sm text-msn-text-secondary">United States</span>
+    <div className="bg-msn-bg text-msn-text font-sans">
+      <header className="bg-msn-card shadow-msn px-6 py-4 flex items-center justify-between border-b">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-msn-text">
+            <MapPin className="h-4 w-4 text-msn-blue" />
+            <h1 className="text-xl font-semibold text-msn-blue">{weatherData.location.name}</h1>
+          </div>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-msn-blue text-white rounded-md hover:bg-msn-blue/90 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </header>
 
-      <main className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content column */}
-        <div className="lg:col-span-2 space-y-6">
-            <section className="bg-msn-card rounded-lg shadow-msn p-6 flex items-center justify-between">
-                <div>
-                    <h2 className="text-4xl font-bold">{Math.round(weather.current.temperature_2m)}°F</h2>
-                    <p className="text-msn-text-secondary">{getWeatherIcon(weather.current.weather_code, weather.current.is_day === 1).props.alt}</p>
-                    <p className="text-sm text-msn-text-muted">High {Math.round(weather.daily.temperature_2m_max[0])}° • Low {Math.round(weather.daily.temperature_2m_min[0])}°</p>
-                </div>
-                {getWeatherIcon(weather.current.weather_code, weather.current.is_day === 1, 64)}
-            </section>
-            
-            <section>
-                <h3 className="text-lg font-semibold mb-2">Hourly Forecast</h3>
-                <div className="flex overflow-x-auto gap-4 pb-2">
-                    {weather.hourly.time.slice(hourlyIndex, hourlyIndex + 12).map((time, i) => (
-                        <div key={time} className="flex-shrink-0 w-28 bg-msn-card rounded-lg shadow-msn p-3 text-center">
-                            <p className="text-sm text-msn-text-secondary">{format(parseISO(time), 'h a')}</p>
-                            <div className="mx-auto my-2">
-                                {getWeatherIcon(weather.hourly.weather_code[hourlyIndex + i], true, 32)}
-                            </div>
-                            <p className="font-medium">{Math.round(weather.hourly.temperature_2m[hourlyIndex + i])}°</p>
-                             <div className="flex items-center justify-center text-xs text-msn-icon-blue mt-1">
-                                <Droplets size={12} className="mr-1" />
-                                <span>{weather.hourly.precipitation_probability[hourlyIndex + i]}%</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-        </div>
+      <main className="p-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Current Weather Hero */}
+            <Card className="bg-msn-card shadow-msn p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-5xl font-bold">{Math.round(weatherData.current.temperature)}°F</h2>
+                <p className="text-msn-text-secondary">{weatherData.current.weatherCode ? iconDescriptions[weatherData.current.weatherCode] : ''}</p>
+                <p className="text-sm text-msn-text-muted">
+                  High {Math.round(weatherData.daily.temperatureMax[0])}° • Low {Math.round(weatherData.daily.temperatureMin[0])}°
+                </p>
+              </div>
+              <div className="w-20 h-20">
+                {getWeatherIcon(weatherData.current.weatherCode, weatherData.current.isDay, 80)}
+              </div>
+            </Card>
 
-        {/* Right sidebar column */}
-        <div className="lg:col-span-1 space-y-6">
-            <section>
-                <h3 className="text-lg font-semibold mb-2">Radar</h3>
-                <RadarMap />
-            </section>
-
-            <section>
-                <h3 className="text-lg font-semibold mb-2">10-Day Forecast</h3>
-                <div className="space-y-2">
-                    {weather.daily.time.slice(0, 10).map((day, i) => (
-                    <div key={day} className="bg-msn-card rounded-lg shadow-msn p-3 flex items-center justify-between text-sm">
-                        <p className="font-semibold w-12">{i === 0 ? "Today" : format(parseISO(day), 'EEE')}</p>
-                        <div className="flex items-center gap-2">
-                            {getWeatherIcon(weather.daily.weather_code[i], true, 24)}
-                            <span className="text-msn-icon-blue w-10">{weather.daily.precipitation_probability_max[i]}%</span>
-                        </div>
-                        <p className="w-20 text-right">
-                            <span className="font-medium">{Math.round(weather.daily.temperature_2m_max[i])}°</span>
-                            <span className="text-msn-text-secondary"> / {Math.round(weather.daily.temperature_2m_min[i])}°</span>
-                        </p>
+            {/* Hourly Forecast */}
+            <Card className="bg-msn-card shadow-msn p-6">
+              <h3 className="text-lg font-semibold mb-4">Hourly Forecast</h3>
+              <div className="flex overflow-x-auto gap-4 pb-2">
+                {weatherData.hourly.time.slice(hourlyIndex, hourlyIndex + 24).map((time, i) => (
+                  <div key={time} className="flex-shrink-0 w-20 text-center">
+                    <p className="text-xs text-msn-text-secondary mb-2">
+                      {format(parseISO(time), 'h a')}
+                    </p>
+                    <div className="mx-auto my-2 w-8 h-8">
+                      {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
                     </div>
-                    ))}
+                    <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
+                    {(weatherData.hourly.precipitation?.[hourlyIndex + i] > 0) && (
+                       <div className="flex items-center justify-center text-xs text-msn-blue mt-1">
+                        <Droplets size={10} className="mr-1" />
+                        <span>{Math.round(weatherData.hourly.precipitation[hourlyIndex + i] * 100)}%</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* 10-Day Forecast */}
+            <Card className="bg-msn-card shadow-msn p-6">
+              <h3 className="text-lg font-semibold mb-4">10-Day Forecast</h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {weatherData.daily.time.slice(0, 10).map((day, i) => {
+                  const dayMin = Math.round(weatherData.daily.temperatureMin[i]);
+                  const dayMax = Math.round(weatherData.daily.temperatureMax[i]);
+                  
+                  return (
+                    <div key={day} className="bg-msn-bg/50 rounded-lg p-3 flex flex-col items-center text-center">
+                      <p className="text-sm font-semibold text-msn-text-secondary">
+                        {i === 0 ? "Today" : format(parseISO(day), 'EEE')}
+                      </p>
+                      <div className="w-10 h-10 my-2">
+                         {getWeatherIcon(weatherData.daily.weatherCode[i], true, 40)}
+                      </div>
+                      <p className="text-sm font-bold">{dayMax}°</p>
+                      <p className="text-sm text-msn-text-muted">{dayMin}°</p>
+                       {(weatherData.daily.precipitationSum?.[i] > 0.01) && (
+                        <div className="flex items-center justify-center text-xs text-msn-blue mt-1">
+                          <Droplets size={10} className="mr-1" />
+                          <span>{Math.round(weatherData.daily.precipitationSum[i] * 100)}%</span>
+                        </div>
+                       )}
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+             {/* Weather Alerts */}
+            {weatherData.alerts && weatherData.alerts.length > 0 && (
+              <Card className="bg-msn-card shadow-msn p-4">
+                <h3 className="text-lg font-semibold mb-2 text-destructive">Weather Alerts</h3>
+                <div className="space-y-2">
+                  {weatherData.alerts.map((alert) => (
+                    <Alert key={alert.id} variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>{alert.title}</strong> - {alert.description}
+                      </AlertDescription>
+                    </Alert>
+                  ))}
                 </div>
-            </section>
-             <section>
-                <h3 className="text-lg font-semibold mb-2">Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <HumidityCard weather={weather} hourlyIndex={hourlyIndex} />
-                  <WindCard weather={weather} />
-                  <SunCard weather={weather} />
-                  <UvCard weather={weather} />
+              </Card>
+            )}
+
+            <Card className="bg-msn-card shadow-msn p-6">
+                <h3 className="text-lg font-semibold mb-4">Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                    <SunCard weather={weatherData} />
+                    <UvCard weather={weatherData} />
+                    <WindCard weather={weatherData} />
+                    <HumidityCard weather={weatherData} hourlyIndex={hourlyIndex} />
                 </div>
-            </section>
+            </Card>
+
+            <Card className="bg-msn-card shadow-msn p-6">
+              <h3 className="text-lg font-semibold mb-4">Weather Radar</h3>
+              <RadarMap />
+            </Card>
+          </div>
         </div>
       </main>
     </div>
   );
 }
+
+const iconDescriptions: { [key: number]: string } = {
+  0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Cloudy',
+  45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
+  56: 'Light Freezing Drizzle', 57: 'Heavy Freezing Drizzle', 61: 'Light Rain',
+  63: 'Rain', 65: 'Heavy Rain', 66: 'Light Freezing Rain', 67: 'Heavy Freezing Rain',
+  71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains',
+  80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
+  95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
+};
+
+    

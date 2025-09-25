@@ -22,7 +22,6 @@ export default {
         sans: ["Segoe UI", "Arial", ...fontFamily.sans],
       },
       colors: {
-        // Default theme colors
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -97,9 +96,11 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       boxShadow: {
-        "msn": "0 2px 8px rgba(0,0,0,0.1)",
+        "msn": "0 1px 3px rgba(0,0,0,0.1)",
       }
     },
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    

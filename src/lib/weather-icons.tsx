@@ -4,24 +4,14 @@
 import React from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle, CloudLightning, CloudFog, CloudSun, Moon } from 'lucide-react';
 
-const iconDescriptions: { [key: number]: string } = {
-  0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Cloudy',
-  45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
-  56: 'Light Freezing Drizzle', 57: 'Heavy Freezing Drizzle', 61: 'Light Rain',
-  63: 'Rain', 65: 'Heavy Rain', 66: 'Light Freezing Rain', 67: 'Heavy Freezing Rain',
-  71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains',
-  80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
-  95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
-};
-
 export function getWeatherIcon(code: number, isDay: boolean = true, size: number = 24) {
     const altText = iconDescriptions[code] || 'Weather';
-    const props = { size, alt: altText, "aria-label": altText };
+    const props = { size, "aria-label": altText, strokeWidth: 1.5 };
 
     switch (code) {
         // Clear sky
         case 0:
-            return isDay ? <Sun {...props} className="text-msn-icon-sun" /> : <Moon {...props} className="text-msn-icon-gray" />;
+            return isDay ? <Sun {...props} className="text-msn-icon-sun fill-msn-icon-sun" /> : <Moon {...props} className="text-msn-icon-gray" />;
 
         // Mainly clear, partly cloudy
         case 1:
@@ -76,3 +66,16 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
             return <Cloud {...props} className="text-msn-icon-gray" />;
     }
 }
+
+const iconDescriptions: { [key: number]: string } = {
+  0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Cloudy',
+  45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
+  56: 'Light Freezing Drizzle', 57: 'Heavy Freezing Drizzle', 61: 'Light Rain',
+  63: 'Rain', 65: 'Heavy Rain', 66: 'Light Freezing Rain', 67: 'Heavy Freezing Rain',
+  71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains',
+  80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
+  95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
+};
+
+
+    
