@@ -120,9 +120,9 @@ const secureWebsiteAgentFlow = ai.defineFlow(
   async (input) => {
     const llmResponse = await ai.generate({
       prompt: `You are a helpful assistant with access to a secure login tool.
-      A user wants you to log into a website and perform a task.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
-      Use your knowledge of common website structures to fill in the parameters.
+      Map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
+      Use your knowledge of common website structures to fill in the other parameters.
 
       User request: "${input.request}"
       `,
@@ -132,23 +132,27 @@ const secureWebsiteAgentFlow = ai.defineFlow(
         {
           role: 'system',
           content: `
-            Known Website Configurations:
-            - RoyalCaribbean:
+            Known Website Configurations & Mappings:
+            - Canonical Name: 'RoyalCaribbean'
+              - Maps from: 'Royal Caribbean', 'royalcaribbean.com'
               - loginUrl: https://www.royalcaribbean.com/account/signin
               - postLoginUrl: https://www.royalcaribbean.com/account/profile
               - successIndicator: "Sign Out"
               - taskScrapeSelector for "account holder name": ".profile-name"
-            - Netflix:
+            - Canonical Name: 'Netflix'
+              - Maps from: 'Netflix', 'netflix.com'
               - loginUrl: https://www.netflix.com/login
               - postLoginUrl: https://www.netflix.com/browse
               - successIndicator: "Sign out of Netflix"
               - taskScrapeSelector for "primary profile name": ".profile-link .profile-name"
-            - Hulu:
+            - Canonical Name: 'Hulu'
+              - Maps from: 'Hulu', 'hulu.com'
               - loginUrl: https://auth.hulu.com/web/login
               - postLoginUrl: https://www.hulu.com/account
               - successIndicator: "Log Out"
               - taskScrapeSelector for "account holder name": "[data-testid=profile-button]"
-            - MSCCruises:
+            - Canonical Name: 'MSCCruises'
+              - Maps from: 'MSC', 'msccruisesusa.com'
               - loginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
               - postLoginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
               - successIndicator: "MY BOOKINGS"
