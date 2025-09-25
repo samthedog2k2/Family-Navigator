@@ -1,17 +1,17 @@
 
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import { PageHeader } from "@/components/page-header";
-import { getWeatherIcon } from "@/lib/weather-icons";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
 import {
   Loader2,
@@ -21,19 +21,27 @@ import {
   Sunset,
   Eye,
   Thermometer,
-  Sun,
   Gauge,
+  CalendarDays,
 } from "lucide-react";
-import { RadarMap } from "@/components/RadarMap";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, parseISO } from "date-fns";
+
+import { getWeatherIcon } from "@/lib/weather-icons";
 import { cn } from "@/lib/utils";
+import { RadarMap } from "@/components/RadarMap";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip as RechartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type WeatherData = {
   current: {
@@ -68,15 +76,20 @@ const WeatherDetail = ({
   icon,
   label,
   value,
+  unit,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
+  unit?: string;
 }) => (
   <div className="flex items-center gap-2 text-sm">
     <div className="text-muted-foreground">{icon}</div>
     <span className="font-medium">{label}</span>
-    <span className="ml-auto font-semibold">{value}</span>
+    <span className="ml-auto font-semibold">
+      {value}
+      {unit}
+    </span>
   </div>
 );
 
@@ -85,7 +98,11 @@ const chartConfig = {
     label: "Temperature",
     color: "hsl(var(--primary))",
   },
-} satisfies ChartConfig;
+  precip: {
+    label: "Precipitation",
+    color: "hsl(var(--secondary))",
+  },
+};
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -116,10 +133,10 @@ export default function WeatherPage() {
         );
         const data = await res.json();
         if (!data.error) {
-            setWeather(data);
+          setWeather(data);
         } else {
-            console.error("Weather API error:", data.reason);
-            setWeather(null);
+          console.error("Weather API error:", data.reason);
+          setWeather(null);
         }
       } catch (err) {
         console.error("Failed to fetch weather:", err);
@@ -160,22 +177,26 @@ export default function WeatherPage() {
   const hourlyChartData = useMemo(() => {
     if (!weather) return [];
     const now = new Date();
-    const startIndex = weather.hourly.time.findIndex(t => new Date(t) > now) - 1;
-    if (startIndex < 0) return [];
-    
+    // Find the first hour in the future
+    let startIndex = weather.hourly.time.findIndex(t => new Date(t) > now);
+    // If not found, or it's the first one, use 0
+    if (startIndex === -1) startIndex = weather.hourly.time.length - 24;
+    else if (startIndex > 0) startIndex = startIndex -1; // Start from the current hour
+    else startIndex = 0;
+
+
     return weather.hourly.time.slice(startIndex, startIndex + 24).map((t, i) => {
       const dataIndex = startIndex + i;
       const time = new Date(t);
       return {
-        time: time.getHours(),
-        formattedTime: dataIndex === 0 ? 'Now' : time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        time: time.toISOString(),
+        formattedTime: dataIndex === startIndex ? 'Now' : format(time, 'h a'),
         temp: Math.round(weather.hourly.temperature_2m[dataIndex]),
         precip: weather.hourly.precipitation_probability[dataIndex],
         icon: getWeatherIcon(weather.hourly.weathercode[dataIndex], true)
       }
     });
   }, [weather]);
-
 
   if (loading) {
     return (
@@ -188,29 +209,39 @@ export default function WeatherPage() {
   if (!weather) {
     return (
       <main className="flex-1 p-4 sm:p-6 bg-gray-100">
-        <PageHeader
-          title="Weather Unavailable"
-          description="Could not load weather data at this time."
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Weather Unavailable</CardTitle>
+            <CardDescription>Could not load weather data at this time.</CardDescription>
+          </CardHeader>
+        </Card>
       </main>
     );
   }
+
+  const currentVisibility = weather.hourly.visibility[
+    weather.hourly.time.findIndex(t => new Date(t) > new Date()) -1
+  ] ?? 0;
   
-  const nowIndex = weather.hourly.time.findIndex(t => new Date(t) > new Date()) - 1;
-  const currentVisibility = nowIndex >= 0 ? weather.hourly.visibility[nowIndex] : 0;
+  const dailyForecasts = weather.daily.time.map((day, i) => ({
+    date: day,
+    dayName: i === 0 ? 'Today' : format(parseISO(day), 'EEE'),
+    maxTemp: Math.round(weather.daily.temperature_2m_max[i]),
+    minTemp: Math.round(weather.daily.temperature_2m_min[i]),
+    weathercode: weather.daily.weathercode[i]
+  }));
 
   return (
     <div
       className={cn(
-        "p-4 sm:p-6 transition-colors duration-500",
+        "p-4 sm:p-6 transition-colors duration-500 min-h-screen",
         isDay ? "weather-bg-day" : "weather-bg-night"
       )}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Current Weather */}
-          <div className="flex flex-col sm:flex-row gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-screen-2xl mx-auto">
+        <div className="lg:col-span-2 xl:col-span-3 space-y-6">
+          {/* Current Conditions */}
+           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="flex items-center gap-4">
               {getWeatherIcon(weather.current.weathercode, isDay)}
               <div>
@@ -232,12 +263,12 @@ export default function WeatherPage() {
           
           {/* Details Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
-             <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}°`} />
-             <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)} mph`} />
-             <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}%`} />
-             <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)} mi`} />
-             <WeatherDetail icon={<Gauge size={20} />} label="Pressure" value={`${(weather.current.surface_pressure / 33.864).toFixed(2)} in`} />
-             <WeatherDetail icon={<Sun size={20} />} label="UV Index" value={weather.current.uv_index.toFixed(0)} />
+             <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}`} unit="°"/>
+             <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)}`} unit=" mph" />
+             <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}`} unit="%" />
+             <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)}`} unit=" mi" />
+             <WeatherDetail icon={<Gauge size={20} />} label="Pressure" value={`${(weather.current.surface_pressure / 33.864).toFixed(2)}`} unit=" in" />
+             <WeatherDetail icon={<CalendarDays size={20} />} label="Dew Point" value={`${Math.round(weather.current.dewpoint_2m)}`} unit="°" />
           </div>
 
           <Card className="bg-background/50 backdrop-blur-sm">
@@ -245,51 +276,68 @@ export default function WeatherPage() {
               <CardTitle>Hourly Forecast</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-                <AreaChart data={hourlyChartData} margin={{ top: 5, right: 20, left: -20, bottom: 40 }}>
-                   <defs>
-                    <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#fde047" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#fde047" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} dy={10} interval="preserveStartEnd" />
-                  <YAxis domain={['dataMin - 5', 'dataMax + 5']} hide />
-                  <Tooltip
-                    content={<ChartTooltipContent indicator="line" />}
-                    cursor={{ stroke: 'hsl(var(--foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  />
-                  <Area type="monotone" dataKey="temp" stroke="#facc15" fillOpacity={1} fill="url(#colorTemp)" strokeWidth={2} />
-                  
-                  {/* Precipitation */}
-                  {hourlyChartData.map((entry, index) => entry.precip > 0 && (
-                     <ReferenceLine
-                        key={index}
-                        x={entry.formattedTime}
-                        ifOverflow="extendDomain"
-                        y={entry.temp - 5}
-                      >
-                         <foreignObject x={-15} y={0} width="30" height="20">
-                            <div style={{ color: '#3b82f6', fontSize: '10px', textAlign: 'center' }}>
-                               💧{entry.precip}%
-                            </div>
-                        </foreignObject>
-                      </ReferenceLine>
-                  ))}
-                   <ReferenceLine y={new Date(weather.daily.sunrise[0]).getHours()} label="Sunrise" strokeDasharray="3 3" />
-                   <ReferenceLine y={new Date(weather.daily.sunset[0]).getHours()} label="Sunset" strokeDasharray="3 3" />
-                </AreaChart>
-              </ChartContainer>
+              <div className="overflow-x-auto pb-4">
+                <div className="flex space-x-2">
+                {dailyForecasts.map((day, i) => (
+                  <div key={day.date} className={cn(
+                    "flex flex-col items-center p-3 rounded-lg border min-w-[80px] cursor-pointer",
+                    i === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/50"
+                    )}>
+                      <p className="font-bold text-sm">{day.dayName}</p>
+                      <div className="w-8 h-8 my-2">{getWeatherIcon(day.weathercode, true)}</div>
+                      <p className="font-bold">{day.maxTemp}°</p>
+                      <p className="text-xs opacity-80">{day.minTemp}°</p>
+                  </div>
+                ))}
+                </div>
+              </div>
+              <Tabs defaultValue="overview">
+                 <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="precipitation">Precipitation</TabsTrigger>
+                  <TabsTrigger value="wind">Wind</TabsTrigger>
+                </TabsList>
+                <TabsContent value="overview">
+                  <ChartContainer config={chartConfig} className="w-full h-[250px] aspect-auto">
+                     <AreaChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+                        <defs>
+                          <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-temp)" stopOpacity={0.4}/>
+                            <stop offset="95%" stopColor="var(--color-temp)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} />
+                        <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide />
+                        <RechartTooltip content={<ChartTooltipContent indicator="line" />} />
+                        <Area type="monotone" dataKey="temp" stroke="var(--color-temp)" strokeWidth={2} fill="url(#colorTemp)" />
+                        <ReferenceLine y={32} stroke="hsl(var(--foreground))" strokeDasharray="3 3" strokeOpacity={0.5} />
+                        <ReferenceLine x={format(parseISO(weather.daily.sunrise[0]), 'h a')} stroke="orange" strokeDasharray="3 3" >
+                           <Sunrise size={14} fill="orange" />
+                        </ReferenceLine>
+                         <ReferenceLine x={format(parseISO(weather.daily.sunset[0]), 'h a')} stroke="darkorange" strokeDasharray="3 3">
+                           <Sunset size={14} fill="darkorange" />
+                        </ReferenceLine>
+                      </AreaChart>
+                  </ChartContainer>
+                  <ChartContainer config={chartConfig} className="w-full h-[80px] aspect-auto -mt-4">
+                    <BarChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
+                       <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} hide/>
+                       <YAxis domain={[0, 100]} hide/>
+                       <RechartTooltip content={<ChartTooltipContent indicator="dot" nameKey="precip"/>} cursor={false} />
+                       <Bar dataKey="precip" fill="hsl(var(--secondary-foreground))" fillOpacity={0.5} radius={4}/>
+                    </BarChart>
+                  </ChartContainer>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="bg-background/50 backdrop-blur-sm">
+           <Card className="bg-background/50 backdrop-blur-sm">
             <CardHeader><CardTitle>Radar</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-sm text-center mb-2">No precipitation for at least 2 hours.</p>
+                <p className="text-sm text-center mb-2 text-muted-foreground">No precipitation for at least 2 hours.</p>
                 <RadarMap />
             </CardContent>
           </Card>
@@ -298,29 +346,28 @@ export default function WeatherPage() {
             <CardHeader><CardTitle>10-Day Forecast</CardTitle></CardHeader>
             <CardContent>
                 <div className="space-y-2">
-                    {weather.daily.time.map((day, i) => (
-                        <div key={day} className="flex items-center justify-between p-2 rounded-md hover:bg-accent/50">
-                            <span className="font-medium w-12">{i === 0 ? 'Today' : new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                            <div className="w-8">{getWeatherIcon(weather.daily.weathercode[i], true)}</div>
+                    {dailyForecasts.map((day, i) => (
+                        <div key={day.date} className="flex items-center justify-between p-2 rounded-md hover:bg-accent/50">
+                            <span className="font-medium w-12">{day.dayName}</span>
+                            <div className="w-8">{getWeatherIcon(day.weathercode, true)}</div>
                             <div className="flex-1 px-4">
                                 <div className="w-full bg-muted rounded-full h-1.5">
                                     <div 
                                         className="bg-gradient-to-r from-blue-400 to-orange-400 h-1.5 rounded-full"
                                         style={{ 
-                                            width: `${((weather.daily.temperature_2m_max[i] - weather.daily.temperature_2m_min[i]) / 40) * 100}%`,
-                                            marginLeft: `${(weather.daily.temperature_2m_min[i] - 30) / 70 * 100}%`
+                                            width: `${((day.maxTemp - day.minTemp) / 40) * 100}%`,
+                                            marginLeft: `${(day.minTemp - 30) / 70 * 100}%`
                                         }}
                                     />
                                 </div>
                             </div>
-                            <span className="font-semibold w-8 text-right">{Math.round(weather.daily.temperature_2m_max[i])}°</span>
-                            <span className="text-muted-foreground w-8 text-right">{Math.round(weather.daily.temperature_2m_min[i])}°</span>
+                            <span className="font-semibold w-8 text-right">{day.maxTemp}°</span>
+                            <span className="text-muted-foreground w-8 text-right">{day.minTemp}°</span>
                         </div>
                     ))}
                 </div>
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>
