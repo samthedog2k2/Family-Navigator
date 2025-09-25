@@ -5,8 +5,8 @@
  */
 
 // Import your existing Genkit setup
-// import { gemini15Flash } from '@genkit-ai/googleai';
-// import { generate } from 'genkit';
+import { ai } from '@/ai/genkit';
+import { generate } from 'genkit';
 
 export class SPGeminiService {
   /**
@@ -83,15 +83,11 @@ Embodying collective wisdom of:
     
     try {
       // Use your existing Genkit setup
-      // const response = await generate({
-      //   model: gemini15Flash,
-      //   prompt: enhancedPrompt
-      // });
+      const { text } = await ai.generate({
+        prompt: enhancedPrompt,
+      });
       
-      // Placeholder for now - replace with your actual Genkit call
-      const response = `SP-Enhanced Gemini response for: ${prompt} (Domain: ${domain || 'general'})`;
-      
-      return response;
+      return text;
     } catch (error) {
       console.error('SP Gemini Service Error:', error);
       throw new Error('Failed to generate SP-enhanced response');
