@@ -4,7 +4,7 @@
 import { useSearchParams } from "next/navigation";
 import { FinanceTools } from "@/components/finance-tools";
 import { HealthTracker } from "@/components/health-tracker";
-import { WebAgentForm } from "@/components/web-agent-form";
+import { SecureAgentForm } from "@/components/secure-agent-form";
 import { ChatInterface } from "@/components/chat";
 import { FamilyCalendar } from "@/components/family-calendar";
 import { SchoolDashboard } from "@/components/school-dashboard";
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 const featureMap: { [key: string]: React.ComponentType } = {
   finance: FinanceTools,
   health: HealthTracker,
-  agents: WebAgentForm,
+  agents: SecureAgentForm,
   chat: ChatInterface,
   calendar: FamilyCalendar,
   school: SchoolDashboard,
@@ -24,7 +24,7 @@ const featureMap: { [key: string]: React.ComponentType } = {
 const featureTitles: { [key: string]: string } = {
     finance: "Financial Tools",
     health: "Health Tracker",
-    agents: "Webpages Agent",
+    agents: "Secure Webpages Agent",
     chat: "Chat Agent",
     calendar: "Family Calendar",
     school: "School Dashboard",
