@@ -7,6 +7,8 @@ import { Wind, Droplets, Sunrise, Sunset, Sun } from "lucide-react";
 import { degreesToCompass } from "@/lib/weather-helpers";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <Card className={cn("bg-msn-bg/50 shadow-inner p-4", className)}>
@@ -59,13 +61,31 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
                     <p className="text-3xl font-bold">{weather.current.humidity}%</p>
                     <p className="text-xs text-msn-text-secondary">Relative</p>
                 </div>
-                <div className="flex gap-1 pt-1">
-                    {weather.hourly.temperature.slice(hourlyIndex, hourlyIndex + 5).map((h: number, i: number) => (
-                        <div key={i} className="w-2 rounded-full bg-gray-200 dark:bg-gray-700 h-12 flex flex-col-reverse">
-                           {(weather.hourly.humidity && weather.hourly.humidity[hourlyIndex + i]) && <div className="bg-msn-blue w-full rounded-full" style={{ height: `${weather.hourly.humidity[hourlyIndex + i]}%` }}></div>}
+                <TooltipProvider>
+                    <div className="flex flex-col items-center">
+                        <p className="text-xs font-semibold text-msn-text-secondary">Hourly</p>
+                        <div className="flex gap-2 pt-1 items-end h-16">
+                            {weather.hourly.time.slice(hourlyIndex, hourlyIndex + 5).map((time: string, i: number) => {
+                                const humidityValue = weather.hourly.humidity[hourlyIndex + i];
+                                return (
+                                    <Tooltip key={time}>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className="w-2.5 rounded-full bg-gray-200 dark:bg-gray-700 h-12 flex flex-col-reverse">
+                                                    <div className="bg-msn-blue w-full rounded-full" style={{ height: `${humidityValue}%` }}></div>
+                                                </div>
+                                                <p className="text-[10px] text-msn-text-secondary">{format(parseISO(time), 'ha')}</p>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{humidityValue}% humidity</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                );
+                            })}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                </TooltipProvider>
             </div>
         </WeatherCard>
     );
