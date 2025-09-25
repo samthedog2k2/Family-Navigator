@@ -99,14 +99,26 @@ export const UvCard = ({ weather }: { weather: any }) => {
     const maxUv = 11;
     const angle = (uvIndex / maxUv) * 180;
 
+    const segments = [
+        { color: 'bg-green-500', range: [0, 2] },
+        { color: 'bg-yellow-500', range: [3, 5] },
+        { color: 'bg-orange-500', range: [6, 7] },
+        { color: 'bg-red-500', range: [8, 10] },
+        { color: 'bg-purple-500', range: [11, 11] }
+    ];
+
     return (
         <WeatherCard>
             <h2 className="text-sm text-msn-text-secondary mb-2">UV Index</h2>
              <div className="relative w-32 h-16 mx-auto mt-2">
-                <div 
-                    className="absolute bottom-0 left-0 right-0 h-16 border-t-[6px] border-l-[6px] border-r-[6px] rounded-t-full"
-                    style={{borderColor: 'transparent', background: 'conic-gradient(from -90deg, #5cb85c 0deg 60deg, #f0ad4e 60deg 120deg, #d9534f 120deg 180deg)', clipPath: 'path("M 0 64 A 64 64 0 0 1 128 64 L 128 16 A 48 48 0 0 0 16 16 Z")' }}
-                />
+                <div className="absolute bottom-0 left-0 w-full h-full overflow-hidden rounded-t-full">
+                    <div className="absolute w-full h-full flex" style={{ transform: 'rotate(-90deg)'}}>
+                        {segments.map((seg, i) => (
+                           <div key={i} className={`absolute w-full h-full ${seg.color}`} style={{ clipPath: `path("M 200 200 A 100 100 0 0 1 ${200 + 100 * Math.cos(seg.range[0] * Math.PI / 11)} ${200 - 100 * Math.sin(seg.range[0] * Math.PI / 11)} L 200 200 Z")`}} />
+                        ))}
+                         <div className="w-full h-full bg-msn-card/80 absolute" style={{ clipPath: `path("M 200 200 A 80 80 0 0 1 ${200 + 80 * Math.cos(Math.PI)} 200 L 200 200 Z")` }}></div>
+                    </div>
+                </div>
                 <div 
                     className="absolute bottom-0 left-1/2 h-[58px] w-1 bg-msn-text origin-bottom"
                     style={{ transform: `translateX(-50%) rotate(${angle - 90}deg)` }}
@@ -122,4 +134,3 @@ export const UvCard = ({ weather }: { weather: any }) => {
     );
 };
 
-    
