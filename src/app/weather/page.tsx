@@ -5,8 +5,8 @@ import { Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { getWeatherIcon } from "@/lib/weather-icons";
-import { WindCard, HumidityCard, SunCard, UvCard } from "@/components/weather-cards";
 import { RadarMap } from "@/components/RadarMap";
+import { WindCard, HumidityCard, SunCard, UvCard } from "@/components/weather-cards";
 
 type WeatherData = {
   current: {
@@ -17,6 +17,7 @@ type WeatherData = {
     weather_code: number;
     wind_speed_10m: number;
     wind_direction_10m: number;
+    wind_gusts_10m: number;
     uv_index: number;
   };
   hourly: {
@@ -138,6 +139,16 @@ export default function WeatherPage() {
                     ))}
                 </div>
             </section>
+
+             <section>
+                <h3 className="text-lg font-semibold mb-2">Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <HumidityCard weather={weather} hourlyIndex={hourlyIndex} />
+                  <WindCard weather={weather} />
+                  <SunCard weather={weather} />
+                  <UvCard weather={weather} />
+                </div>
+            </section>
         </div>
 
         {/* Right sidebar column */}
@@ -163,14 +174,6 @@ export default function WeatherPage() {
                     </div>
                     ))}
                 </div>
-            </section>
-
-            <section className="grid grid-cols-2 gap-6">
-                <h3 className="text-lg font-semibold col-span-full">Details</h3>
-                <HumidityCard weather={weather} hourlyIndex={hourlyIndex} />
-                <WindCard weather={weather} />
-                <SunCard weather={weather} />
-                <UvCard weather={weather} />
             </section>
         </div>
       </main>
