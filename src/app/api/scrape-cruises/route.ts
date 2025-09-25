@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
 import * as cheerio from "cheerio";
-import chrome from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
 
 // --- Site selector map ---
 const SITE_CONFIGS = {
@@ -183,14 +183,13 @@ export async function GET(req: NextRequest) {
 
   let browser = null;
   try {
-    console.log("Launching Puppeteer with chrome-aws-lambda...");
-
-    const executablePath = await chrome.executablePath;
+    console.log("Launching Puppeteer with @sparticuz/chromium...");
 
     browser = await puppeteer.launch({
-      args: chrome.args,
-      executablePath,
-      headless: chrome.headless,
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
