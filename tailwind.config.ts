@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 const { fontFamily } = require("tailwindcss/defaultTheme")
 
@@ -18,9 +19,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
+        sans: ["Segoe UI", "Arial", ...fontFamily.sans],
       },
       colors: {
+        // Default theme colors
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -61,6 +63,18 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        // Microsoft Fluent / MSN Weather palette
+        "msn-bg": "#f3f2f1",
+        "msn-card": "#ffffff",
+        "msn-blue": "#0078d4",
+        "msn-text": "#242424",
+        "msn-text-secondary": "#605e5c",
+        "msn-text-muted": "#323130",
+        "msn-icon-sun": "#fcd116",
+        "msn-icon-gray": "#666666",
+        "msn-icon-blue": "#0078d4",
+        "msn-hover": "#eff6fc",
+        "msn-hover-light": "#c7e0f4"
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -89,7 +103,12 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      boxShadow: {
+        "msn": "0 2px 8px rgba(0,0,0,0.1)",
+      }
     },
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    

@@ -1,9 +1,10 @@
 
 "use client";
 import { Card } from "./ui/card";
-import { degreesToCompass, getUVIndexInfo } from "@/lib/weather-helpers";
+import { getUVIndexInfo } from "@/lib/weather-helpers";
 import { format, parseISO } from "date-fns";
 import { Wind, Droplets, Sunrise, Sunset } from "lucide-react";
+import { degreesToCompass } from "@/lib/weather-helpers";
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <Card className={`bg-white/10 border-white/20 backdrop-blur-lg p-4 text-white ${className}`}>
@@ -59,7 +60,7 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
                 <div className="flex gap-1">
                     {weather.hourly.temperature_2m.slice(hourlyIndex, hourlyIndex + 5).map((h: number, i: number) => (
                         <div key={i} className="w-2 rounded-full bg-gray-700 h-12 flex flex-col-reverse">
-                            <div className="bg-blue-400 w-full rounded-full" style={{ height: `${weather.hourly.relative_humidity_2m[hourlyIndex + i]}%` }}></div>
+                           {weather.hourly.relative_humidity_2m && <div className="bg-blue-400 w-full rounded-full" style={{ height: `${weather.hourly.relative_humidity_2m[hourlyIndex + i]}%` }}></div>}
                         </div>
                     ))}
                 </div>
@@ -128,3 +129,4 @@ export const PressureCard = ({ weather }: { weather: any }) => (<div></div>);
 export const PrecipitationCard = ({ weather }: { weather: any }) => (<div></div>);
 export const CloudCoverCard = ({ weather }: { weather: any }) => (<div></div>);
 
+    

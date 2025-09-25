@@ -1,5 +1,4 @@
 
-
 export function degreesToCompass(deg: number) {
   const val = Math.floor((deg / 22.5) + 0.5);
   const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
