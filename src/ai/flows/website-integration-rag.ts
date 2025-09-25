@@ -78,7 +78,7 @@ const websiteIntegrationRAGFlow = ai.defineFlow(
      // In a more complex flow, you would handle the tool output here.
      // For this RAG pattern, the model should be able to answer in one go after using the tool.
      return {
-        answer: llmResponse.text() || "I was unable to find an answer from the provided website."
+        answer: llmResponse.text || "I was unable to find an answer from the provided website."
      }
   }
 );

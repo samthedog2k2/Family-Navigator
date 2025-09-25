@@ -163,7 +163,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     if (toolResponse) {
       return { response: `Task completed. Here is the information I found: ${toolResponse}` };
     } else {
-      return { response: llmResponse.text() || "I was unable to complete the request. The tool did not return a response." };
+      return { response: llmResponse.text || "I was unable to complete the request. The tool did not return a response." };
     }
   }
 );
