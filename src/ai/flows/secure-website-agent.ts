@@ -15,7 +15,7 @@ import chromium from '@sparticuz/chromium';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
-  website: z.enum(['RoyalCaribbean', 'Netflix', 'BankOfAmerica']).describe('The canonical name of the website to log into.'),
+  website: z.enum(['RoyalCaribbean', 'Netflix', 'BankOfAmerica', 'Hulu', 'MSCCruises']).describe('The canonical name of the website to log into.'),
   task: z.string().describe('A simple, specific task to perform after logging in. e.g., "Get the account holder\'s name from the profile page."'),
   loginUrl: z.string().url().describe('The direct URL for the website\'s login page.'),
   postLoginUrl: z.string().url().describe('The URL to navigate to after a successful login to perform the task.'),
@@ -143,6 +143,16 @@ const secureWebsiteAgentFlow = ai.defineFlow(
               - postLoginUrl: https://www.netflix.com/browse
               - successIndicator: "Sign out of Netflix"
               - taskScrapeSelector for "primary profile name": ".profile-link .profile-name"
+            - Hulu:
+              - loginUrl: https://auth.hulu.com/web/login
+              - postLoginUrl: https://www.hulu.com/account
+              - successIndicator: "Log Out"
+              - taskScrapeSelector for "account holder name": "[data-testid=profile-button]"
+            - MSCCruises:
+              - loginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
+              - postLoginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
+              - successIndicator: "MY BOOKINGS"
+              - taskScrapeSelector for "booking number": ".booking-number-selection"
           `
         }
       ]
