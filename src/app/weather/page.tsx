@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -12,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Droplets } from 'lucide-react';
 import { LayoutWrapper } from "@/components/layout-wrapper";
 
-export default function WeatherDashboard() {
+export default function WeatherPage() {
   const [weatherData, setWeatherData] = useState<ComprehensiveWeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +37,8 @@ export default function WeatherDashboard() {
       },
       (error) => {
         console.error('Geolocation error:', error);
-        // Default to New York if location access denied
-        setLocation({ lat: 40.7128, lon: -74.0060 });
+        // Default to Greenwood, IN if location access denied
+        setLocation({ lat: 39.6137, lon: -86.1067 });
       },
       { timeout: 10000, maximumAge: 300000 }
     );
