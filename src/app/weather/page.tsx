@@ -54,7 +54,6 @@ type WeatherData = {
     surface_pressure: number;
     dewpoint_2m: number;
     uv_index: number;
-    european_aqi: number;
   };
   hourly: {
     time: string[];
@@ -62,6 +61,7 @@ type WeatherData = {
     precipitation_probability: number[];
     weathercode: number[];
     visibility: number[];
+    european_aqi: number[];
   };
   daily: {
     time: string[];
@@ -146,7 +146,7 @@ export default function WeatherPage() {
 
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index,european_aqi&hourly=temperature_2m,precipitation_probability,weathercode,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index&hourly=temperature_2m,precipitation_probability,weathercode,visibility,european_aqi&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
         );
         const data = await res.json();
         if (!data.error) {
@@ -234,9 +234,9 @@ export default function WeatherPage() {
     );
   }
 
-  const currentVisibility = weather.hourly.visibility[
-    weather.hourly.time.findIndex(t => new Date(t) > new Date()) -1
-  ] ?? 0;
+  const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t) > new Date()) -1;
+  const currentVisibility = weather.hourly.visibility[currentHourIndex] ?? 0;
+  const currentAqi = weather.hourly.european_aqi[currentHourIndex] ?? 0;
   
   const dailyForecasts = weather.daily.time.map((day, i) => ({
     date: day,
@@ -278,7 +278,7 @@ export default function WeatherPage() {
           
           {/* Details Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-3">
-             <WeatherDetail icon={<GaugeCircle size={20} />} label="Air quality" value={weather.current.european_aqi} tooltip="European Air Quality Index"/>
+             <WeatherDetail icon={<GaugeCircle size={20} />} label="Air quality" value={currentAqi} tooltip="European Air Quality Index"/>
              <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)}`} unit=" mph" />
              <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}`} unit="%" />
              <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)}`} unit=" mi" />
