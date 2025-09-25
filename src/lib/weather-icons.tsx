@@ -1,3 +1,4 @@
+
 import {
   Sun,
   Cloud,
@@ -10,24 +11,41 @@ import {
   CloudSun,
   CloudMoon,
 } from "lucide-react";
+import React from "react";
 
 // Open-Meteo Weather Codes: https://open-meteo.com/en/docs
-export function getWeatherIcon(code: number, isDay: boolean = true) {
+export function getWeatherIcon(code: number, isDay: boolean = true, size: number = 24) {
+    const iconProps = {
+        width: size,
+        height: size,
+        className: isDay ? "text-yellow-500" : "text-gray-300"
+    };
+    const dayCloudProps = {
+        width: size,
+        height: size,
+        className: "text-gray-500"
+    };
+     const nightCloudProps = {
+        width: size,
+        height: size,
+        className: "text-gray-400"
+    };
+
   switch (code) {
     // Clear sky
     case 0:
-      return isDay ? <Sun className="w-6 h-6 text-yellow-500" /> : <CloudMoon className="w-6 h-6" />;
+      return isDay ? React.createElement(Sun, iconProps) : React.createElement(Moon, nightCloudProps);
 
     // Mainly clear, partly cloudy, overcast
     case 1:
     case 2:
     case 3:
-        return isDay? <CloudSun className="w-6 h-6" /> : <Cloud className="w-6 h-6" />;
+        return isDay? React.createElement(CloudSun, dayCloudProps) : React.createElement(CloudMoon, nightCloudProps);
 
     // Fog and depositing rime fog
     case 45:
     case 48:
-      return <CloudFog className="w-6 h-6" />;
+      return React.createElement(CloudFog, dayCloudProps);
 
     // Drizzle
     case 51:
@@ -35,7 +53,7 @@ export function getWeatherIcon(code: number, isDay: boolean = true) {
     case 55:
     case 56:
     case 57:
-      return <CloudDrizzle className="w-6 h-6" />;
+      return React.createElement(CloudDrizzle, dayCloudProps);
 
     // Rain
     case 61:
@@ -43,19 +61,19 @@ export function getWeatherIcon(code: number, isDay: boolean = true) {
     case 65:
     case 66:
     case 67:
-      return <CloudRain className="w-6 h-6" />;
+      return React.createElement(CloudRain, dayCloudProps);
 
     // Snow fall
     case 71:
     case 73:
     case 75:
     case 77:
-      return <CloudSnow className="w-6 h-6" />;
+      return React.createElement(CloudSnow, dayCloudProps);
     
     // Snow showers
     case 85:
     case 86:
-        return <CloudSnow className="w-6 h-6" />;
+        return React.createElement(CloudSnow, dayCloudProps);
 
     // Thunderstorm
     case 80:
@@ -64,10 +82,12 @@ export function getWeatherIcon(code: number, isDay: boolean = true) {
     case 95:
     case 96:
     case 99:
-      return <CloudLightning className="w-6 h-6" />;
+      return React.createElement(CloudLightning, dayCloudProps);
 
     // Default fallback
     default:
-      return <Cloud className="w-6 h-6" />;
+      return React.createElement(Cloud, dayCloudProps);
   }
 }
+
+    

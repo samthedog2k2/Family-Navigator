@@ -9,7 +9,7 @@ import {
   BarChart,
   ReferenceLine,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -23,6 +23,8 @@ import {
   Thermometer,
   Gauge,
   CalendarDays,
+  GaugeCircle,
+  HelpCircle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -36,12 +38,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip as RechartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 type WeatherData = {
   current: {
@@ -54,6 +54,7 @@ type WeatherData = {
     surface_pressure: number;
     dewpoint_2m: number;
     uv_index: number;
+    european_aqi: number;
   };
   hourly: {
     time: string[];
@@ -77,20 +78,36 @@ const WeatherDetail = ({
   label,
   value,
   unit,
+  tooltip,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   unit?: string;
+  tooltip?: string;
 }) => (
-  <div className="flex items-center gap-2 text-sm">
-    <div className="text-muted-foreground">{icon}</div>
-    <span className="font-medium">{label}</span>
-    <span className="ml-auto font-semibold">
-      {value}
-      {unit}
-    </span>
-  </div>
+    <div className="flex items-center gap-2 text-sm">
+        <div className="text-muted-foreground">{icon}</div>
+        <div className="flex items-center gap-1">
+            <span className="font-medium">{label}</span>
+            {tooltip && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>
+                           <HelpCircle size={12} className="text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>{tooltip}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
+        </div>
+        <span className="ml-auto font-semibold">
+        {value}
+        {unit}
+        </span>
+    </div>
 );
 
 const chartConfig = {
@@ -102,7 +119,7 @@ const chartConfig = {
     label: "Precipitation",
     color: "hsl(var(--secondary))",
   },
-};
+} satisfies ChartConfig;
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -129,7 +146,7 @@ export default function WeatherPage() {
 
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index&hourly=temperature_2m,precipitation_probability,weathercode,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index,european_aqi&hourly=temperature_2m,precipitation_probability,weathercode,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
         );
         const data = await res.json();
         if (!data.error) {
@@ -177,11 +194,9 @@ export default function WeatherPage() {
   const hourlyChartData = useMemo(() => {
     if (!weather) return [];
     const now = new Date();
-    // Find the first hour in the future
     let startIndex = weather.hourly.time.findIndex(t => new Date(t) > now);
-    // If not found, or it's the first one, use 0
     if (startIndex === -1) startIndex = weather.hourly.time.length - 24;
-    else if (startIndex > 0) startIndex = startIndex -1; // Start from the current hour
+    else if (startIndex > 0) startIndex = startIndex -1;
     else startIndex = 0;
 
 
@@ -243,7 +258,7 @@ export default function WeatherPage() {
           {/* Current Conditions */}
            <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="flex items-center gap-4">
-              {getWeatherIcon(weather.current.weathercode, isDay)}
+              <div className="w-16 h-16">{getWeatherIcon(weather.current.weathercode, isDay, 64)}</div>
               <div>
                 <span className="text-7xl font-bold">
                   {Math.round(weather.current.temperature_2m)}°
@@ -262,8 +277,8 @@ export default function WeatherPage() {
           </div>
           
           {/* Details Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
-             <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}`} unit="°"/>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-3">
+             <WeatherDetail icon={<GaugeCircle size={20} />} label="Air quality" value={weather.current.european_aqi} tooltip="European Air Quality Index"/>
              <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)}`} unit=" mph" />
              <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}`} unit="%" />
              <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)}`} unit=" mi" />
@@ -274,9 +289,23 @@ export default function WeatherPage() {
           <Card className="bg-background/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Hourly Forecast</CardTitle>
+               <Tabs defaultValue="overview" className="mt-2 -mb-8">
+                 <TabsList className="overflow-x-auto max-w-full justify-start">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="precipitation">Precipitation</TabsTrigger>
+                  <TabsTrigger value="wind">Wind</TabsTrigger>
+                  <TabsTrigger value="air-quality">Air Quality</TabsTrigger>
+                  <TabsTrigger value="humidity">Humidity</TabsTrigger>
+                  <TabsTrigger value="cloud-cover">Cloud cover</TabsTrigger>
+                  <TabsTrigger value="pressure">Pressure</TabsTrigger>
+                  <TabsTrigger value="uv">UV</TabsTrigger>
+                  <TabsTrigger value="visibility">Visibility</TabsTrigger>
+                  <TabsTrigger value="feels-like">Feels like</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto pb-4">
+               <div className="overflow-x-auto pb-4">
                 <div className="flex space-x-2">
                 {dailyForecasts.map((day, i) => (
                   <div key={day.date} className={cn(
@@ -284,7 +313,7 @@ export default function WeatherPage() {
                     i === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/50"
                     )}>
                       <p className="font-bold text-sm">{day.dayName}</p>
-                      <div className="w-8 h-8 my-2">{getWeatherIcon(day.weathercode, true)}</div>
+                      <div className="w-10 h-10 my-2">{getWeatherIcon(day.weathercode, true, 40)}</div>
                       <p className="font-bold">{day.maxTemp}°</p>
                       <p className="text-xs opacity-80">{day.minTemp}°</p>
                   </div>
@@ -292,13 +321,8 @@ export default function WeatherPage() {
                 </div>
               </div>
               <Tabs defaultValue="overview">
-                 <TabsList>
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="precipitation">Precipitation</TabsTrigger>
-                  <TabsTrigger value="wind">Wind</TabsTrigger>
-                </TabsList>
                 <TabsContent value="overview">
-                  <ChartContainer config={chartConfig} className="w-full h-[250px] aspect-auto">
+                   <ChartContainer config={chartConfig} className="w-full h-[250px] aspect-auto">
                      <AreaChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
                         <defs>
                           <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
@@ -308,22 +332,16 @@ export default function WeatherPage() {
                         </defs>
                         <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} />
                         <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide />
-                        <RechartTooltip content={<ChartTooltipContent indicator="line" />} />
+                        <RechartsTooltip cursor={{ stroke: 'hsl(var(--foreground))', strokeWidth: 1, strokeDasharray: '3 3' }} content={<ChartTooltipContent indicator="line" />} />
                         <Area type="monotone" dataKey="temp" stroke="var(--color-temp)" strokeWidth={2} fill="url(#colorTemp)" />
                         <ReferenceLine y={32} stroke="hsl(var(--foreground))" strokeDasharray="3 3" strokeOpacity={0.5} />
-                        <ReferenceLine x={format(parseISO(weather.daily.sunrise[0]), 'h a')} stroke="orange" strokeDasharray="3 3" >
-                           <Sunrise size={14} fill="orange" />
-                        </ReferenceLine>
-                         <ReferenceLine x={format(parseISO(weather.daily.sunset[0]), 'h a')} stroke="darkorange" strokeDasharray="3 3">
-                           <Sunset size={14} fill="darkorange" />
-                        </ReferenceLine>
                       </AreaChart>
                   </ChartContainer>
                   <ChartContainer config={chartConfig} className="w-full h-[80px] aspect-auto -mt-4">
                     <BarChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
                        <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} hide/>
                        <YAxis domain={[0, 100]} hide/>
-                       <RechartTooltip content={<ChartTooltipContent indicator="dot" nameKey="precip"/>} cursor={false} />
+                       <RechartsTooltip content={<ChartTooltipContent indicator="dot" nameKey="precip"/>} cursor={false} />
                        <Bar dataKey="precip" fill="hsl(var(--secondary-foreground))" fillOpacity={0.5} radius={4}/>
                     </BarChart>
                   </ChartContainer>
@@ -346,10 +364,10 @@ export default function WeatherPage() {
             <CardHeader><CardTitle>10-Day Forecast</CardTitle></CardHeader>
             <CardContent>
                 <div className="space-y-2">
-                    {dailyForecasts.map((day, i) => (
+                    {dailyForecasts.map((day) => (
                         <div key={day.date} className="flex items-center justify-between p-2 rounded-md hover:bg-accent/50">
                             <span className="font-medium w-12">{day.dayName}</span>
-                            <div className="w-8">{getWeatherIcon(day.weathercode, true)}</div>
+                            <div className="w-8">{getWeatherIcon(day.weathercode, true, 24)}</div>
                             <div className="flex-1 px-4">
                                 <div className="w-full bg-muted rounded-full h-1.5">
                                     <div 
@@ -373,3 +391,5 @@ export default function WeatherPage() {
     </div>
   );
 }
+
+    
