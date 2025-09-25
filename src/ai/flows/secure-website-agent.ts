@@ -10,8 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
@@ -51,10 +50,8 @@ const loginAndPerformTask = ai.defineTool(
     try {
       console.log('[Agent] Launching browser...');
       browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
 
       const page = await browser.newPage();
@@ -165,6 +162,9 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     const toolResponse = llmResponse.toolRequest?.output;
 
     if (toolResponse) {
+      if (toolResponse.startsWith('Error:')) {
+          return { response: `I'm sorry, I wasn't able to get that information for you. ${toolResponse}` };
+      }
       return { response: `Task completed. Here is the information I found: ${toolResponse}` };
     } else {
       return { response: llmResponse.text || "I was unable to complete the request. The tool did not return a response." };
