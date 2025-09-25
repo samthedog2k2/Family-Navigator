@@ -235,8 +235,8 @@ export default function WeatherPage() {
   }
 
   const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t) > new Date()) -1;
-  const currentVisibility = weather.hourly.visibility[currentHourIndex] ?? 0;
-  const currentAqi = weather.hourly.european_aqi[currentHourIndex] ?? 0;
+  const currentVisibility = currentHourIndex >=0 ? weather.hourly.visibility[currentHourIndex] : 0;
+  const currentAqi = currentHourIndex >=0 ? weather.hourly.european_aqi[currentHourIndex] : 0;
   
   const dailyForecasts = weather.daily.time.map((day, i) => ({
     date: day,
