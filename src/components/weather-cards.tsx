@@ -3,9 +3,10 @@
 import { Card } from "./ui/card";
 import { getUVIndexInfo } from "@/lib/weather-helpers";
 import { format, parseISO } from "date-fns";
-import { Wind, Droplets, Sunrise, Sunset } from "lucide-react";
+import { Wind, Droplets, Sunrise, Sunset, Sun } from "lucide-react";
 import { degreesToCompass } from "@/lib/weather-helpers";
 import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <Card className={cn("bg-msn-bg/50 shadow-inner p-4", className)}>
@@ -71,26 +72,71 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
 };
 
 export const SunCard = ({ weather }: { weather: any }) => {
-    const sunrise = parseISO(weather.daily.sunrise[0]);
-    const sunset = parseISO(weather.daily.sunset[0]);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-    return (
-        <WeatherCard>
-            <h2 className="text-sm text-msn-text-secondary mb-2">Sunrise & Sunset</h2>
-            <div className="flex justify-between items-center text-center mt-4">
-                <div>
-                    <Sunrise className="mx-auto text-msn-icon-sun" />
-                    <p className="text-lg font-bold">{format(sunrise, 'h:mm')}</p>
-                    <p className="text-xs text-msn-text-muted">{format(sunrise, 'a')}</p>
-                </div>
-                <div>
-                    <Sunset className="mx-auto text-orange-500" />
-                    <p className="text-lg font-bold">{format(sunset, 'h:mm')}</p>
-                    <p className="text-xs text-msn-text-muted">{format(sunset, 'a')}</p>
-                </div>
-            </div>
-        </WeatherCard>
-    );
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  const sunrise = parseISO(weather.daily.sunrise[0]);
+  const sunset = parseISO(weather.daily.sunset[0]);
+
+  const totalDaylight = sunset.getTime() - sunrise.getTime();
+  const timeSinceSunrise = currentTime.getTime() - sunrise.getTime();
+  
+  let sunProgress = 0;
+  if (totalDaylight > 0 && timeSinceSunrise > 0) {
+      sunProgress = (timeSinceSunrise / totalDaylight) * 100;
+  }
+  
+  if (currentTime > sunset) {
+      sunProgress = 100;
+  }
+  if (currentTime < sunrise) {
+      sunProgress = 0;
+  }
+
+  // Convert progress (0-100) to an angle (180 to 0 degrees) for the arc
+  const angle = 180 - (sunProgress * 1.8);
+  const radians = (angle * Math.PI) / 180;
+  const sunX = 50 + 45 * Math.cos(radians);
+  const sunY = 50 - 45 * Math.sin(radians);
+
+  return (
+    <WeatherCard>
+      <h2 className="text-sm text-msn-text-secondary mb-2">Sunrise & Sunset</h2>
+      <div className="relative w-full h-24 mb-2">
+        <svg viewBox="0 0 100 55" className="w-full h-full">
+            {/* Dashed Arc Path */}
+            <path d="M 5 50 A 45 45 0 0 1 95 50" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeDasharray="2 3" />
+            
+            {/* Sun Icon positioned on the arc */}
+            {sunProgress > 0 && sunProgress < 100 && (
+                <g transform={`translate(${sunX}, ${sunY})`}>
+                    <Sun size={12} className="text-msn-icon-sun" fill="hsl(var(--msn-icon-sun))"/>
+                </g>
+            )}
+        </svg>
+        <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-msn-text-secondary font-semibold">
+          {format(currentTime, 'h:mm a')}
+        </p>
+      </div>
+
+      <div className="flex justify-between items-center text-center">
+          <div>
+              <Sunrise className="mx-auto text-msn-icon-sun" />
+              <p className="text-lg font-bold">{format(sunrise, 'h:mm')}</p>
+              <p className="text-xs text-msn-text-muted">{format(sunrise, 'a')}</p>
+          </div>
+          <div>
+              <Sunset className="mx-auto text-orange-500" />
+              <p className="text-lg font-bold">{format(sunset, 'h:mm')}</p>
+              <p className="text-xs text-msn-text-muted">{format(sunset, 'a')}</p>
+          </div>
+      </div>
+    </WeatherCard>
+  );
 };
 
 export const UvCard = ({ weather }: { weather: any }) => {
@@ -118,4 +164,3 @@ export const UvCard = ({ weather }: { weather: any }) => {
         </WeatherCard>
     );
 };
-
