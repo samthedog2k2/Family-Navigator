@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -16,11 +17,19 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
+// The agent flow doesn't need to know about these, they are passed separately.
+// We are adding them to the form schema for validation.
 const formSchema = z.object({
   request: z.string().min(10, "Please enter a detailed request."),
+  geminiApiKey: z.string().startsWith("AIzaSy", "Please enter a valid Gemini API Key."),
+  huluUsername: z.string().email("Please enter a valid Hulu email."),
+  huluPassword: z.string().min(1, "Please enter your Hulu password."),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -40,8 +49,15 @@ export function SecureAgentForm() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     setAnswer("");
+
+    // Temporarily set credentials in the environment for the agent to use.
+    // This is NOT a secure long-term solution.
+    process.env.GEMINI_API_KEY = data.geminiApiKey;
+    process.env.HULU_USERNAME = data.huluUsername;
+    process.env.HULU_PASSWORD = data.huluPassword;
+
     try {
-      const result = await secureWebsiteAgent(data);
+      const result = await secureWebsiteAgent({ request: data.request });
       setAnswer(result.response);
     } catch (error) {
       console.error("Error with Secure Agent:", error);
@@ -66,6 +82,29 @@ export function SecureAgentForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
+             <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-800">
+                <Info className="h-4 w-4 !text-blue-800" />
+                <AlertDescription>
+                   Please provide your credentials below. They are used only for this request and are not stored.
+                </AlertDescription>
+            </Alert>
+            <div className="grid gap-2">
+              <Label htmlFor="geminiApiKey">Gemini API Key</Label>
+              <Input id="geminiApiKey" type="password" {...register("geminiApiKey")} placeholder="Paste your Gemini API Key" />
+              {errors.geminiApiKey && <p className="text-sm text-destructive">{errors.geminiApiKey.message}</p>}
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+               <div className="grid gap-2">
+                <Label htmlFor="huluUsername">Hulu Email</Label>
+                <Input id="huluUsername" type="email" {...register("huluUsername")} placeholder="Your Hulu email" />
+                {errors.huluUsername && <p className="text-sm text-destructive">{errors.huluUsername.message}</p>}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="huluPassword">Hulu Password</Label>
+                <Input id="huluPassword" type="password" {...register("huluPassword")} placeholder="Your Hulu password" />
+                {errors.huluPassword && <p className="text-sm text-destructive">{errors.huluPassword.message}</p>}
+              </div>
+             </div>
             <div className="grid gap-2">
               <Label htmlFor="request">Your Request</Label>
               <Textarea
