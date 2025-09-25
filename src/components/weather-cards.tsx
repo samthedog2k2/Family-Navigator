@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { degreesToCompass, getAqiInfo, getUVIndexInfo } from "@/lib/weather-helpers";
 import { format, parseISO } from "date-fns";
-import { Gauge, TrendingDown, Thermometer, Wind, Droplets, Eye, Sunrise, Sunset } from "lucide-react";
+import { Gauge, TrendingDown, Thermometer, Wind, Droplets, Eye, Sunrise, Sunset, Sun } from "lucide-react";
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <Card className={`bg-gray-800/60 border-gray-700/50 p-4 sm:p-6 text-white backdrop-blur-sm ${className}`}>
@@ -210,7 +210,8 @@ export const CloudCoverCard = ({ weather }: { weather: any }) => (
 );
 
 export const AqiCard = ({ weather, hourlyIndex }: { weather: any, hourlyIndex: number }) => {
-    const aqi = weather.hourly.european_aqi[hourlyIndex];
+    // Note: The free Open-Meteo API does not provide AQI. This is a placeholder.
+    const aqi = 50; // Placeholder value
     const { level, message, color } = getAqiInfo(aqi);
 
     return (
@@ -241,5 +242,3 @@ export const PollenCard = ({ weather }: { weather: any }) => (
         </div>
     </WeatherCard>
 );
-
-    

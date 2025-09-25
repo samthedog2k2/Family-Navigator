@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wind, Droplets, Eye, Gauge, Sunrise, Sunset, Sun } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { cn } from "@/lib/utils";
@@ -17,8 +17,6 @@ import {
   SunCard,
   PrecipitationCard,
   CloudCoverCard,
-  AqiCard,
-  PollenCard
 } from "@/components/weather-cards";
 
 type WeatherData = {
@@ -55,9 +53,6 @@ type WeatherData = {
     wind_gusts_10m: number[];
     uv_index: number[];
     is_day: (0 | 1)[];
-    european_aqi: number[];
-    us_aqi: number[];
-    us_aqi_pm2_5: number[];
   };
   daily: {
     time: string[];
@@ -104,8 +99,8 @@ export default function WeatherPage() {
             latitude: lat.toString(),
             longitude: lon.toString(),
             current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index",
-            hourly: "temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,european_aqi,us_aqi,us_aqi_pm2_5",
-            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration",
+            hourly: "temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day",
+            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant",
             temperature_unit: "fahrenheit",
             wind_speed_unit: "mph",
             precipitation_unit: "inch",
@@ -177,14 +172,10 @@ export default function WeatherPage() {
             <WindCard weather={weather} />
             <HumidityCard weather={weather} hourlyIndex={currentHourIndex} />
             <UvCard weather={weather} />
-            <AqiCard weather={weather} hourlyIndex={currentHourIndex} />
             <VisibilityCard weather={weather} hourlyIndex={currentHourIndex} />
             <PressureCard weather={weather} />
             <SunCard weather={weather} />
-            {/* Pollen card can be added here if API supports it */}
         </div>
     </div>
   );
 }
-
-    
