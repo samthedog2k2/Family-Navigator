@@ -2,22 +2,33 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, Wind, Droplets, Eye, Gauge, Sunrise, Sunset, Sun } from "lucide-react";
+import { Loader2, Wind, Droplets, Eye, Gauge, Sunrise, Sunset, Sun, Thermometer } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  TemperatureCard,
-  FeelsLikeCard,
-  WindCard,
-  HumidityCard,
-  VisibilityCard,
-  PressureCard,
-  UvCard,
-  SunCard,
-  PrecipitationCard,
-  CloudCoverCard,
-} from "@/components/weather-cards";
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Rectangle,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
+import { getWeatherIcon } from "@/lib/weather-icons";
+import { RadarMap } from "@/components/RadarMap";
+
 
 type WeatherData = {
   current: {
@@ -38,21 +49,8 @@ type WeatherData = {
   hourly: {
     time: string[];
     temperature_2m: number[];
-    relative_humidity_2m: number[];
-    dew_point_2m: number[];
-    apparent_temperature: number[];
     precipitation_probability: number[];
-    precipitation: number[];
     weather_code: number[];
-    pressure_msl: number;
-    surface_pressure: number;
-    cloud_cover: number[];
-    visibility: number[];
-    wind_speed_10m: number[];
-    wind_direction_10m: number[];
-    wind_gusts_10m: number[];
-    uv_index: number[];
-    is_day: (0 | 1)[];
   };
   daily: {
     time: string[];
@@ -61,17 +59,22 @@ type WeatherData = {
     temperature_2m_min: number[];
     sunrise: string[];
     sunset: string[];
-    uv_index_max: number[];
-    precipitation_sum: number[];
-    precipitation_hours: number[];
-    precipitation_probability_max: number[];
-    wind_speed_10m_max: number[];
-    wind_gusts_10m_max: number[];
-    wind_direction_10m_dominant: number[];
-    shortwave_radiation_sum: number[];
-    et0_fao_evapotranspiration: number[];
   };
 };
+
+const WeatherDetail = ({ icon, label, value, unit }: { icon: React.ReactNode, label: string, value: string, unit?: string }) => (
+  <div className="flex items-center gap-3">
+    <div className="text-gray-400">{icon}</div>
+    <div className="flex-1">
+      <div className="text-sm text-gray-400">{label}</div>
+      <div className="text-lg font-bold">
+        {value}
+        {unit && <span className="text-base font-normal">{unit}</span>}
+      </div>
+    </div>
+  </div>
+);
+
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -98,9 +101,9 @@ export default function WeatherPage() {
         const params = new URLSearchParams({
             latitude: lat.toString(),
             longitude: lon.toString(),
-            current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index",
-            hourly: "temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day",
-            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant",
+            current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,uv_index",
+            hourly: "temperature_2m,precipitation_probability,weather_code",
+            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
             temperature_unit: "fahrenheit",
             wind_speed_unit: "mph",
             precipitation_unit: "inch",
@@ -141,6 +144,26 @@ export default function WeatherPage() {
     );
   }, []);
 
+  const isDay = weather?.current.is_day === 1;
+  const weatherDescription = getWeatherIcon(weather?.current.weather_code ?? 0, isDay)?.description || 'Loading...';
+
+  const hourlyData = weather?.hourly.time.slice(0, 24).map((time, index) => ({
+    time: format(parseISO(time), 'ha'),
+    temp: weather.hourly.temperature_2m[index],
+    precip: weather.hourly.precipitation_probability[index],
+  })) || [];
+
+  const chartConfig: ChartConfig = {
+    temp: {
+      label: "Temperature",
+      color: "hsl(var(--primary))",
+    },
+     precip: {
+      label: "Precipitation",
+      color: "hsl(var(--muted-foreground))",
+    },
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
@@ -157,25 +180,98 @@ export default function WeatherPage() {
     );
   }
   
-  const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t).getHours() === new Date().getHours());
+  const currentVisibility = weather.hourly.visibility?.[0] || 0;
 
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen p-4 sm:p-6 lg:p-8">
-        <h1 className="text-3xl font-bold mb-2">{locationName}</h1>
-        <p className="text-lg text-gray-400 mb-8">As of {format(new Date(), "h:mm a")}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <TemperatureCard weather={weather} />
-            <FeelsLikeCard weather={weather} />
-            <CloudCoverCard weather={weather} />
-            <PrecipitationCard weather={weather} />
-            <WindCard weather={weather} />
-            <HumidityCard weather={weather} hourlyIndex={currentHourIndex} />
-            <UvCard weather={weather} />
-            <VisibilityCard weather={weather} hourlyIndex={currentHourIndex} />
-            <PressureCard weather={weather} />
-            <SunCard weather={weather} />
+    <div className={cn("p-4 sm:p-6 lg:p-8", isDay ? "weather-bg-day" : "weather-bg-night")}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-6">
+           <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+             <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="font-bold text-lg">{locationName}</p>
+                        <p className="text-7xl font-bold">{Math.round(weather.current.temperature_2m)}°</p>
+                        <p className="text-lg">{weatherDescription}</p>
+                        <p className="text-sm">H: {Math.round(weather.daily.temperature_2m_max[0])}° L: {Math.round(weather.daily.temperature_2m_min[0])}°</p>
+                    </div>
+                    <div className="w-24 h-24">
+                        {getWeatherIcon(weather.current.weather_code, isDay, 96)}
+                    </div>
+                </div>
+              </CardContent>
+           </Card>
+
+            <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+              <CardHeader>
+                <CardTitle>Hourly Forecast</CardTitle>
+              </CardHeader>
+              <CardContent>
+                 <ChartContainer config={chartConfig} className="h-64 w-full">
+                  <AreaChart data={hourlyData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-temp)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="var(--color-temp)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
+                    <XAxis dataKey="time" tick={{ fill: 'white' }} tickLine={{ stroke: 'white' }} axisLine={{ stroke: 'white' }} />
+                    <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="temp" strokeWidth={2} stroke="var(--color-temp)" fill="url(#colorTemp)" />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+           <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+             <CardContent className="p-6 grid grid-cols-2 md:grid-cols-3 gap-6">
+                <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}°`} />
+                <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.wind_speed_10m)}`} unit=" mph" />
+                <WeatherDetail icon={<Droplets size={20} />} label="Humidity" value={`${weather.current.relative_humidity_2m}%`} />
+                <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)}`} unit=" mi" />
+                <WeatherDetail icon={<Gauge size={20} />} label="Pressure" value={`${(weather.current.surface_pressure / 33.864).toFixed(2)}`} unit=" in" />
+                <WeatherDetail icon={<Sun size={20} />} label="UV Index" value={`${weather.current.uv_index}`} />
+             </CardContent>
+           </Card>
         </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+            <CardHeader>
+              <CardTitle>Weather Radar</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadarMap />
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 border-white/20 backdrop-blur-lg">
+            <CardHeader>
+              <CardTitle>10-Day Forecast</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {weather.daily.time.slice(0, 10).map((day, i) => (
+                 <div key={day} className="flex items-center justify-between">
+                    <p className="w-1/4 font-medium">{format(parseISO(day), "EEEE")}</p>
+                    <div className="w-1/4 flex justify-center">
+                        {getWeatherIcon(weather.daily.weather_code[i], true, 28)}
+                    </div>
+                    <p className="w-1/4 text-right">{Math.round(weather.daily.temperature_2m_min[i])}°</p>
+                     <div className="w-1/4 h-1.5 bg-gray-600/50 rounded-full mx-2">
+                        <div className="h-full bg-gradient-to-r from-cyan-400 to-amber-400 rounded-full" />
+                    </div>
+                    <p className="w-1/4 text-right font-medium">{Math.round(weather.daily.temperature_2m_max[i])}°</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
+

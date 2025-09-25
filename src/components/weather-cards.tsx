@@ -70,7 +70,6 @@ export const WindCard = ({ weather }: { weather: any }) => {
                 <div className="flex-1">
                     <p className="text-xs text-gray-400">From {degreesToCompass(weather.current.wind_direction_10m)} ({weather.current.wind_direction_10m}°)</p>
                     <p><span className="text-3xl font-bold">{Math.round(weather.current.wind_speed_10m)}</span> mph Wind Speed</p>
-                    <p><span className="text-3xl font-bold">{Math.round(weather.current.wind_gusts_10m)}</span> mph Wind Gust</p>
                 </div>
             </div>
         </WeatherCard>
@@ -102,7 +101,7 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
 };
 
 export const VisibilityCard = ({ weather, hourlyIndex }: { weather: any, hourlyIndex: number }) => {
-    const visibilityInMiles = (weather.hourly.visibility[hourlyIndex] / 1609).toFixed(1);
+    const visibilityInMiles = (weather.hourly.visibility?.[hourlyIndex] / 1609).toFixed(1) || 0;
     return (
         <WeatherCard>
             <h2 className="text-sm text-gray-400 mb-2">Visibility</h2>
@@ -205,40 +204,6 @@ export const CloudCoverCard = ({ weather }: { weather: any }) => (
         <div className="text-center mt-4">
             <p className="font-bold">Cloudy ({weather.current.cloud_cover}%)</p>
             <p className="text-xs text-gray-400">Steady with mostly cloudy sky at {format(new Date(), 'h:mm a')}.</p>
-        </div>
-    </WeatherCard>
-);
-
-export const AqiCard = ({ weather, hourlyIndex }: { weather: any, hourlyIndex: number }) => {
-    // Note: The free Open-Meteo API does not provide AQI. This is a placeholder.
-    const aqi = 50; // Placeholder value
-    const { level, message, color } = getAqiInfo(aqi);
-
-    return (
-        <WeatherCard>
-            <h2 className="text-sm text-gray-400 mb-2">AQI</h2>
-             <div className="relative w-32 h-32 mx-auto mt-4 flex items-center justify-center">
-                <Gauge size={128} className="text-gray-700" strokeWidth={1} />
-                <p className="absolute text-4xl font-bold">{aqi}</p>
-             </div>
-            <div className="text-center mt-4">
-                <p className={`font-bold ${color}`}>{level}</p>
-                <p className="text-xs text-gray-400">{message}</p>
-            </div>
-        </WeatherCard>
-    )
-};
-
-export const PollenCard = ({ weather }: { weather: any }) => (
-    <WeatherCard>
-         <h2 className="text-sm text-gray-400 mb-2">Pollen</h2>
-             <div className="relative w-32 h-32 mx-auto mt-4 flex items-center justify-center">
-                <Gauge size={128} className="text-gray-700" strokeWidth={1} />
-                <p className="absolute text-4xl font-bold">16</p>
-             </div>
-        <div className="text-center mt-4">
-            <p className="font-bold text-yellow-400">Low</p>
-            <p className="text-xs text-gray-400">Main Allergy: Weed</p>
         </div>
     </WeatherCard>
 );
