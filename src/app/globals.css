@@ -75,19 +75,10 @@
     @apply bg-background text-foreground;
   }
   .weather-bg-day {
-    @apply bg-gradient-to-br from-blue-200 to-blue-400 text-gray-800;
-  }
-  .weather-bg-day .text-muted-foreground {
-    @apply text-gray-600;
+    background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
   }
   .weather-bg-night {
-    @apply bg-gradient-to-br from-gray-800 to-gray-900 text-white;
-  }
-  .weather-bg-night .text-muted-foreground {
-    @apply text-gray-400;
-  }
-  .weather-bg-night .recharts-cartesian-axis-tick_text {
-    @apply fill-gray-400;
+    background: linear-gradient(135deg, #2c3e50 0%, #485461 100%);
   }
 }
 
