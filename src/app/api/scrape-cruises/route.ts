@@ -1,8 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import * as cheerio from "cheerio";
-import crypto from "crypto";
+import chrome from 'chrome-aws-lambda';
 
 // --- Site selector map ---
 const SITE_CONFIGS = {
@@ -183,13 +183,14 @@ export async function GET(req: NextRequest) {
 
   let browser = null;
   try {
-    console.log("Launching Puppeteer...");
+    console.log("Launching Puppeteer with chrome-aws-lambda...");
+
+    const executablePath = await chrome.executablePath;
+
     browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-      ],
+      args: chrome.args,
+      executablePath,
+      headless: chrome.headless,
     });
 
     const page = await browser.newPage();
