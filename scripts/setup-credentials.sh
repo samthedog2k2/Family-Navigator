@@ -76,6 +76,9 @@ export HULU_PASSWORD=$PASSWORD
 # I am creating this test file to run your test.
 # This is a temporary file that will be cleaned up.
 cat > test-runner.ts << 'EOF'
+import { config } from 'dotenv';
+config(); // This is the crucial line that loads .env variables for the script
+
 import { secureWebsiteAgent } from './src/ai/flows/secure-website-agent';
 
 async function runTest() {
