@@ -1,107 +1,82 @@
 
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
-  Loader2,
-  Wind,
-  Droplet,
-  Sunrise,
-  Sunset,
-  Eye,
-  Thermometer,
-  Gauge,
-  CalendarDays,
-  Sun,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
-import { getWeatherIcon } from "@/lib/weather-icons";
 import { cn } from "@/lib/utils";
-import { RadarMap } from "@/components/RadarMap";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+  TemperatureCard,
+  FeelsLikeCard,
+  WindCard,
+  HumidityCard,
+  VisibilityCard,
+  PressureCard,
+  UvCard,
+  SunCard,
+  PrecipitationCard,
+  CloudCoverCard,
+  AqiCard,
+  PollenCard
+} from "@/components/weather-cards";
 
 type WeatherData = {
   current: {
-    is_day: 0 | 1;
     temperature_2m: number;
+    relative_humidity_2m: number;
     apparent_temperature: number;
-    weathercode: number;
-    windspeed_10m: number;
-    relativehumidity_2m: number;
+    is_day: 0 | 1;
+    precipitation: number;
+    weather_code: number;
+    cloud_cover: number;
+    pressure_msl: number;
     surface_pressure: number;
-    dewpoint_2m: number;
+    wind_speed_10m: number;
+    wind_direction_10m: number;
+    wind_gusts_10m: number;
     uv_index: number;
   };
   hourly: {
     time: string[];
     temperature_2m: number[];
+    relative_humidity_2m: number[];
+    dew_point_2m: number[];
+    apparent_temperature: number[];
     precipitation_probability: number[];
-    weathercode: number[];
+    precipitation: number[];
+    weather_code: number[];
+    pressure_msl: number;
+    surface_pressure: number;
+    cloud_cover: number[];
     visibility: number[];
+    wind_speed_10m: number[];
+    wind_direction_10m: number[];
+    wind_gusts_10m: number[];
+    uv_index: number[];
+    is_day: (0 | 1)[];
+    european_aqi: number[];
+    us_aqi: number[];
+    us_aqi_pm2_5: number[];
   };
   daily: {
     time: string[];
+    weather_code: number[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
-    weathercode: number[];
     sunrise: string[];
     sunset: string[];
+    uv_index_max: number[];
+    precipitation_sum: number[];
+    precipitation_hours: number[];
+    precipitation_probability_max: number[];
+    wind_speed_10m_max: number[];
+    wind_gusts_10m_max: number[];
+    wind_direction_10m_dominant: number[];
+    shortwave_radiation_sum: number[];
+    et0_fao_evapotranspiration: number[];
   };
 };
-
-const WeatherDetail = ({
-  icon,
-  label,
-  value,
-  unit,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  unit?: string;
-}) => (
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      {icon}
-      <span>{label}</span>
-    </div>
-    <span className="font-semibold">
-      {value}
-      {unit}
-    </span>
-  </div>
-);
-
-const chartConfig = {
-  temp: {
-    label: "Temperature",
-    color: "hsl(var(--primary))",
-  },
-  precip: {
-    label: "Precipitation",
-    color: "hsl(var(--secondary))",
-  },
-} satisfies ChartConfig;
-
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -118,18 +93,25 @@ export default function WeatherPage() {
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
         );
         const geoData = await geoRes.json();
-        setLocationName(
-          geoData.city || geoData.principalSubdivision || "Current Location"
-        );
+        setLocationName(geoData.city || geoData.principalSubdivision || "Current Location");
       } catch (err) {
         console.error("Failed to fetch location name:", err);
         setLocationName("Current Location");
       }
 
       try {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index&hourly=temperature_2m,precipitation_probability,weathercode,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
-        );
+        const params = new URLSearchParams({
+            latitude: lat.toString(),
+            longitude: lon.toString(),
+            current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index",
+            hourly: "temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,pressure_msl,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,european_aqi,us_aqi,us_aqi_pm2_5",
+            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration",
+            temperature_unit: "fahrenheit",
+            wind_speed_unit: "mph",
+            precipitation_unit: "inch",
+            timezone: "auto",
+        });
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
         const data = await res.json();
         if (!data.error) {
           setWeather(data);
@@ -144,20 +126,14 @@ export default function WeatherPage() {
       }
     }
 
-    async function geocodeAndFetch(address: string) {
+     async function geocodeAndFetch(address: string) {
       try {
-        const geoRes = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-            address
-          )}&count=1`
-        );
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1`);
         const geoData = await geoRes.json();
         if (geoData.results && geoData.results.length > 0) {
           const { latitude, longitude } = geoData.results[0];
           await fetchLocationAndWeather(latitude, longitude);
-        } else {
-          setLoading(false);
-        }
+        } else { setLoading(false); }
       } catch (error) {
         console.error("Geocoding API call failed:", error);
         setLoading(false);
@@ -165,194 +141,48 @@ export default function WeatherPage() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        fetchLocationAndWeather(pos.coords.latitude, pos.coords.longitude),
+      (pos) => fetchLocationAndWeather(pos.coords.latitude, pos.coords.longitude),
       () => geocodeAndFetch(defaultLocation)
     );
   }, []);
 
-  const isDay = weather?.current.is_day === 1;
-
-  const hourlyChartData = useMemo(() => {
-    if (!weather) return [];
-    const now = new Date();
-    let startIndex = weather.hourly.time.findIndex(t => new Date(t) > now);
-    if (startIndex === -1) startIndex = weather.hourly.time.length - 24;
-    else if (startIndex > 0) startIndex = startIndex -1;
-    else startIndex = 0;
-
-
-    return weather.hourly.time.slice(startIndex, startIndex + 24).map((t, i) => {
-      const dataIndex = startIndex + i;
-      const time = new Date(t);
-      return {
-        time: time.toISOString(),
-        formattedTime: dataIndex === startIndex ? 'Now' : format(time, 'h a'),
-        temp: Math.round(weather.hourly.temperature_2m[dataIndex]),
-        precip: weather.hourly.precipitation_probability[dataIndex],
-        icon: getWeatherIcon(weather.hourly.weathercode[dataIndex], true),
-        weathercode: weather.hourly.weathercode[dataIndex]
-      }
-    });
-  }, [weather]);
-
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-blue-100">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+      <main className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
+        <Loader2 className="h-12 w-12 animate-spin" />
       </main>
     );
   }
 
   if (!weather) {
     return (
-      <main className="flex-1 p-4 sm:p-6 bg-gray-100">
-        <Card>
-          <CardHeader>
-            <CardTitle>Weather Unavailable</CardTitle>
-            <CardDescription>Could not load weather data at this time.</CardDescription>
-          </CardHeader>
-        </Card>
+      <main className="flex-1 p-4 sm:p-6 bg-gray-900 text-white">
+        <div>Could not load weather data.</div>
       </main>
     );
   }
-
-  const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t) > new Date()) -1;
-  const currentVisibility = currentHourIndex >=0 ? weather.hourly.visibility[currentHourIndex] : 0;
   
-  const dailyForecasts = weather.daily.time.map((day, i) => ({
-    date: day,
-    dayName: i === 0 ? 'Today' : format(parseISO(day), 'EEE'),
-    maxTemp: Math.round(weather.daily.temperature_2m_max[i]),
-    minTemp: Math.round(weather.daily.temperature_2m_min[i]),
-    weathercode: weather.daily.weathercode[i]
-  }));
+  const currentHourIndex = weather.hourly.time.findIndex(t => new Date(t).getHours() === new Date().getHours());
+
 
   return (
-    <div
-      className={cn(
-        "p-4 sm:p-6 transition-colors duration-500 min-h-screen",
-        isDay ? "weather-bg-day" : "weather-bg-night"
-      )}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-screen-2xl mx-auto">
-        <div className="lg:col-span-2 xl:col-span-3 space-y-6">
-          <Card className="bg-background/50 backdrop-blur-sm">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row gap-6 items-start">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16">{getWeatherIcon(weather.current.weathercode, isDay, 64)}</div>
-                  <div>
-                    <span className="text-7xl font-bold">
-                      {Math.round(weather.current.temperature_2m)}°
-                    </span>
-                    <p className="font-semibold text-lg -mt-2">
-                      Feels like {Math.round(weather.current.apparent_temperature)}°
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <p className="text-2xl font-bold">
-                    {locationName}
-                  </p>
-                  <p>The skies will be mostly cloudy. The low will be {Math.round(weather.daily.temperature_2m_min[0])}°.</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-4">
-                 <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}°`} />
-                 <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)}`} unit=" mph" />
-                 <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}`} unit="%" />
-                 <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)}`} unit=" mi" />
-                 <WeatherDetail icon={<Gauge size={20} />} label="Pressure" value={`${(weather.current.surface_pressure / 33.864).toFixed(2)}`} unit=" in" />
-                 <WeatherDetail icon={<Sun size={20} />} label="UV Index" value={`${weather.current.uv_index}`} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-background/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Hourly Forecast</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto pb-4">
-                <div className="flex space-x-2">
-                {hourlyChartData.map((hour, i) => (
-                  <div key={hour.time} className={cn(
-                    "flex flex-col items-center p-3 rounded-lg border min-w-[80px] cursor-pointer",
-                    i === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/50"
-                    )}>
-                      <p className="font-bold text-sm">{hour.formattedTime}</p>
-                      <div className="w-10 h-10 my-2">{getWeatherIcon(hour.weathercode, true, 40)}</div>
-                      <p className="font-bold">{hour.temp}°</p>
-                  </div>
-                ))}
-                </div>
-              </div>
-               <ChartContainer config={chartConfig} className="w-full h-[250px] aspect-auto">
-                 <AreaChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
-                    <defs>
-                      <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-temp)" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="var(--color-temp)" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} />
-                    <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide />
-                    <RechartsTooltip cursor={{ stroke: 'hsl(var(--foreground))', strokeWidth: 1, strokeDasharray: '3 3' }} content={<ChartTooltipContent indicator="line" />} />
-                    <Area type="monotone" dataKey="temp" stroke="var(--color-temp)" strokeWidth={2} fill="url(#colorTemp)" />
-                    <ReferenceLine y={32} stroke="hsl(var(--foreground))" strokeDasharray="3 3" strokeOpacity={0.5} />
-                  </AreaChart>
-              </ChartContainer>
-              <ChartContainer config={chartConfig} className="w-full h-[80px] aspect-auto -mt-4">
-                <BarChart data={hourlyChartData} margin={{top: 10, right: 10, left: -20, bottom: 0}}>
-                   <XAxis dataKey="formattedTime" tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} hide/>
-                   <YAxis domain={[0, 100]} hide/>
-                   <RechartsTooltip content={<ChartTooltipContent indicator="dot" nameKey="precip"/>} cursor={false} />
-                   <Bar dataKey="precip" fill="hsl(var(--secondary-foreground))" fillOpacity={0.5} radius={4}/>
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+    <div className="bg-gray-900 text-white min-h-screen p-4 sm:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold mb-2">{locationName}</h1>
+        <p className="text-lg text-gray-400 mb-8">As of {format(new Date(), "h:mm a")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <TemperatureCard weather={weather} />
+            <FeelsLikeCard weather={weather} />
+            <CloudCoverCard weather={weather} />
+            <PrecipitationCard weather={weather} />
+            <WindCard weather={weather} />
+            <HumidityCard weather={weather} hourlyIndex={currentHourIndex} />
+            <UvCard weather={weather} />
+            <AqiCard weather={weather} hourlyIndex={currentHourIndex} />
+            <VisibilityCard weather={weather} hourlyIndex={currentHourIndex} />
+            <PressureCard weather={weather} />
+            <SunCard weather={weather} />
+            {/* Pollen card can be added here if API supports it */}
         </div>
-
-        <div className="lg:col-span-1 space-y-6">
-           <Card className="bg-background/50 backdrop-blur-sm">
-            <CardHeader><CardTitle>Radar</CardTitle></CardHeader>
-            <CardContent>
-                <RadarMap />
-            </CardContent>
-          </Card>
-
-           <Card className="bg-background/50 backdrop-blur-sm">
-            <CardHeader><CardTitle>10-Day Forecast</CardTitle></CardHeader>
-            <CardContent>
-                <div className="space-y-2">
-                    {dailyForecasts.map((day) => (
-                        <div key={day.date} className="flex items-center justify-between p-2 rounded-md hover:bg-accent/50">
-                            <span className="font-medium w-12">{day.dayName}</span>
-                            <div className="w-8">{getWeatherIcon(day.weathercode, true, 24)}</div>
-                            <div className="flex-1 px-4">
-                                <div className="w-full bg-muted rounded-full h-1.5">
-                                    <div 
-                                        className="bg-gradient-to-r from-blue-400 to-orange-400 h-1.5 rounded-full"
-                                        style={{ 
-                                            width: `${((day.maxTemp - day.minTemp) / 40) * 100}%`,
-                                            marginLeft: `${(day.minTemp - 30) / 70 * 100}%`
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <span className="font-semibold w-8 text-right">{day.maxTemp}°</span>
-                            <span className="text-muted-foreground w-8 text-right">{day.minTemp}°</span>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </div>
   );
 }
