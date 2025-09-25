@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { PageHeader } from "@/components/page-header";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import {
