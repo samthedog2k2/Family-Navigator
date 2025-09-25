@@ -40,6 +40,14 @@ export const WindCard = ({ weather }: { weather: any }) => {
 
 
 export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyIndex: number }) => {
+    if (!weather?.hourly?.relative_humidity_2m) {
+        return (
+            <WeatherCard>
+                <h2 className="text-sm text-gray-300 mb-2">Humidity</h2>
+                <div className="text-gray-400">Data unavailable</div>
+            </WeatherCard>
+        );
+    }
     return (
         <WeatherCard>
             <h2 className="text-sm text-gray-300 mb-2">Humidity</h2>
@@ -120,4 +128,3 @@ export const PressureCard = ({ weather }: { weather: any }) => (<div></div>);
 export const PrecipitationCard = ({ weather }: { weather: any }) => (<div></div>);
 export const CloudCoverCard = ({ weather }: { weather: any }) => (<div></div>);
 
-    

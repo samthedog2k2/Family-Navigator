@@ -2,11 +2,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, Wind, Droplets, Eye, Gauge, Sunrise, Sunset } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { RadarMap } from "@/components/RadarMap";
 import { TemperatureCard, FeelsLikeCard, WindCard, HumidityCard, VisibilityCard, PressureCard, SunCard, UvCard, PrecipitationCard, CloudCoverCard } from "@/components/weather-cards";
@@ -98,7 +98,7 @@ export default function WeatherPage() {
             latitude: lat.toString(),
             longitude: lon.toString(),
             current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,uv_index",
-            hourly: "temperature_2m,precipitation_probability,weather_code,is_day",
+            hourly: "temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,is_day",
             daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum",
             temperature_unit: "fahrenheit",
             wind_speed_unit: "mph",
@@ -203,7 +203,7 @@ export default function WeatherPage() {
                         <p className="text-lg font-bold">{Math.round(weather.hourly.temperature_2m[realIndex])}°</p>
                         {precipProb > 10 && (
                           <div className="flex items-center gap-1 text-blue-300 text-xs">
-                            <Droplets size={12}/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5s-3 3.5-3 5.5a7 7 0 0 0 7 7z"/></svg>
                             <span>{precipProb}%</span>
                           </div>
                         )}
@@ -214,7 +214,7 @@ export default function WeatherPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 border-white/20 backdrop-blur-lg text-white">
+             <Card className="bg-white/10 border-white/20 backdrop-blur-lg text-white">
                 <CardHeader>
                 <CardTitle>10-Day Forecast</CardTitle>
                 </CardHeader>
@@ -254,5 +254,3 @@ export default function WeatherPage() {
     </div>
   );
 }
-
-    
