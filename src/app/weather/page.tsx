@@ -33,7 +33,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 
 type WeatherData = {
   current: {
@@ -62,9 +62,6 @@ type WeatherData = {
     sunrise: string[];
     sunset: string[];
   };
-  daily_units: {
-    visibility: string;
-  }
 };
 
 const WeatherDetail = ({
@@ -82,6 +79,13 @@ const WeatherDetail = ({
     <span className="ml-auto font-semibold">{value}</span>
   </div>
 );
+
+const chartConfig = {
+  temp: {
+    label: "Temperature",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
 
 export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -241,7 +245,7 @@ export default function WeatherPage() {
               <CardTitle>Hourly Forecast</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
+              <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
                 <AreaChart data={hourlyChartData} margin={{ top: 5, right: 20, left: -20, bottom: 40 }}>
                    <defs>
                     <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
@@ -275,7 +279,7 @@ export default function WeatherPage() {
                    <ReferenceLine y={new Date(weather.daily.sunrise[0]).getHours()} label="Sunrise" strokeDasharray="3 3" />
                    <ReferenceLine y={new Date(weather.daily.sunset[0]).getHours()} label="Sunset" strokeDasharray="3 3" />
                 </AreaChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </CardContent>
           </Card>
         </div>
