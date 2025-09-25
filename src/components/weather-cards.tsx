@@ -75,7 +75,7 @@ export const SunCard = ({ weather }: { weather: any }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000); // Update every second
     return () => clearInterval(timer);
   }, []);
 
@@ -119,7 +119,7 @@ export const SunCard = ({ weather }: { weather: any }) => {
             )}
         </svg>
         <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-msn-text-secondary font-semibold">
-          {format(currentTime, 'h:mm a')}
+          {format(currentTime, 'h:mm:ss a')}
         </p>
       </div>
 
