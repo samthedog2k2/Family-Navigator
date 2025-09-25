@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import { weatherService, type ComprehensiveWeatherData } from "@/lib/weather-api
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Droplets } from 'lucide-react';
+import { LayoutWrapper } from "@/components/layout-wrapper";
 
 export default function WeatherDashboard() {
   const [weatherData, setWeatherData] = useState<ComprehensiveWeatherData | null>(null);
@@ -77,23 +77,21 @@ export default function WeatherDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-msn-bg">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-msn-text-secondary">Loading weather data...</p>
+      <LayoutWrapper>
+        <div className="flex h-[80vh] items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-msn-text-secondary">Loading weather data...</p>
+          </div>
         </div>
-      </div>
+      </LayoutWrapper>
     );
   }
   
   if (error || !weatherData) {
     return (
-      <div className="min-h-screen bg-msn-bg p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Weather Dashboard</h1>
-            <p className="text-msn-text-secondary mt-2">Real-time weather conditions and forecasts</p>
-          </div>
+      <LayoutWrapper>
+        <div className="max-w-2xl mx-auto mt-8">
           <Alert variant="destructive" className="max-w-md">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -101,7 +99,7 @@ export default function WeatherDashboard() {
             </AlertDescription>
           </Alert>
         </div>
-      </div>
+      </LayoutWrapper>
     );
   }
 
@@ -110,7 +108,7 @@ export default function WeatherDashboard() {
   const hourlyIndex = currentHourIndex < 0 ? 0 : currentHourIndex;
 
   return (
-    <div className="bg-msn-bg text-msn-text font-sans">
+    <LayoutWrapper className="bg-msn-bg text-msn-text font-sans p-0 m-0 max-w-full">
       <header className="bg-msn-card shadow-msn px-6 py-4 flex items-center justify-between border-b">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-msn-text">
@@ -158,12 +156,6 @@ export default function WeatherDashboard() {
                       {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
                     </div>
                     <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
-                    {(weatherData.hourly.precipitation?.[hourlyIndex + i] > 0) && (
-                       <div className="flex items-center justify-center text-xs text-msn-blue mt-1">
-                        <Droplets size={10} className="mr-1" />
-                        <span>{Math.round(weatherData.hourly.precipitation[hourlyIndex + i] * 100)}%</span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -187,12 +179,6 @@ export default function WeatherDashboard() {
                       </div>
                       <p className="text-sm font-bold">{dayMax}°</p>
                       <p className="text-sm text-msn-text-muted">{dayMin}°</p>
-                       {(weatherData.daily.precipitationSum?.[i] > 0.01) && (
-                        <div className="flex items-center justify-center text-xs text-msn-blue mt-1">
-                          <Droplets size={10} className="mr-1" />
-                          <span>{Math.round(weatherData.daily.precipitationSum[i] * 100)}%</span>
-                        </div>
-                       )}
                     </div>
                   )
                 })}
@@ -236,7 +222,7 @@ export default function WeatherDashboard() {
           </div>
         </div>
       </main>
-    </div>
+    </LayoutWrapper>
   );
 }
 
@@ -249,5 +235,3 @@ const iconDescriptions: { [key: number]: string } = {
   80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
   95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
 };
-
-    
