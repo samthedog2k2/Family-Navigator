@@ -26,7 +26,6 @@ type WeatherData = {
     temperature_2m: number[];
     weather_code: number[];
     relative_humidity_2m: number[];
-    precipitation_probability: number[];
   };
   daily: {
     time: string[];
@@ -35,7 +34,6 @@ type WeatherData = {
     temperature_2m_min: number[];
     sunrise: string[];
     sunset: string[];
-    precipitation_probability_max: number[];
   };
 };
 
@@ -62,8 +60,8 @@ export default function WeatherPage() {
             latitude: lat.toString(),
             longitude: lon.toString(),
             current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index",
-            hourly: "temperature_2m,weather_code,relative_humidity_2m,precipitation_probability",
-            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max",
+            hourly: "temperature_2m,weather_code,relative_humidity_2m",
+            daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
             temperature_unit: "fahrenheit",
             wind_speed_unit: "mph",
             precipitation_unit: "inch",
@@ -138,12 +136,6 @@ export default function WeatherPage() {
                                 {getWeatherIcon(weather.hourly.weather_code[hourlyIndex + i], true, 32)}
                             </div>
                             <p className="font-medium">{Math.round(weather.hourly.temperature_2m[hourlyIndex + i])}°</p>
-                            {weather.hourly.precipitation_probability && (
-                               <div className="flex items-center justify-center text-xs text-msn-icon-blue mt-1 gap-1">
-                                    <Droplets size={12} />
-                                    <span>{weather.hourly.precipitation_probability[hourlyIndex + i]}%</span>
-                               </div>
-                            )}
                         </div>
                     ))}
                 </div>
@@ -166,12 +158,6 @@ export default function WeatherPage() {
                         <div className="flex items-center gap-2">
                             {getWeatherIcon(weather.daily.weather_code[i], true, 24)}
                         </div>
-                        {weather.daily.precipitation_probability_max && (
-                            <div className="flex items-center w-12 text-xs text-msn-icon-blue gap-1">
-                                <Droplets size={12} />
-                                <span>{weather.daily.precipitation_probability_max[i]}%</span>
-                            </div>
-                        )}
                         <p className="w-20 text-right">
                             <span className="font-medium">{Math.round(weather.daily.temperature_2m_max[i])}°</span>
                             <span className="text-msn-text-secondary"> / {Math.round(weather.daily.temperature_2m_min[i])}°</span>

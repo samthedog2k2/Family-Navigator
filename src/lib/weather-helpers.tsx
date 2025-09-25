@@ -12,5 +12,3 @@ export function getUVIndexInfo(uvIndex: number): { level: string, color: string 
     if (uvIndex <= 10) return { level: 'Very High', color: '#d9534f' };
     return { level: 'Extreme', color: '#d9534f' };
 }
-
-    

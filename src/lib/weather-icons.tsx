@@ -76,5 +76,3 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
             return <Cloud {...props} className="text-msn-icon-gray" />;
     }
 }
-
-    
