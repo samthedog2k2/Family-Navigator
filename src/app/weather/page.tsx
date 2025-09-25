@@ -23,6 +23,7 @@ import {
   Thermometer,
   Gauge,
   CalendarDays,
+  Sun,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -355,3 +356,5 @@ export default function WeatherPage() {
     </div>
   );
 }
+
+    
