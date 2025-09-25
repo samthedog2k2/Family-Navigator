@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import * as cheerio from 'cheerio';
 
 const WebsiteIntegrationRAGInputSchema = z.object({
   url: z.string().describe('The URL of the website to scrape.'),
@@ -22,21 +24,45 @@ const WebsiteIntegrationRAGOutputSchema = z.object({
 });
 export type WebsiteIntegrationRAGOutput = z.infer<typeof WebsiteIntegrationRAGOutputSchema>;
 
-export async function websiteIntegrationRAG(input: WebsiteIntegrationRAGInput): Promise<WebsiteIntegrationRAGOutput> {
-  return websiteIntegrationRAGFlow(input);
-}
+
+/**
+ * A tool that scrapes the text content from a given URL.
+ */
+const scrapeWebsite = ai.defineTool(
+  {
+    name: 'scrapeWebsite',
+    description: 'Scrapes the text content from a website URL.',
+    inputSchema: z.object({ url: z.string().url() }),
+    outputSchema: z.string(),
+  },
+  async ({ url }) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return `Error: Failed to fetch URL. Status: ${response.status}`;
+      }
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      // Remove script, style, and other non-visible elements
+      $('script, style, noscript, iframe, img, svg, header, footer, nav').remove();
+      return $('body').text().replace(/\s\s+/g, ' ').trim();
+    } catch (e: any) {
+      return `Error scraping website: ${e.message}`;
+    }
+  }
+);
+
 
 const websiteIntegrationRAGPrompt = ai.definePrompt({
   name: 'websiteIntegrationRAGPrompt',
-  input: {schema: WebsiteIntegrationRAGInputSchema},
-  output: {schema: WebsiteIntegrationRAGOutputSchema},
-  prompt: `You are a helpful assistant that answers questions based on content scraped from a website.
+  tools: [scrapeWebsite],
+  prompt: `You are a helpful assistant that answers questions based on content from a website.
+  First, use the scrapeWebsite tool to get the content of the provided URL.
+  Then, analyze the scraped content to answer the user's query.
 
   Website URL: {{{url}}}
-  Website Content: {{scrape url=url}}
   User Query: {{{query}}}
-
-  Answer:`,
+`,
 });
 
 const websiteIntegrationRAGFlow = ai.defineFlow(
@@ -46,7 +72,18 @@ const websiteIntegrationRAGFlow = ai.defineFlow(
     outputSchema: WebsiteIntegrationRAGOutputSchema,
   },
   async input => {
-    const {output} = await websiteIntegrationRAGPrompt(input);
-    return output!;
+     const llmResponse = await websiteIntegrationRAGPrompt(input);
+
+     // If the model returns text directly, use it. Otherwise, it might have called a tool.
+     // In a more complex flow, you would handle the tool output here.
+     // For this RAG pattern, the model should be able to answer in one go after using the tool.
+     return {
+        answer: llmResponse.text() || "I was unable to find an answer from the provided website."
+     }
   }
 );
+
+
+export async function websiteIntegrationRAG(input: WebsiteIntegrationRAGInput): Promise<WebsiteIntegrationRAGOutput> {
+  return websiteIntegrationRAGFlow(input);
+}
