@@ -1,7 +1,6 @@
 
 "use client";
 import React from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog, CloudDrizzle, CloudSun, CloudMoon, Moon } from 'lucide-react';
 
 const iconSize = "100%";
 
@@ -127,7 +126,7 @@ const FogIcon = () => (
 );
 
 // Open-Meteo Weather Codes: https://open-meteo.com/en/docs
-export function getWeatherIcon(code: number, isDay: boolean = true) {
+export function getWeatherIcon(code: number, isDay: boolean = true, size: number = 64) {
   switch (code) {
     case 0: return isDay ? <ClearDayIcon /> : <ClearNightIcon />;
     case 1:
