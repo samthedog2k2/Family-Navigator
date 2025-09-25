@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, MapPin, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, MapPin, AlertTriangle, RefreshCw, Droplets } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { RadarMap } from "@/components/RadarMap";
@@ -10,7 +10,6 @@ import { WindCard, HumidityCard, SunCard, UvCard } from "@/components/weather-ca
 import { weatherService, type ComprehensiveWeatherData } from "@/lib/weather-api-free";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
-import { Droplets } from 'lucide-react';
 import { LayoutWrapper } from "@/components/layout-wrapper";
 
 export default function WeatherPage() {
@@ -25,6 +24,7 @@ export default function WeatherPage() {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by this browser');
       setLoading(false);
+      setLocation({ lat: 39.6137, lon: -86.1067 }); // Default to Greenwood, IN
       return;
     }
 
@@ -134,7 +134,7 @@ export default function WeatherPage() {
             <Card className="bg-msn-card shadow-msn p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-5xl font-bold">{Math.round(weatherData.current.temperature)}°F</h2>
-                <p className="text-msn-text-secondary">{weatherData.current.weatherCode ? iconDescriptions[weatherData.current.weatherCode] : ''}</p>
+                <p className="text-msn-text-secondary">{iconDescriptions[weatherData.current.weatherCode] || ''}</p>
                 <p className="text-sm text-msn-text-muted">
                   High {Math.round(weatherData.daily.temperatureMax[0])}° • Low {Math.round(weatherData.daily.temperatureMin[0])}°
                 </p>
@@ -157,33 +157,23 @@ export default function WeatherPage() {
                       {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
                     </div>
                     <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
+                    <div className="flex items-center justify-center text-xs text-msn-icon-blue mt-1">
+                      <Droplets size={12} className="mr-1" />
+                      <span>{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </Card>
-
-            {/* 10-Day Forecast */}
+             {/* Details Cards moved from sidebar */}
             <Card className="bg-msn-card shadow-msn p-6">
-              <h3 className="text-lg font-semibold mb-4">10-Day Forecast</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {weatherData.daily.time.slice(0, 10).map((day, i) => {
-                  const dayMin = Math.round(weatherData.daily.temperatureMin[i]);
-                  const dayMax = Math.round(weatherData.daily.temperatureMax[i]);
-                  
-                  return (
-                    <div key={day} className="bg-msn-bg/50 rounded-lg p-3 flex flex-col items-center text-center">
-                      <p className="text-sm font-semibold text-msn-text-secondary">
-                        {i === 0 ? "Today" : format(parseISO(day), 'EEE')}
-                      </p>
-                      <div className="w-10 h-10 my-2">
-                         {getWeatherIcon(weatherData.daily.weatherCode[i], true, 40)}
-                      </div>
-                      <p className="text-sm font-bold">{dayMax}°</p>
-                      <p className="text-sm text-msn-text-muted">{dayMin}°</p>
-                    </div>
-                  )
-                })}
-              </div>
+                <h3 className="text-lg font-semibold mb-4">Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                    <SunCard weather={weatherData} />
+                    <UvCard weather={weatherData} />
+                    <WindCard weather={weatherData} />
+                    <HumidityCard weather={weatherData} hourlyIndex={hourlyIndex} />
+                </div>
             </Card>
           </div>
 
@@ -206,14 +196,42 @@ export default function WeatherPage() {
               </Card>
             )}
 
+            {/* 10-Day Forecast */}
             <Card className="bg-msn-card shadow-msn p-6">
-                <h3 className="text-lg font-semibold mb-4">Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <SunCard weather={weatherData} />
-                    <UvCard weather={weatherData} />
-                    <WindCard weather={weatherData} />
-                    <HumidityCard weather={weatherData} hourlyIndex={hourlyIndex} />
-                </div>
+              <h3 className="text-lg font-semibold mb-4">10-Day Forecast</h3>
+              <div className="space-y-2">
+                {weatherData.daily.time.slice(0, 10).map((day, i) => {
+                  const dayMin = Math.round(weatherData.daily.temperatureMin[i]);
+                  const dayMax = Math.round(weatherData.daily.temperatureMax[i]);
+                  const tempRange = dayMax - dayMin;
+                  const leftOffset = (dayMin - 40) / 60 * 100; // Assuming a temp range of 40-100F
+                  const barWidth = (tempRange / 60) * 100;
+                  
+                  return (
+                    <div key={day} className="grid grid-cols-4 items-center gap-2 text-sm">
+                      <p className="font-medium text-msn-text-secondary w-16">
+                        {i === 0 ? "Today" : format(parseISO(day), 'EEE')}
+                      </p>
+                       <div className="flex items-center gap-2 col-span-1">
+                        <div className="w-8 h-8">
+                           {getWeatherIcon(weatherData.daily.weatherCode[i], true, 32)}
+                        </div>
+                        <div className="flex items-center text-xs text-msn-icon-blue">
+                           <Droplets size={12} className="mr-1"/>
+                           <span>{weatherData.daily.precipitationSum[i]}%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center col-span-2 gap-2">
+                        <span className="text-msn-text-muted w-8 text-right">{dayMin}°</span>
+                        <div className="w-full bg-muted rounded-full h-2.5">
+                           <div className="bg-gradient-to-r from-cyan-500 to-yellow-500 h-2.5 rounded-full" style={{ marginLeft: `${leftOffset}%`, width: `${barWidth}%` }}></div>
+                        </div>
+                        <span className="text-msn-text w-8">{dayMax}°</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </Card>
 
             <Card className="bg-msn-card shadow-msn p-6">

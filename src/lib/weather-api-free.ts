@@ -252,5 +252,3 @@ class WeatherService {
 
 // Export singleton instance
 export const weatherService = new WeatherService();
-
-    
