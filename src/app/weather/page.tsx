@@ -52,6 +52,7 @@ type WeatherData = {
     temperature_2m: number[];
     precipitation_probability: number[];
     weathercode: number[];
+    visibility: number[];
   };
   daily: {
     time: string[];
@@ -60,7 +61,6 @@ type WeatherData = {
     weathercode: number[];
     sunrise: string[];
     sunset: string[];
-    visibility: number[];
   };
   daily_units: {
     visibility: string;
@@ -108,7 +108,7 @@ export default function WeatherPage() {
 
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index&hourly=temperature_2m,precipitation_probability,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,visibility&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m,surface_pressure,dewpoint_2m,uv_index&hourly=temperature_2m,precipitation_probability,weathercode,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=10`
         );
         const data = await res.json();
         if (!data.error) {
@@ -191,6 +191,9 @@ export default function WeatherPage() {
       </main>
     );
   }
+  
+  const nowIndex = weather.hourly.time.findIndex(t => new Date(t) > new Date()) - 1;
+  const currentVisibility = nowIndex >= 0 ? weather.hourly.visibility[nowIndex] : 0;
 
   return (
     <div
@@ -228,7 +231,7 @@ export default function WeatherPage() {
              <WeatherDetail icon={<Thermometer size={20} />} label="Feels Like" value={`${Math.round(weather.current.apparent_temperature)}°`} />
              <WeatherDetail icon={<Wind size={20} />} label="Wind" value={`${Math.round(weather.current.windspeed_10m)} mph`} />
              <WeatherDetail icon={<Droplet size={20} />} label="Humidity" value={`${weather.current.relativehumidity_2m}%`} />
-             <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(weather.daily.visibility[0] / 1609).toFixed(1)} mi`} />
+             <WeatherDetail icon={<Eye size={20} />} label="Visibility" value={`${(currentVisibility / 1609).toFixed(1)} mi`} />
              <WeatherDetail icon={<Gauge size={20} />} label="Pressure" value={`${(weather.current.surface_pressure / 33.864).toFixed(2)} in`} />
              <WeatherDetail icon={<Sun size={20} />} label="UV Index" value={weather.current.uv_index.toFixed(0)} />
           </div>
