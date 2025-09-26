@@ -112,6 +112,7 @@ export default function HuluAgentPage() {
                   id="request"
                   {...register('request')}
                   rows={3}
+                  name="request"
                 />
                 {errors.request && <p className="text-sm text-destructive">{errors.request.message}</p>}
               </div>
