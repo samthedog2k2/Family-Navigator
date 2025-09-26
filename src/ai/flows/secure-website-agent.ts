@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An AI agent that can securely log into websites and perform tasks.
@@ -9,20 +8,24 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import puppeteer from 'puppeteer';
-import { googleAI } from '@genkit-ai/googleai';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
-  website: z.enum(['RoyalCaribbean', 'Netflix', 'BankOfAmerica', 'Hulu', 'MSCCruises']).describe('The canonical name of the website to log into.'),
+  website: z.string().describe('The name of the website to log into (can be any website name).'),
   task: z.string().describe('A simple, specific task to perform after logging in. e.g., "Get the account holder\'s name from the profile page." or "Check for redirects."'),
   loginUrl: z.string().url().describe('The direct URL for the website\'s login page.'),
   postLoginUrl: z.string().url().optional().describe('The URL to navigate to after a successful login to perform the task.'),
   successIndicator: z.string().optional().describe('A unique piece of text or a CSS selector that is only visible AFTER a successful login. e.g., "Sign Out", "#profile-icon".'),
   taskScrapeSelector: z.string().optional().describe('The CSS selector for the element containing the information needed to complete the task. e.g., ".account-name", "#balance-display".'),
   username: z.string().optional().describe("The username or email for login."),
-  password: z.string().optional().describe("The password for login.")
+  password: z.string().optional().describe("The password for login."),
+  usernameSelector: z.string().optional().describe("CSS selector for the username/email input field. Defaults to 'input[type=\"email\"]' if not provided."),
+  passwordSelector: z.string().optional().describe("CSS selector for the password input field. Defaults to 'input[type=\"password\"]' if not provided."),
+  loginButtonSelector: z.string().optional().describe("CSS selector for the login/submit button. Defaults to 'button[type=\"submit\"]' if not provided."),
+  waitForNavigation: z.boolean().optional().describe("Whether to wait for navigation after submitting credentials. Defaults to true."),
+  customLoginFlow: z.boolean().optional().describe("Set to true for complex login flows (OAuth, multi-step, etc.) that require custom handling.")
 });
 
 /**
@@ -64,19 +67,49 @@ const loginAndPerformTask = ai.defineTool(
         return `Error: Credentials for ${input.website} were not provided for the login task.`;
       }
 
-      // Enter credentials
-      await page.type('input[type="email"]', username);
-      await page.click('button[type="submit"]');
-      console.log('[Agent] Submitted username/email.');
+      // Enter credentials using flexible selectors
+      const userSel = input.usernameSelector || 'input[type="email"]';
+      const passSel = input.passwordSelector || 'input[type="password"]';
+      const btnSel = input.loginButtonSelector || 'button[type="submit"]';
 
-      // Wait for navigation to password page
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
-      await page.type('input[type="password"]', password);
-      await page.click('button[type="submit"]');
-      console.log('[Agent] Submitted password.');
+      // Check for custom flow - currently a placeholder for future logic
+      if (input.customLoginFlow) {
+        // Here you could implement more complex login sequences
+        return `Error: Custom login flow for ${input.website} is not yet implemented.`;
+      }
+
+      // Standard login flow
+      await page.type(userSel, username);
+      console.log(`[Agent] Typed username into selector: ${userSel}`);
+
+      // Handle cases where username and password are on the same page
+      const passwordInput = await page.$(passSel);
+      if (passwordInput) {
+        await page.type(passSel, password);
+        console.log(`[Agent] Typed password into selector: ${passSel}`);
+        await page.click(btnSel);
+        console.log(`[Agent] Clicked login button: ${btnSel}`);
+      } else {
+        // Handle cases where it's a two-step login
+        await page.click(btnSel); // Click to submit username
+        console.log(`[Agent] Submitted username form with button: ${btnSel}`);
+        if(input.waitForNavigation !== false) {
+           await page.waitForNavigation({ waitUntil: 'networkidle2' });
+        } else {
+           await page.waitForTimeout(2000); // wait for JS to load password field
+        }
+        await page.type(passSel, password);
+        console.log(`[Agent] Typed password into selector on second step: ${passSel}`);
+        await page.click(btnSel);
+        console.log(`[Agent] Clicked login button on second step: ${btnSel}`);
+      }
 
       // Wait for final navigation and confirm login success
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      if (input.waitForNavigation !== false) {
+        await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      } else {
+        await page.waitForTimeout(3000);
+      }
       
       if (!input.successIndicator) {
         throw new Error("A success indicator is required to confirm login.");
@@ -120,7 +153,6 @@ const SecureWebsiteAgentInputSchema = z.object({
   request: z.string().describe('The user\'s request, e.g., "Log into Netflix and find the primary profile name."'),
   username: z.string().optional().describe("The username or email for the website."),
   password: z.string().optional().describe("The password for the website."),
-  geminiApiKey: z.string().optional().describe("The user's Gemini API Key.")
 });
 export type SecureWebsiteAgentInput = z.infer<typeof SecureWebsiteAgentInputSchema>;
 
@@ -143,8 +175,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
       If the user asks to check a redirect, set the task to "Check for redirects." and use the starting URL as the loginUrl.
-      For logins, map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
-      Use your knowledge of common website structures to fill in the other parameters.
+      For logins, use your knowledge of common website structures to fill in the other parameters.
       You have been provided with the username and password, you must pass them to the tool.
 
       User request: "${input.request}"
@@ -158,25 +189,32 @@ const secureWebsiteAgentFlow = ai.defineFlow(
           role: 'system',
           content: `
             Known Website Configurations & Mappings:
-            - Canonical Name: 'Hulu'
+            - website: 'Hulu'
               - Maps from: 'Hulu', 'hulu.com'
               - loginUrl: https://auth.hulu.com/web/login
               - postLoginUrl: https://www.hulu.com/account
               - successIndicator: "Log Out"
               - taskScrapeSelector for "account holder name": "[data-testid=profile-button]"
-            - Canonical Name: 'RoyalCaribbean'
+              - usernameSelector: "#email_id"
+              - passwordSelector: "#password_id"
+              - loginButtonSelector: "button[data-testid=login-button]"
+              - waitForNavigation: true
+            - website: 'RoyalCaribbean'
               - Maps from: 'Royal Caribbean', 'royalcaribbean.com'
               - loginUrl: https://www.royalcaribbean.com/account/signin
               - postLoginUrl: https://www.royalcaribbean.com/account/profile
               - successIndicator: "Sign Out"
               - taskScrapeSelector for "account holder name": ".profile-name"
-            - Canonical Name: 'Netflix'
+            - website: 'Netflix'
               - Maps from: 'Netflix', 'netflix.com'
               - loginUrl: https://www.netflix.com/login
               - postLoginUrl: https://www.netflix.com/browse
               - successIndicator: "Sign out of Netflix"
               - taskScrapeSelector for "primary profile name": ".profile-link .profile-name"
-            - Canonical Name: 'MSCCruises'
+              - usernameSelector: "input[name=userLoginId]"
+              - passwordSelector: "input[name=password]"
+              - loginButtonSelector: "button[data-uia=login-submit-button]"
+            - website: 'MSCCruises'
               - Maps from: 'MSC', 'msccruisesusa.com'
               - loginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
               - postLoginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
