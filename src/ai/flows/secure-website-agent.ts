@@ -11,7 +11,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import puppeteer from 'puppeteer';
-import { googleAI } from '@genkit-ai/googleai';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
@@ -119,9 +118,18 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     outputSchema: SecureWebsiteAgentOutputSchema,
   },
   async (input) => {
-    
-    const llmResponse = await ai.generate({
+    // Configure model with the provided API key if available
+    const modelConfig = input.geminiApiKey ? {
       model: 'googleai/gemini-2.5-flash',
+      config: {
+        apiKey: input.geminiApiKey
+      }
+    } : {
+      model: 'googleai/gemini-2.5-flash'
+    };
+
+    const llmResponse = await ai.generate({
+      ...modelConfig,
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
       Map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
@@ -165,11 +173,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
               - taskScrapeSelector for "booking number": ".booking-number-selection"
           `
         }
-      ],
-      custom: {
-        username: input.username,
-        password: input.password
-      }
+      ]
     });
 
     const toolRequest = llmResponse.toolRequest;

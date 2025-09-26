@@ -50,14 +50,14 @@ export function SecureAgentForm() {
     setIsLoading(true);
     setAnswer("");
 
-    // Temporarily set credentials in the environment for the agent to use.
-    // This is NOT a secure long-term solution.
-    process.env.GEMINI_API_KEY = data.geminiApiKey;
-    process.env.HULU_USERNAME = data.huluUsername;
-    process.env.HULU_PASSWORD = data.huluPassword;
-
     try {
-      const result = await secureWebsiteAgent({ request: data.request });
+      // Pass credentials securely to the agent function instead of setting environment variables
+      const result = await secureWebsiteAgent({
+        request: data.request,
+        username: data.huluUsername,
+        password: data.huluPassword,
+        geminiApiKey: data.geminiApiKey
+      });
       setAnswer(result.response);
     } catch (error) {
       console.error("Error with Secure Agent:", error);
