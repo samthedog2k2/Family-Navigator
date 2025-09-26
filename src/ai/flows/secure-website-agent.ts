@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({

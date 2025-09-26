@@ -1,86 +1,126 @@
-"use client";
+/**
+ * Client Data Service - Browser Safe Firebase Operations
+ * Uses only Firebase client SDK - safe for browser use
+ */
 
+import { db, auth } from '@/lib/firebase-client';
 import { 
   collection, 
-  getDocs, 
   doc, 
-  setDoc,
-  query,
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
   orderBy 
-} from "firebase/firestore";
-import { db } from "@/lib/firebase-client";
-import type { HealthData, FamilyMember, AppState } from '@/lib/types';
+} from 'firebase/firestore';
 
-const emptyHealthData: HealthData = {
-  height: "",
-  age: 0,
-  gender: "Other",
-  weight: "",
-  glucose: "",
-  notes: "",
-};
+export interface FamilyMember {
+  id: string;
+  name: string;
+  email?: string;
+  role?: string;
+}
 
-const defaultState: AppState = {
-  Adam: { ...emptyHealthData, gender: "Male" },
-  Holly: { ...emptyHealthData, gender: "Female" },
-  Ethan: { ...emptyHealthData, gender: "Male" },
-  Elle: { ...emptyHealthData, gender: "Female" },
-};
+export interface HealthData {
+  [key: string]: any;
+}
 
-export async function getHealthData(): Promise<AppState & { source: string }> {
-  try {
-    const healthCol = collection(db, "healthData");
-    const healthSnapshot = await getDocs(healthCol);
-    
-    if (healthSnapshot.empty) {
-      return { ...defaultState, source: "firebase-empty" };
+export class ClientDataService {
+  // Health Data Operations
+  static async getHealthData(memberId: string): Promise<HealthData | null> {
+    try {
+      const docRef = doc(db, 'healthData', memberId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists() ? docSnap.data() as HealthData : null;
+    } catch (error) {
+      console.error('Error getting health data:', error);
+      throw error;
     }
+  }
 
-    const healthData = { ...defaultState };
-    healthSnapshot.forEach(document => {
-      healthData[document.id as FamilyMember] = document.data() as HealthData;
-    });
-    return { ...healthData, source: "firebase" };
+  static async saveHealthData(memberId: string, data: HealthData): Promise<void> {
+    try {
+      const docRef = doc(db, 'healthData', memberId);
+      await setDoc(docRef, data, { merge: true });
+    } catch (error) {
+      console.error('Error saving health data:', error);
+      throw error;
+    }
+  }
 
-  } catch (error) {
-    console.error("Error fetching health data from Firestore:", error);
-    return { ...defaultState, source: "firebase-error" };
+  // Calendar Operations
+  static async getCalendarEvents(userId: string) {
+    try {
+      const q = query(
+        collection(db, 'calendarEvents'),
+        where('userId', '==', userId),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('Error getting calendar events:', error);
+      throw error;
+    }
+  }
+
+  static async saveCalendarEvent(eventData: any): Promise<void> {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
+      
+      const docRef = doc(collection(db, 'calendarEvents'));
+      await setDoc(docRef, { ...eventData, userId: user.uid });
+    } catch (error) {
+      console.error('Error saving calendar event:', error);
+      throw error;
+    }
+  }
+
+  // Travel Data Operations
+  static async getTravelData(userId: string) {
+    try {
+      const q = query(
+        collection(db, 'travelData'),
+        where('userId', '==', userId)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('Error getting travel data:', error);
+      throw error;
+    }
+  }
+
+  static async saveTravelData(travelData: any): Promise<void> {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
+      
+      const docRef = doc(collection(db, 'travelData'));
+      await setDoc(docRef, { ...travelData, userId: user.uid });
+    } catch (error) {
+      console.error('Error saving travel data:', error);
+      throw error;
+    }
+  }
+
+  // Authentication helpers
+  static getCurrentUser() {
+    return auth.currentUser;
+  }
+
+  static async signOut(): Promise<void> {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
   }
 }
 
-export async function updateHealthData(member: FamilyMember, data: HealthData): Promise<AppState> {
-  const ref = doc(db, "healthData", member);
-  await setDoc(ref, data, { merge: true });
-  const updatedData = await getHealthData();
-  const { source, ...appState } = updatedData;
-  return appState;
-}
-
-// Calendar functions (client-side placeholder)
-export async function getCalendarEvents(): Promise<any[]> {
-  try {
-    const eventsCol = collection(db, "calendarEvents");
-    const eventsSnapshot = await getDocs(query(eventsCol, orderBy("start", "desc")));
-    return eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error("Error fetching calendar events:", error);
-    return [];
-  }
-}
-
-export async function addCalendarEvent(newEvent: any): Promise<any> {
-  try {
-    const eventsCol = collection(db, "calendarEvents");
-    const eventWithId = { ...newEvent, id: new Date().toISOString() };
-    await setDoc(doc(eventsCol, eventWithId.id), eventWithId);
-    return eventWithId;
-  } catch (error) {
-    console.error("Error adding calendar event:", error);
-    throw error;
-  }
-}
-
-export async function deleteCalendarEvent(eventId: string): Promise<any[]> {
-  console.warn("deleteCalendarEvent not implemented in client service yet.");
-  return [];
-}
+export default ClientDataService;

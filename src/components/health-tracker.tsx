@@ -36,7 +36,7 @@ const familyMembers: FamilyMember[] = ["Adam", "Holly", "Ethan", "Elle"];
 const healthSchema = z.object({
   height: z.string().min(1, "Height is required"),
   age: z.coerce.number().positive("Age must be positive"),
-  gender: z.enum(["", "Male", "Female", "Other"]),
+  gender: z.enum(["Male", "Female", "Other"]),
   weight: z.string().min(1, "Weight is required"),
   glucose: z.string().min(1, "Glucose level is required"),
   notes: z.string().max(140, "Notes must be 140 characters or less").optional(),
@@ -73,11 +73,7 @@ function HealthForm({
 
 
   const onSubmit: SubmitHandler<HealthFormData> = (formData) => {
-    const dataToSave: HealthData = {
-        ...formData,
-        gender: formData.gender as "Male" | "Female" | "Other"
-    };
-    onSave(member, dataToSave);
+    onSave(member, formData);
   };
 
   return (

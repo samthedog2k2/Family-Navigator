@@ -44,9 +44,9 @@ function logAuthEvent(event: string, data?: any, isError = false) {
   const prefix = isError ? '❌' : '✅';
   
   if (data) {
-    console.log(`${prefix} [${timestamp}] ${event}:`, data);
+    
   } else {
-    console.log(`${prefix} [${timestamp}] ${event}`);
+    
   }
 }
 
