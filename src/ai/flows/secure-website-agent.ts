@@ -178,7 +178,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       }
     });
 
-    const toolRequest = llmResponse.toolRequest;
+    const toolRequest = llmResponse.toolRequest();
 
     if (toolRequest) {
       // Pass the credentials to the tool call
@@ -192,7 +192,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       }
       return { response: `Task completed. Here is the information I found: ${toolResponse}` };
     } else {
-      return { response: llmResponse.text || "I was unable to complete the request. The tool did not return a response." };
+      return { response: llmResponse.text() || "I was unable to complete the request. The tool did not return a response." };
     }
   }
 );
