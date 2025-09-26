@@ -20,6 +20,8 @@ const LoginToolInputSchema = z.object({
   postLoginUrl: z.string().url().describe('The URL to navigate to after a successful login to perform the task.'),
   successIndicator: z.string().describe('A unique piece of text or a CSS selector that is only visible AFTER a successful login. e.g., "Sign Out", "#profile-icon".'),
   taskScrapeSelector: z.string().describe('The CSS selector for the element containing the information needed to complete the task. e.g., ".account-name", "#balance-display".'),
+  username: z.string().optional().describe("The username or email for login."),
+  password: z.string().optional().describe("The password for login.")
 });
 
 /**
@@ -29,21 +31,20 @@ const LoginToolInputSchema = z.object({
 const loginAndPerformTask = ai.defineTool(
   {
     name: 'loginAndPerformTask',
-    description: 'Logs into a supported website and extracts a piece of information. Credentials must be pre-configured by the user in a secure secret manager.',
+    description: 'Logs into a supported website and extracts a piece of information. Credentials must be provided if not pre-configured in a secure secret manager.',
     inputSchema: LoginToolInputSchema,
     outputSchema: z.string(),
   },
   async (input) => {
     console.log(`[Agent] Starting login task for ${input.website}`);
 
-    // Securely retrieve credentials from environment variables.
-    // These are set by Secret Manager, NOT hard-coded.
-    const username = process.env[`${input.website.toUpperCase()}_USERNAME`];
-    const password = process.env[`${input.website.toUpperCase()}_PASSWORD`];
+    // Securely retrieve credentials from input if available, otherwise from environment variables.
+    const username = input.username || process.env[`${input.website.toUpperCase()}_USERNAME`];
+    const password = input.password || process.env[`${input.website.toUpperCase()}_PASSWORD`];
 
     if (!username || !password) {
-      console.error(`[Agent] Credentials for ${input.website} not found in environment.`);
-      return `Error: Credentials for ${input.website} have not been configured by the user.`;
+      console.error(`[Agent] Credentials for ${input.website} not found.`);
+      return `Error: Credentials for ${input.website} were not provided and have not been pre-configured by the user.`;
     }
 
     let browser;
@@ -99,6 +100,9 @@ const loginAndPerformTask = ai.defineTool(
 
 const SecureWebsiteAgentInputSchema = z.object({
   request: z.string().describe('The user\'s request, e.g., "Log into Netflix and find the primary profile name."'),
+  username: z.string().optional().describe("The username or email for the website."),
+  password: z.string().optional().describe("The password for the website."),
+  geminiApiKey: z.string().optional().describe("The user's Gemini API Key.")
 });
 export type SecureWebsiteAgentInput = z.infer<typeof SecureWebsiteAgentInputSchema>;
 
@@ -115,13 +119,21 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     outputSchema: SecureWebsiteAgentOutputSchema,
   },
   async (input) => {
-    const llmResponse = await ai.generate({
+    
+    // Use provided Gemini API Key if available
+    const config = input.geminiApiKey ? { plugins: [googleAI({ apiKey: input.geminiApiKey })] } : {};
+    const localAi = genkit(config);
+
+    const llmResponse = await localAi.generate({
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
       Map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
       Use your knowledge of common website structures to fill in the other parameters.
+      You have been provided with the username and password, you must pass them to the tool.
 
       User request: "${input.request}"
+      Username: "${input.username}"
+      Password: "[hidden]"
       `,
       tools: [loginAndPerformTask],
       // Provide some known website configurations to help the AI.
@@ -130,6 +142,12 @@ const secureWebsiteAgentFlow = ai.defineFlow(
           role: 'system',
           content: `
             Known Website Configurations & Mappings:
+            - Canonical Name: 'Hulu'
+              - Maps from: 'Hulu', 'hulu.com'
+              - loginUrl: https://auth.hulu.com/web/login
+              - postLoginUrl: https://www.hulu.com/account
+              - successIndicator: "Log Out"
+              - taskScrapeSelector for "account holder name": "[data-testid=profile-button]"
             - Canonical Name: 'RoyalCaribbean'
               - Maps from: 'Royal Caribbean', 'royalcaribbean.com'
               - loginUrl: https://www.royalcaribbean.com/account/signin
@@ -142,12 +160,6 @@ const secureWebsiteAgentFlow = ai.defineFlow(
               - postLoginUrl: https://www.netflix.com/browse
               - successIndicator: "Sign out of Netflix"
               - taskScrapeSelector for "primary profile name": ".profile-link .profile-name"
-            - Canonical Name: 'Hulu'
-              - Maps from: 'Hulu', 'hulu.com'
-              - loginUrl: https://auth.hulu.com/web/login
-              - postLoginUrl: https://www.hulu.com/account
-              - successIndicator: "Log Out"
-              - taskScrapeSelector for "account holder name": "[data-testid=profile-button]"
             - Canonical Name: 'MSCCruises'
               - Maps from: 'MSC', 'msccruisesusa.com'
               - loginUrl: https://www.msccruisesusa.com/manage-booking/manage-your-booking
@@ -156,13 +168,23 @@ const secureWebsiteAgentFlow = ai.defineFlow(
               - taskScrapeSelector for "booking number": ".booking-number-selection"
           `
         }
-      ]
+      ],
+      custom: {
+        username: input.username,
+        password: input.password
+      }
     });
 
-    const toolResponse = llmResponse.toolRequest?.output;
+    const toolRequest = llmResponse.toolRequest;
 
-    if (toolResponse) {
-      if (toolResponse.startsWith('Error:')) {
+    if (toolRequest) {
+      // Pass the credentials to the tool call
+      toolRequest.input.username = input.username;
+      toolRequest.input.password = input.password;
+
+      const toolResponse = await toolRequest.run();
+
+      if (typeof toolResponse === 'string' && toolResponse.startsWith('Error:')) {
           return { response: `I'm sorry, I wasn't able to get that information for you. ${toolResponse}` };
       }
       return { response: `Task completed. Here is the information I found: ${toolResponse}` };

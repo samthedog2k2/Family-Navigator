@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { secureWebsiteAgent } from '@/ai/flows/secure-website-agent';
+import { secureWebsiteAgent, SecureWebsiteAgentInput } from '@/ai/flows/secure-website-agent';
 
 const formSchema = z.object({
   request: z.string().min(10, 'Please enter a detailed request.'),
@@ -46,14 +45,15 @@ export default function HuluAgentPage() {
     setIsLoading(true);
     setAnswer('');
 
-    // Set credentials in the environment for the agent to use for this request.
-    // In a real production app, these would be managed by a secure secret manager.
-    process.env.GEMINI_API_KEY = data.geminiApiKey;
-    process.env.HULU_USERNAME = data.huluUsername;
-    process.env.HULU_PASSWORD = data.huluPassword;
+    const agentInput: SecureWebsiteAgentInput = {
+        request: data.request,
+        username: data.huluUsername,
+        password: data.huluPassword,
+        geminiApiKey: data.geminiApiKey,
+    };
 
     try {
-      const result = await secureWebsiteAgent({ request: data.request });
+      const result = await secureWebsiteAgent(agentInput);
       setAnswer(result.response);
     } catch (error) {
       console.error('Error with Secure Agent:', error);
