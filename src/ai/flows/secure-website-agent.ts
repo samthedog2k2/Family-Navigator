@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import puppeteer from 'puppeteer';
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
@@ -41,8 +41,8 @@ const loginAndPerformTask = ai.defineTool(
     console.log(`[Agent] Starting login task for ${input.website}`);
 
     // Securely retrieve credentials from input if available, otherwise from environment variables.
-    const username = input.username || process.env[`${input.website.toUpperCase()}_USERNAME`];
-    const password = input.password || process.env[`${input.website.toUpperCase()}_PASSWORD`];
+    const username = input.username;
+    const password = input.password;
 
     if (!username || !password) {
       console.error(`[Agent] Credentials for ${input.website} not found.`);
@@ -127,6 +127,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     const localAi = genkit(config);
 
     const llmResponse = await localAi.generate({
+      model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
       Map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
