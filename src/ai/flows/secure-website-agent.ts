@@ -73,43 +73,107 @@ const loginAndPerformTask = ai.defineTool(
       const passSel = input.passwordSelector || 'input[type="password"], input[name="password"]';
       const btnSel = input.loginButtonSelector || 'button[type="submit"]';
 
-      // Check for custom flow - currently a placeholder for future logic
+      // Check for custom flow - handles OAuth, B2C, and complex login sequences
       if (input.customLoginFlow) {
-        // Here you could implement more complex login sequences
-        return `Error: Custom login flow for ${input.website} is not yet implemented.`;
-      }
+        console.log('[Agent] Custom login flow detected. Attempting to handle complex authentication...');
 
-      // Standard login flow
-      await page.type(userSel, username);
-      console.log(`[Agent] Typed username into selector: ${userSel}`);
+        // For OAuth/B2C flows, try to find standard form elements
+        const forms = await page.$$('form');
+        console.log(`[Agent] Found ${forms.length} forms on the page`);
 
-      // Handle cases where username and password are on the same page vs. two steps
-      const passwordInput = await page.$(passSel);
-      if (passwordInput) {
-        await page.type(passSel, password);
-        console.log(`[Agent] Typed password into selector: ${passSel}`);
-        await page.click(btnSel);
-        console.log(`[Agent] Clicked login button: ${btnSel}`);
-      } else {
-        // Handle cases where it's a two-step login
-        await page.click(btnSel); // Click to submit username
-        console.log(`[Agent] Submitted username form with button: ${btnSel}`);
-        if(input.waitForNavigation !== false) {
-           await page.waitForNavigation({ waitUntil: 'networkidle2' });
+        // Try common OAuth form patterns with more flexible selectors
+        const emailInputs = await page.$$('input[type="email"], input[name="email"], input[id*="email"], input[placeholder*="email" i], input[name*="username"], input[name*="Email"]');
+        const passwordInputs = await page.$$('input[type="password"], input[name="password"], input[id*="password"], input[name*="Password"]');
+        const submitButtons = await page.$$('button[type="submit"], input[type="submit"], button[id*="submit"], button[class*="submit"], button[id*="next"], button[id*="continue"], button[id*="login"]');
+
+        console.log(`[Agent] Found ${emailInputs.length} email inputs, ${passwordInputs.length} password inputs, ${submitButtons.length} submit buttons`);
+
+        if (emailInputs.length > 0 && submitButtons.length > 0) {
+          // Fill email
+          await emailInputs[0].type(username);
+          console.log('[Agent] Filled email field');
+
+          // Check if password field is present on the same page
+          if (passwordInputs.length > 0) {
+            await passwordInputs[0].type(password);
+            console.log('[Agent] Filled password field');
+          }
+
+          // Click submit
+          await submitButtons[0].click();
+          console.log('[Agent] Clicked submit button');
+
+          // Wait for response/navigation
+          if (input.waitForNavigation !== false) {
+            try {
+              await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 });
+              console.log('[Agent] Navigation completed after first submit');
+            } catch (e) {
+              console.log('[Agent] No navigation detected after login attempt, continuing...');
+              await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+          }
+
+          // If password field wasn't on first page, try to find it now
+          if (passwordInputs.length === 0) {
+            const newPasswordInputs = await page.$$('input[type="password"], input[name="password"], input[id*="password"], input[name*="Password"]');
+            const newSubmitButtons = await page.$$('button[type="submit"], input[type="submit"], button[id*="submit"], button[class*="submit"], button[id*="next"], button[id*="continue"], button[id*="login"]');
+
+            if (newPasswordInputs.length > 0 && newSubmitButtons.length > 0) {
+              await newPasswordInputs[0].type(password);
+              console.log('[Agent] Filled password field on second page');
+
+              await newSubmitButtons[0].click();
+              console.log('[Agent] Clicked submit button on second page');
+
+              if (input.waitForNavigation !== false) {
+                try {
+                  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 });
+                  console.log('[Agent] Navigation completed after password submit');
+                } catch (e) {
+                  console.log('[Agent] No navigation detected after password submit');
+                  await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+              }
+            }
+          }
         } else {
-           await page.waitForTimeout(2000); // wait for JS to load password field
+          return `Error: Could not find standard login form elements for custom login flow on ${input.website}`;
         }
-        await page.type(passSel, password);
-        console.log(`[Agent] Typed password into selector on second step: ${passSel}`);
-        await page.click(btnSel);
-        console.log(`[Agent] Clicked login button on second step: ${btnSel}`);
+      } else {
+        // Standard login flow
+        await page.type(userSel, username);
+        console.log(`[Agent] Typed username into selector: ${userSel}`);
+  
+        // Handle cases where username and password are on the same page vs. two steps
+        const passwordInput = await page.$(passSel);
+        if (passwordInput) {
+          await page.type(passSel, password);
+          console.log(`[Agent] Typed password into selector: ${passSel}`);
+          await page.click(btnSel);
+          console.log(`[Agent] Clicked login button: ${btnSel}`);
+        } else {
+          // Handle cases where it's a two-step login
+          await page.click(btnSel); // Click to submit username
+          console.log(`[Agent] Submitted username form with button: ${btnSel}`);
+          if(input.waitForNavigation !== false) {
+             await page.waitForNavigation({ waitUntil: 'networkidle2' });
+          } else {
+             await new Promise(resolve => setTimeout(resolve, 2000)); // wait for JS to load password field
+          }
+          await page.type(passSel, password);
+          console.log(`[Agent] Typed password into selector on second step: ${passSel}`);
+          await page.click(btnSel);
+          console.log(`[Agent] Clicked login button on second step: ${btnSel}`);
+        }
       }
+
 
       // Wait for final navigation and confirm login success
       if (input.waitForNavigation !== false) {
         await page.waitForNavigation({ waitUntil: 'networkidle2' });
       } else {
-        await page.waitForTimeout(3000);
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
       
       if (!input.successIndicator) {
@@ -230,10 +294,13 @@ const secureWebsiteAgentFlow = ai.defineFlow(
 
     if (toolRequest) {
       // Pass the credentials to the tool call
-      toolRequest.input.username = input.username;
-      toolRequest.input.password = input.password;
+      const toolInput = {
+        ...toolRequest.input as any,
+        username: input.username,
+        password: input.password
+      };
 
-      const toolResponse = await toolRequest.run();
+      const toolResponse = await loginAndPerformTask(toolInput);
 
       if (typeof toolResponse === 'string' && toolResponse.startsWith('Error:')) {
           return { response: `I'm sorry, I wasn't able to get that information for you. ${toolResponse}` };
@@ -246,15 +313,5 @@ const secureWebsiteAgentFlow = ai.defineFlow(
 );
 
 export async function secureWebsiteAgent(input: SecureWebsiteAgentInput): Promise<SecureWebsiteAgentOutput> {
-  // Let's check for the specific redirect request from the user.
-  if (input.request.includes("https://www.hulu.com/welcome")) {
-    const redirectCheckInput = {
-      website: "Hulu",
-      task: "Check for redirects.",
-      loginUrl: "https://www.hulu.com/welcome",
-    };
-    const response = await loginAndPerformTask(redirectCheckInput);
-    return { response };
-  }
   return secureWebsiteAgentFlow(input);
 }
