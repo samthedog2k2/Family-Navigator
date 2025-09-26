@@ -19,7 +19,6 @@ import { secureWebsiteAgent, SecureWebsiteAgentInput } from '@/ai/flows/secure-w
 
 const formSchema = z.object({
   request: z.string().min(10, 'Please enter a detailed request.'),
-  geminiApiKey: z.string().startsWith('AIzaSy', 'Please enter a valid Gemini API Key.'),
   huluUsername: z.string().email('Please enter a valid Hulu email.'),
   huluPassword: z.string().min(1, 'Please enter your Hulu password.'),
 });
@@ -49,7 +48,6 @@ export default function HuluAgentPage() {
         request: data.request,
         username: data.huluUsername,
         password: data.huluPassword,
-        geminiApiKey: data.geminiApiKey,
     };
 
     try {
@@ -83,17 +81,6 @@ export default function HuluAgentPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
-              <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300">
-                  <Info className="h-4 w-4 !text-blue-700 dark:!text-blue-300" />
-                  <AlertDescription>
-                    You can get a Gemini API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Google AI Studio</a>.
-                  </AlertDescription>
-              </Alert>
-              <div className="grid gap-2">
-                <Label htmlFor="geminiApiKey">Gemini API Key</Label>
-                <Input id="geminiApiKey" name="geminiApiKey" type="password" {...register('geminiApiKey')} placeholder="Paste your Gemini API Key" autoComplete="off" />
-                {errors.geminiApiKey && <p className="text-sm text-destructive">{errors.geminiApiKey.message}</p>}
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="huluUsername">Hulu Email</Label>

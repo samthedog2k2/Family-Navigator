@@ -68,8 +68,8 @@ const loginAndPerformTask = ai.defineTool(
       }
 
       // Enter credentials using flexible selectors
-      const userSel = input.usernameSelector || 'input[type="email"]';
-      const passSel = input.passwordSelector || 'input[type="password"]';
+      const userSel = input.usernameSelector || 'input[type="email"], input[name="email"]';
+      const passSel = input.passwordSelector || 'input[type="password"], input[name="password"]';
       const btnSel = input.loginButtonSelector || 'button[type="submit"]';
 
       // Check for custom flow - currently a placeholder for future logic
@@ -82,7 +82,7 @@ const loginAndPerformTask = ai.defineTool(
       await page.type(userSel, username);
       console.log(`[Agent] Typed username into selector: ${userSel}`);
 
-      // Handle cases where username and password are on the same page
+      // Handle cases where username and password are on the same page vs. two steps
       const passwordInput = await page.$(passSel);
       if (passwordInput) {
         await page.type(passSel, password);
