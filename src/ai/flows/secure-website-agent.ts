@@ -11,8 +11,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import puppeteer from 'puppeteer';
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
@@ -121,12 +119,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     outputSchema: SecureWebsiteAgentOutputSchema,
   },
   async (input) => {
-    
-    // Use provided Gemini API Key if available
-    const config = input.geminiApiKey ? { plugins: [googleAI({ apiKey: input.geminiApiKey })] } : {};
-    const localAi = genkit(config);
-
-    const llmResponse = await localAi.generate({
+    const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
