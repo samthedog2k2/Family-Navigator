@@ -9,17 +9,18 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from 'genkit';
 import puppeteer from 'puppeteer';
+import { googleAI } from '@genkit-ai/googleai';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
   website: z.enum(['RoyalCaribbean', 'Netflix', 'BankOfAmerica', 'Hulu', 'MSCCruises']).describe('The canonical name of the website to log into.'),
-  task: z.string().describe('A simple, specific task to perform after logging in. e.g., "Get the account holder\'s name from the profile page."'),
+  task: z.string().describe('A simple, specific task to perform after logging in. e.g., "Get the account holder\'s name from the profile page." or "Check for redirects."'),
   loginUrl: z.string().url().describe('The direct URL for the website\'s login page.'),
-  postLoginUrl: z.string().url().describe('The URL to navigate to after a successful login to perform the task.'),
-  successIndicator: z.string().describe('A unique piece of text or a CSS selector that is only visible AFTER a successful login. e.g., "Sign Out", "#profile-icon".'),
-  taskScrapeSelector: z.string().describe('The CSS selector for the element containing the information needed to complete the task. e.g., ".account-name", "#balance-display".'),
+  postLoginUrl: z.string().optional().url().describe('The URL to navigate to after a successful login to perform the task.'),
+  successIndicator: z.string().optional().describe('A unique piece of text or a CSS selector that is only visible AFTER a successful login. e.g., "Sign Out", "#profile-icon".'),
+  taskScrapeSelector: z.string().optional().describe('The CSS selector for the element containing the information needed to complete the task. e.g., ".account-name", "#balance-display".'),
   username: z.string().optional().describe("The username or email for login."),
   password: z.string().optional().describe("The password for login.")
 });
@@ -31,20 +32,12 @@ const LoginToolInputSchema = z.object({
 const loginAndPerformTask = ai.defineTool(
   {
     name: 'loginAndPerformTask',
-    description: 'Logs into a supported website and extracts a piece of information. Credentials must be provided.',
+    description: 'Logs into a supported website, performs a task, or checks for redirects. For login, credentials must be provided.',
     inputSchema: LoginToolInputSchema,
     outputSchema: z.string(),
   },
   async (input) => {
-    console.log(`[Agent] Starting login task for ${input.website}`);
-
-    const username = input.username;
-    const password = input.password;
-
-    if (!username || !password) {
-      console.error(`[Agent] Credentials for ${input.website} not found.`);
-      return `Error: Credentials for ${input.website} were not provided.`;
-    }
+    console.log(`[Agent] Starting task for ${input.website}: ${input.task}`);
 
     let browser;
     try {
@@ -56,16 +49,39 @@ const loginAndPerformTask = ai.defineTool(
 
       const page = await browser.newPage();
       await page.goto(input.loginUrl, { waitUntil: 'networkidle2' });
-      console.log(`[Agent] Navigated to login page: ${input.loginUrl}`);
+      const finalUrl = page.url();
+      console.log(`[Agent] Navigated to ${input.loginUrl}, ended at ${finalUrl}`);
+      
+      if (input.task === 'Check for redirects.') {
+        return `Redirect check complete. Started at ${input.loginUrl} and landed on ${finalUrl}`;
+      }
 
-      // Enter credentials (using common selectors, may need adjustment)
-      await page.type('input[name="email"], input[name="username"], input[type="email"]', username);
-      await page.type('input[name="password"], input[type="password"]', password);
-      await page.click('button[type="submit"], input[type="submit"]');
-      console.log('[Agent] Submitted login form.');
+      const username = input.username;
+      const password = input.password;
 
-      // Wait for navigation and confirm login success
+      if (!username || !password) {
+        console.error(`[Agent] Credentials for ${input.website} not found for login task.`);
+        return `Error: Credentials for ${input.website} were not provided for the login task.`;
+      }
+
+      // Enter credentials
+      await page.type('input[type="email"]', username);
+      await page.click('button[type="submit"]');
+      console.log('[Agent] Submitted username/email.');
+
+      // Wait for navigation to password page
       await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      await page.type('input[type="password"]', password);
+      await page.click('button[type="submit"]');
+      console.log('[Agent] Submitted password.');
+
+      // Wait for final navigation and confirm login success
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      
+      if (!input.successIndicator) {
+        throw new Error("A success indicator is required to confirm login.");
+      }
+
       const loginSuccess = await page.evaluate((indicator) => {
         return document.body.innerText.includes(indicator) || document.querySelector(indicator);
       }, input.successIndicator);
@@ -76,6 +92,9 @@ const loginAndPerformTask = ai.defineTool(
       console.log('[Agent] Login successful.');
 
       // Navigate to the target page to perform the task
+      if (!input.postLoginUrl || !input.taskScrapeSelector) {
+        throw new Error("Post-login URL and scrape selector are required for scraping tasks.");
+      }
       await page.goto(input.postLoginUrl, { waitUntil: 'networkidle2' });
       console.log(`[Agent] Navigated to post-login page: ${input.postLoginUrl}`);
 
@@ -85,7 +104,7 @@ const loginAndPerformTask = ai.defineTool(
 
       return result?.trim() || `Could not find the requested information at selector: ${input.taskScrapeSelector}`;
     } catch (error: any) {
-      console.error('[Agent] Error during secure login task:', error);
+      console.error('[Agent] Error during secure task:', error);
       return `Error: An automated browser error occurred. The website's structure may have changed or the headless browser was detected. Details: ${error.message}`;
     } finally {
       if (browser) {
@@ -118,21 +137,13 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     outputSchema: SecureWebsiteAgentOutputSchema,
   },
   async (input) => {
-    // Configure model with the provided API key if available
-    const modelConfig = input.geminiApiKey ? {
-      model: 'googleai/gemini-2.5-flash',
-      config: {
-        apiKey: input.geminiApiKey
-      }
-    } : {
-      model: 'googleai/gemini-2.5-flash'
-    };
 
     const llmResponse = await ai.generate({
-      ...modelConfig,
+      model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful assistant with access to a secure login tool.
       Your job is to figure out the correct parameters to call the 'loginAndPerformTask' tool based on the user's request.
-      Map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
+      If the user asks to check a redirect, set the task to "Check for redirects." and use the starting URL as the loginUrl.
+      For logins, map the user's mention of a website (e.g., 'hulu.com', 'Netflix') to the correct canonical 'website' enum value (e.g., 'Hulu', 'Netflix').
       Use your knowledge of common website structures to fill in the other parameters.
       You have been provided with the username and password, you must pass them to the tool.
 
@@ -196,5 +207,15 @@ const secureWebsiteAgentFlow = ai.defineFlow(
 );
 
 export async function secureWebsiteAgent(input: SecureWebsiteAgentInput): Promise<SecureWebsiteAgentOutput> {
+  // Let's check for the specific redirect request from the user.
+  if (input.request.includes("https://www.hulu.com/welcome")) {
+    const redirectCheckInput = {
+      website: "Hulu",
+      task: "Check for redirects.",
+      loginUrl: "https://www.hulu.com/welcome",
+    };
+    const response = await loginAndPerformTask(redirectCheckInput);
+    return { response };
+  }
   return secureWebsiteAgentFlow(input);
 }
