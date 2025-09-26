@@ -118,6 +118,20 @@ const SITE_CONFIGS = {
     LINK: ["a", "a.card-link"],
     NEXT: ["a.next"],
   },
+  "msccruisesusa.com": {
+    CONTAINER: [".cruise-result-list__item"],
+    TITLE: [".cruise-card__title"],
+    SHIP: [".cruise-card__ship-name"],
+    LINE: [],
+    PRICE: [".price-box__price"],
+    DURATION: [".cruise-card__cruise-length"],
+    ITINERARY: [".cruise-card__ports-of-call"],
+    DEPARTURE: [".cruise-card__departure-port"],
+    RATING: [],
+    DATE: [".cruise-card__departure-date"],
+    LINK: ["a.cruise-card__link"],
+    NEXT: [".pagination__next"],
+  },
 };
 
 // --- Helpers ---
