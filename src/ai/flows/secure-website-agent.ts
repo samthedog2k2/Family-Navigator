@@ -18,7 +18,7 @@ const LoginToolInputSchema = z.object({
   website: z.enum(['RoyalCaribbean', 'Netflix', 'BankOfAmerica', 'Hulu', 'MSCCruises']).describe('The canonical name of the website to log into.'),
   task: z.string().describe('A simple, specific task to perform after logging in. e.g., "Get the account holder\'s name from the profile page." or "Check for redirects."'),
   loginUrl: z.string().url().describe('The direct URL for the website\'s login page.'),
-  postLoginUrl: z.string().optional().url().describe('The URL to navigate to after a successful login to perform the task.'),
+  postLoginUrl: z.string().url().optional().describe('The URL to navigate to after a successful login to perform the task.'),
   successIndicator: z.string().optional().describe('A unique piece of text or a CSS selector that is only visible AFTER a successful login. e.g., "Sign Out", "#profile-icon".'),
   taskScrapeSelector: z.string().optional().describe('The CSS selector for the element containing the information needed to complete the task. e.g., ".account-name", "#balance-display".'),
   username: z.string().optional().describe("The username or email for login."),
