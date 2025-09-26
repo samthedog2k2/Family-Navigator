@@ -118,11 +118,13 @@ export default function EnhancedLogin() {
                 <Label htmlFor="displayName">Full Name</Label>
                 <Input
                   id="displayName"
+                  name="displayName"
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="John Doe"
                   required
+                  autoComplete="name"
                 />
               </div>
             )}
@@ -130,22 +132,26 @@ export default function EnhancedLogin() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="john@example.com"
+                autoComplete="email"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               />
             </div>
             

@@ -91,18 +91,18 @@ export default function HuluAgentPage() {
               </Alert>
               <div className="grid gap-2">
                 <Label htmlFor="geminiApiKey">Gemini API Key</Label>
-                <Input id="geminiApiKey" type="password" {...register('geminiApiKey')} placeholder="Paste your Gemini API Key" />
+                <Input id="geminiApiKey" name="geminiApiKey" type="password" {...register('geminiApiKey')} placeholder="Paste your Gemini API Key" autoComplete="off" />
                 {errors.geminiApiKey && <p className="text-sm text-destructive">{errors.geminiApiKey.message}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="huluUsername">Hulu Email</Label>
-                  <Input id="huluUsername" type="email" {...register('huluUsername')} placeholder="Your Hulu email" />
+                  <Input id="huluUsername" name="huluUsername" type="email" {...register('huluUsername')} placeholder="Your Hulu email" autoComplete="username" />
                   {errors.huluUsername && <p className="text-sm text-destructive">{errors.huluUsername.message}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="huluPassword">Hulu Password</Label>
-                  <Input id="huluPassword" type="password" {...register('huluPassword')} placeholder="Your Hulu password" />
+                  <Input id="huluPassword" name="huluPassword" type="password" {...register('huluPassword')} placeholder="Your Hulu password" autoComplete="current-password" />
                   {errors.huluPassword && <p className="text-sm text-destructive">{errors.huluPassword.message}</p>}
                 </div>
               </div>
