@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import puppeteer from 'puppeteer';
+import { googleAI } from '@genkit-ai/googleai';
 
 // Define the schema for the secure login tool's input
 const LoginToolInputSchema = z.object({
@@ -25,26 +26,25 @@ const LoginToolInputSchema = z.object({
 });
 
 /**
- * A secure tool that logs into a website using credentials from environment variables
+ * A secure tool that logs into a website using credentials from input
  * and performs a specified scraping task.
  */
 const loginAndPerformTask = ai.defineTool(
   {
     name: 'loginAndPerformTask',
-    description: 'Logs into a supported website and extracts a piece of information. Credentials must be provided if not pre-configured in a secure secret manager.',
+    description: 'Logs into a supported website and extracts a piece of information. Credentials must be provided.',
     inputSchema: LoginToolInputSchema,
     outputSchema: z.string(),
   },
   async (input) => {
     console.log(`[Agent] Starting login task for ${input.website}`);
 
-    // Securely retrieve credentials from input if available, otherwise from environment variables.
     const username = input.username;
     const password = input.password;
 
     if (!username || !password) {
       console.error(`[Agent] Credentials for ${input.website} not found.`);
-      return `Error: Credentials for ${input.website} were not provided and have not been pre-configured by the user.`;
+      return `Error: Credentials for ${input.website} were not provided.`;
     }
 
     let browser;
@@ -72,7 +72,7 @@ const loginAndPerformTask = ai.defineTool(
       }, input.successIndicator);
 
       if (!loginSuccess) {
-        throw new Error('Login failed. The success indicator was not found.');
+        throw new Error('Login failed. The success indicator was not found. This could be due to incorrect credentials or a change in the website\'s layout.');
       }
       console.log('[Agent] Login successful.');
 
@@ -87,7 +87,7 @@ const loginAndPerformTask = ai.defineTool(
       return result?.trim() || `Could not find the requested information at selector: ${input.taskScrapeSelector}`;
     } catch (error: any) {
       console.error('[Agent] Error during secure login task:', error);
-      return `Error: An automated browser error occurred. The website's structure may have changed. Details: ${error.message}`;
+      return `Error: An automated browser error occurred. The website's structure may have changed or the headless browser was detected. Details: ${error.message}`;
     } finally {
       if (browser) {
         await browser.close();
@@ -119,6 +119,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
     outputSchema: SecureWebsiteAgentOutputSchema,
   },
   async (input) => {
+    
     const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful assistant with access to a secure login tool.
@@ -171,7 +172,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       }
     });
 
-    const toolRequest = llmResponse.toolRequest();
+    const toolRequest = llmResponse.toolRequest;
 
     if (toolRequest) {
       // Pass the credentials to the tool call
@@ -185,7 +186,7 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       }
       return { response: `Task completed. Here is the information I found: ${toolResponse}` };
     } else {
-      return { response: llmResponse.text() || "I was unable to complete the request. The tool did not return a response." };
+      return { response: llmResponse.text || "I was unable to complete the request. The tool did not return a response." };
     }
   }
 );
