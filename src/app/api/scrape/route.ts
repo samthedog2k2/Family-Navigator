@@ -59,11 +59,14 @@ export async function POST(request: NextRequest) {
     console.error('HTTPS Scraping error:', error);
     
     // Specific error handling
-    let errorMessage = error.message;
-    if (error.name === 'AbortError') {
-      errorMessage = 'Request timeout - site took too long to respond';
-    } else if (error.message.includes('fetch')) {
-      errorMessage = 'Network error - site may be blocking requests or down';
+    let errorMessage = 'An unknown error occurred';
+    if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.name === 'AbortError') {
+          errorMessage = 'Request timeout - site took too long to respond';
+        } else if (error.message.includes('fetch')) {
+          errorMessage = 'Network error - site may be blocking requests or down';
+        }
     }
     
     return NextResponse.json({ 

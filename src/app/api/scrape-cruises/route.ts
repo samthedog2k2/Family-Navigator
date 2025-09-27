@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer-core";
 import * as cheerio from "cheerio";
+import chromium from '@sparticuz/chromium';
 
 // --- Site selector map ---
 const SITE_CONFIGS = {
@@ -192,22 +194,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unsupported domain" }, { status: 400 });
   }
 
+  let browser = null;
   try {
-    console.log(`Scraping ${sourceUrl} using fetch...`);
-    
-    const response = await fetch(sourceUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-      }
+    console.log("Launching Puppeteer with @sparticuz/chromium...");
+
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch the page. Status: ${response.status}`);
-    }
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
+    
+    console.log(`Navigating to ${sourceUrl}...`);
+    await page.goto(sourceUrl, { waitUntil: "networkidle2", timeout: 60000 });
 
-    const html = await response.text();
+    const html = await page.content();
     console.log("Page content retrieved. Parsing results...");
 
     const results = parseResults(html, config);
@@ -225,5 +229,10 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     console.error("Scraper error:", err.message);
     return NextResponse.json({ error: "Failed to scrape data.", details: err.message }, { status: 500 });
+  } finally {
+    if (browser) {
+      await browser.close();
+      console.log("Browser closed.");
+    }
   }
 }
