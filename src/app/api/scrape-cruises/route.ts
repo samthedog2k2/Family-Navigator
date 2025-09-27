@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
@@ -194,7 +193,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    console.log(`Fetching ${sourceUrl} with fetch()...`);
+    console.log(`Scraping ${sourceUrl} using fetch...`);
     
     const response = await fetch(sourceUrl, {
       headers: {
