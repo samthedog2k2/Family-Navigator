@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // Enable turbo mode for faster builds
-    turbo: true,
-  },
-  
   // Security headers
   async headers() {
     return [
@@ -41,9 +36,6 @@ const nextConfig = {
   // Compression
   compress: true,
 
-  // Performance optimizations
-  swcMinify: true,
-  
   // Bundle analyzer (development only)
   ...(process.env.ANALYZE === 'true' && {
     bundleAnalyzer: {
