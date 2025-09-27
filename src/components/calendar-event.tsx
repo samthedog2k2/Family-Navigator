@@ -23,6 +23,10 @@ const calendarColorConfig: Record<string, { month: string; timeline: string }> =
     month: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/50 dark:text-purple-200 dark:border-purple-700",
     timeline: "bg-purple-500 border-purple-700 text-white",
   },
+  Family: {
+    month: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-200 dark:border-amber-700",
+    timeline: "bg-amber-500 border-amber-700 text-white",
+  },
   default: {
     month: "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900/50 dark:text-gray-200 dark:border-gray-700",
     timeline: "bg-gray-500 border-gray-700 text-white",
