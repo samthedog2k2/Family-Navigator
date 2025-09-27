@@ -44,7 +44,7 @@ const SCRAPE_TARGETS = [
     { name: "Cruises.com", url: "https://www.cruises.com/" },
     { name: "Cruise.com", url: "https://www.cruise.com/" },
     { name: "MSC Cruises", url: "https://www.msccruisesusa.com/cruise/deals" },
-    { name: "CruiseMapper.com", url: "https://www.cruisemapper.com/itineraries" },
+    { name: "CruiseMapper.com", url: "https://www.cruisemapper.com/cruise-search" },
 ];
 
 export function CruiseSearch() {
@@ -65,6 +65,8 @@ export function CruiseSearch() {
     setError(null);
 
     try {
+        // Note: This fetch-based scraper is simple and may be blocked by ads or dynamic content.
+        // A more robust solution would use a headless browser, but that is not supported in this environment.
         const response = await fetch(`/api/scrape-cruises?url=${encodeURIComponent(data.url)}`);
         
         if (!response.ok) {
@@ -77,7 +79,7 @@ export function CruiseSearch() {
         if (scrapedData.results && scrapedData.results.length > 0) {
             setResults(scrapedData.results);
         } else {
-            toast({ title: "No Results", description: "The scraper couldn't find any cruise results on that page."});
+            toast({ title: "No Results", description: "The scraper couldn't find any cruise results. The site may be blocking the request or its layout has changed."});
         }
 
     } catch(err) {
@@ -135,8 +137,8 @@ export function CruiseSearch() {
                     {isLoading && (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                            <p className="text-lg font-semibold">Launching headless browser...</p>
-                            <p>Scraping live data. This can take up to a minute.</p>
+                            <p className="text-lg font-semibold">Scraping live data...</p>
+                            <p>This can take a moment.</p>
                         </div>
                     )}
                     {error && (
