@@ -9,7 +9,7 @@ import AgentSelector from '@/components/AgentSelector';
 import FamilyProfile from '@/components/FamilyProfile';
 import TripComparison from '@/components/TripComparison';
 import { TravelCoordinator } from '@/agents/coordinator/MainTravelAgent';
-import { FamilyData, TripRequest } from '@/lib/travel-types';
+import { FamilyData, TripRequest, AgentConfig, FullTripRequest } from '@/lib/travel-types';
 import { DEFAULT_FAMILY } from '@/lib/constants';
 import { LayoutWrapper } from '@/components/layout-wrapper';
 
@@ -50,16 +50,18 @@ export default function TravelCoordinatorPage() {
     setError(null);
 
     try {
-      const result = await coordinator.planTrip({
+      const fullRequest: FullTripRequest = {
         ...request,
         family,
         activeAgents,
-      });
+        origin: family.homeAddress.city,
+      };
+      const result = await coordinator.planTrip(fullRequest);
       
       // Handle the result - will be connected to the dashboard
       console.log('SP Trip Planning Result:', result);
-      // For now, we just log it. In a real app, this would update state.
       alert('Trip planning complete! Check the console for results.');
+
 
     } catch (err) {
       setError('Failed to process trip request');

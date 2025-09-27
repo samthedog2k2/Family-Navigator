@@ -78,6 +78,11 @@ export interface TripRequest {
   specialRequests?: string;
 }
 
+export interface FullTripRequest extends TripRequest {
+  family: FamilyData;
+  activeAgents: string[];
+}
+
 export interface TripPlan {
   id: string;
   request: TripRequest;

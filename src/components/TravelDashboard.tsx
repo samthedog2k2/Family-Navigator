@@ -1,23 +1,9 @@
-
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
-import { FamilyData, TripRequest } from '@/lib/travel-types';
-
-const tripRequestSchema = z.object({
-  origin: z.string().min(1, 'Origin is required'),
-  destination: z.string().min(1, 'Destination is required'),
-  budget: z.coerce.number().positive('Budget must be a positive number'),
-  additionalInfo: z.string().optional(),
-});
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, MapPin, Users, DollarSign, Search, Sparkles, Clock } from 'lucide-react';
+import { FamilyData, TripRequest } from '../lib/travel-types';
 
 interface TravelDashboardProps {
   family: FamilyData;
@@ -26,57 +12,185 @@ interface TravelDashboardProps {
 }
 
 export default function TravelDashboard({ family, onTripRequest, isProcessing }: TravelDashboardProps) {
-  const { control, handleSubmit, register, formState: { errors } } = useForm<TripRequest>({
-    resolver: zodResolver(tripRequestSchema),
-  });
+  const [tripType, setTripType] = useState<'cruise' | 'flight' | 'roadtrip' | 'hybrid'>('cruise');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [destinations, setDestinations] = useState<string[]>(['Caribbean']);
+  const [budget, setBudget] = useState(5000);
+  const [interests, setInterests] = useState<string[]>(['family', 'relaxation']);
 
-  const onSubmit = (data: TripRequest) => {
-    onTripRequest(data);
+  const handleSubmit = () => {
+    const request: TripRequest = {
+      type: tripType,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      destinations,
+      budget: {
+        total: budget,
+        flexibility: 'flexible',
+      },
+      interests,
+    };
+    onTripRequest(request);
   };
 
+  const tripTypes = [
+    { id: 'cruise', label: 'Cruise', icon: '🚢' },
+    { id: 'flight', label: 'Flight', icon: '✈️' },
+    { id: 'roadtrip', label: 'Road Trip', icon: '🚗' },
+    { id: 'hybrid', label: 'Combined', icon: '🌍' },
+  ];
+
   return (
-    <Card className="shadow-xl rounded-2xl">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Plan Your Next Adventure</CardTitle>
-          <CardDescription>
-            Tell the coordinator agent what you're looking for. The more detail, the better!
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="origin">From</Label>
-              <Input id="origin" placeholder="e.g., New York, NY" {...register('origin')} />
-              {errors.origin && <p className="text-sm text-red-500">{errors.origin.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="destination">To</Label>
-              <Input id="destination" placeholder="e.g., Orlando, FL" {...register('destination')} />
-              {errors.destination && <p className="text-sm text-red-500">{errors.destination.message}</p>}
-            </div>
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Plan Your Trip</h2>
+        <Sparkles className="w-6 h-6 text-indigo-500" />
+      </div>
+
+      {/* Trip Type Selection */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-3">Trip Type</label>
+        <div className="grid grid-cols-4 gap-3">
+          {tripTypes.map((type) => (
+            <motion.button
+              key={type.id}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setTripType(type.id as any)}
+              className={`p-3 rounded-xl border-2 transition-all ${
+                tripType === type.id
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-2xl mb-1">{type.icon}</div>
+              <div className="text-sm font-medium">{type.label}</div>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Date Selection */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Calendar className="inline w-4 h-4 mr-1" />
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Calendar className="inline w-4 h-4 mr-1" />
+            End Date
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      {/* Destinations */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          <MapPin className="inline w-4 h-4 mr-1" />
+          Destinations
+        </label>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {destinations.map((dest, idx) => (
+            <span
+              key={idx}
+              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+            >
+              {dest}
+            </span>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Add destination..."
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              const input = e.currentTarget;
+              if (input.value) {
+                setDestinations([...destinations, input.value]);
+                input.value = '';
+              }
+            }
+          }}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      {/* Budget */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          <DollarSign className="inline w-4 h-4 mr-1" />
+          Budget: ${budget.toLocaleString()}
+        </label>
+        <input
+          type="range"
+          min="1000"
+          max="25000"
+          step="500"
+          value={budget}
+          onChange={(e) => setBudget(Number(e.target.value))}
+          className="w-full"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>$1,000</span>
+          <span>$25,000</span>
+        </div>
+      </div>
+
+      {/* Family Summary */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Users className="w-5 h-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">
+              Traveling with {family.members.length} family members
+            </span>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="budget">Budget (USD)</Label>
-            <Input id="budget" type="number" placeholder="e.g., 4000" {...register('budget')} />
-            {errors.budget && <p className="text-sm text-red-500">{errors.budget.message}</p>}
+          <div className="text-sm text-gray-600">
+            From: {family.homeAddress.city}, {family.homeAddress.state}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="additionalInfo">Additional Information</Label>
-            <Textarea
-              id="additionalInfo"
-              placeholder="e.g., 'We have two young kids who love swimming. We prefer direct flights and need a rental car.'"
-              {...register('additionalInfo')}
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full" disabled={isProcessing}>
-            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isProcessing ? 'Agents are working...' : 'Start Planning'}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </div>
+
+      {/* Search Button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleSubmit}
+        disabled={isProcessing || !startDate || !endDate}
+        className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 ${
+          isProcessing
+            ? 'bg-gray-300 cursor-not-allowed'
+            : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg'
+        }`}
+      >
+        {isProcessing ? (
+          <>
+            <Clock className="w-5 h-5 animate-spin" />
+            <span>Processing with AI Agents...</span>
+          </>
+        ) : (
+          <>
+            <Search className="w-5 h-5" />
+            <span>Find Perfect Trip</span>
+          </>
+        )}
+      </motion.button>
+    </div>
   );
 }

@@ -42,8 +42,8 @@ export class TravelCoordinator {
 
         // Step 2 & 3: Delegate to sub-agents and gather results (mocked)
         const subAgentTasks = [
-          `Find flights for ${req.family.members.length} people from ${req.origin} to ${req.destination}`,
-          `Find hotels in ${req.destination} under a budget of $${req.budget}`,
+          `Find flights for ${req.family.members.length} people from ${req.origin} to ${req.destinations[0]}`,
+          `Find hotels in ${req.destinations[0]} under a budget of $${req.budget.total}`,
         ];
 
         console.log('[Coordinator] Delegating tasks:', subAgentTasks);
