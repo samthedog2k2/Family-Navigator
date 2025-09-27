@@ -200,14 +200,7 @@ export async function GET(req: NextRequest) {
     console.log("Launching Puppeteer with @sparticuz/chromium...");
 
     browser = await puppeteer.launch({
-      args: [
-          ...chromium.args,
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--no-zygote',
-          '--single-process'
-      ],
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
