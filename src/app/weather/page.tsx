@@ -157,9 +157,9 @@ export default function WeatherPage() {
                       {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
                     </div>
                     <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
-                    <div className="flex items-center justify-center text-xs text-msn-icon-blue mt-1">
-                      <Droplets size={12} className="mr-1" />
-                      <span>{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
+                    <div className="flex items-center justify-center text-xs mt-1">
+                      <Droplets size={12} className="mr-1 text-msn-icon-blue" />
+                      <span className="text-msn-icon-blue">{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
                     </div>
                   </div>
                 ))}
@@ -216,9 +216,9 @@ export default function WeatherPage() {
                         <div className="w-8 h-8">
                            {getWeatherIcon(weatherData.daily.weatherCode[i], true, 32)}
                         </div>
-                        <div className="flex items-center text-xs text-msn-icon-blue">
-                           <Droplets size={12} className="mr-1"/>
-                           <span>{weatherData.daily.precipitationSum[i]}%</span>
+                        <div className="flex items-center text-xs">
+                           <Droplets size={12} className="mr-1 text-msn-icon-blue"/>
+                           <span className="text-msn-icon-blue">{weatherData.daily.precipitationSum[i]}%</span>
                         </div>
                       </div>
                       <div className="flex items-center col-span-2 gap-2">
