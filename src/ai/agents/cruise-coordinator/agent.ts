@@ -6,7 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { UserPreferencesSchema, CoordinatedCruiseResultSchema, type UserPreferences } from './types';
 import { analyzeUserQuery } from './query-analyst';
 import { retrieveCruiseInformation } from './info-retriever';
