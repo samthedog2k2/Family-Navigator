@@ -44,7 +44,7 @@ const SCRAPE_TARGETS = [
     { name: "Cruises.com", url: "https://www.cruises.com/" },
     { name: "Cruise.com", url: "https://www.cruise.com/" },
     { name: "MSC Cruises", url: "https://www.msccruisesusa.com/cruise/deals" },
-    { name: "CruiseMapper.com", url: "https://www.cruisemapper.com/cruises" },
+    { name: "CruiseMapper.com", url: "https://www.cruisemapper.com/itineraries" },
 ];
 
 export function CruiseSearch() {
