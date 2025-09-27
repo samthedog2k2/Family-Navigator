@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import type { FamilyMember, HealthData, AppState } from "@/lib/types";
-import { getHealthData, updateHealthData } from "@/services/client-data-service";
+import { ClientDataService } from "@/services/client-data-service";
 import { Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 
@@ -169,7 +169,6 @@ function HealthForm({
 
 export function HealthTracker() {
   const [appState, setAppState] = useState<AppState | null>(null);
-  const [dataSource, setDataSource] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<FamilyMember>(familyMembers[0]);
@@ -177,11 +176,15 @@ export function HealthTracker() {
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
+      const newAppState: Partial<AppState> = {};
       try {
-        const data = await getHealthData();
-        const { source, ...healthData } = data;
-        setAppState(healthData as AppState);
-        setDataSource(source);
+        for (const member of familyMembers) {
+          const memberData = await ClientDataService.getHealthData(member);
+          if (memberData) {
+            newAppState[member] = memberData as HealthData;
+          }
+        }
+        setAppState(newAppState as AppState);
       } catch (error) {
         toast({
           title: "Error Loading Data",
@@ -198,8 +201,8 @@ export function HealthTracker() {
   const handleSave = async (member: FamilyMember, data: HealthData) => {
     setIsSaving(true);
     try {
-      const updatedData = await updateHealthData(member, data);
-      setAppState(updatedData);
+      await ClientDataService.saveHealthData(member, data);
+      setAppState(prevState => ({...prevState!, [member]: data}));
       toast({
         title: "Data Saved",
         description: `Health data for ${member} has been updated.`,
@@ -229,11 +232,6 @@ export function HealthTracker() {
 
   return (
     <div className="relative">
-        {dataSource && (
-            <Badge variant="outline" className="absolute top-0 right-0">
-                Data Source: {dataSource}
-            </Badge>
-        )}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FamilyMember)} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
             {familyMembers.map((member) => (
@@ -244,12 +242,12 @@ export function HealthTracker() {
         </TabsList>
         {familyMembers.map((member) => (
             <TabsContent key={member} value={member} forceMount={true} hidden={activeTab !== member}>
-              <HealthForm
+             {appState[member] && <HealthForm
                   member={member}
                   data={appState[member]}
                   onSave={handleSave}
                   isSaving={isSaving}
-              />
+              />}
             </TabsContent>
         ))}
         </Tabs>
