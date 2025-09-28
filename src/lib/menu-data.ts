@@ -60,7 +60,7 @@ export const mainNavItems: NavItem[] = [
     ],
   },
 
-  { title: "Travel", href: "/travel", description: "Plan your next family adventure", isLeaf: true },
+  { title: "Travel", href: "/travel-coordinator", description: "Plan your next family adventure", isLeaf: true },
   { title: "Finance", href: "/finance", description: "Manage your family's finances", isLeaf: true },
   { title: "Health", href: "/health", description: "Keep track of your family's health", isLeaf: true },
 
