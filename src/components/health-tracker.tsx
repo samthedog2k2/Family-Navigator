@@ -36,7 +36,7 @@ const familyMembers: FamilyMember[] = ["Adam", "Holly", "Ethan", "Elle"];
 const healthSchema = z.object({
   height: z.string().min(1, "Height is required"),
   age: z.coerce.number().positive("Age must be positive"),
-  gender: z.enum(["Male", "Female", "Other"]),
+  gender: z.enum(["Male", "Female", "Other", ""]),
   weight: z.string().min(1, "Weight is required"),
   glucose: z.string().min(1, "Glucose level is required"),
   notes: z.string().max(140, "Notes must be 140 characters or less").optional(),
@@ -62,24 +62,18 @@ function HealthForm({
     reset,
   } = useForm<HealthFormData>({
     resolver: zodResolver(healthSchema),
-    defaultValues: {
-      ...data,
-      gender: data.gender === "" ? "Male" : data.gender, // Ensure gender is not an empty string
-    },
+    defaultValues: data,
   });
   
   const { errors } = useFormState({ control });
 
   useEffect(() => {
-    reset({
-      ...data,
-      gender: data.gender === "" ? "Male" : data.gender,
-    });
+    reset(data);
   }, [data, reset]);
 
 
   const onSubmit: SubmitHandler<HealthFormData> = (formData) => {
-    onSave(member, formData);
+    onSave(member, formData as HealthData);
   };
 
   return (
@@ -176,7 +170,7 @@ function HealthForm({
 const emptyHealthData: HealthData = {
   height: "",
   age: 0,
-  gender: "Male",
+  gender: "",
   weight: "",
   glucose: "",
   notes: "",
