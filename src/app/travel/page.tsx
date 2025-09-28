@@ -41,14 +41,11 @@ const mockFamily: FamilyData = {
 export default function TravelPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [aiResults, setAiResults] = useState<CruiseResult | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   const { toast } = useToast();
 
   const handleTripRequest = async (request: TripRequest) => {
-    console.log('🚀 SP Travel Page: Processing trip request...', request);
     setIsProcessing(true);
     setAiResults(null);
-    setDebugInfo('');
     
     try {
         const coordinatorInput: CruiseCoordinatorInput = {
@@ -62,33 +59,27 @@ export default function TravelPage() {
             interests: request.interests.join(', ')
         };
 
-        console.log('📤 SP Travel Page: Sending to AI agent...', coordinatorInput);
-        setDebugInfo(`Processing: ${JSON.stringify(coordinatorInput, null, 2)}`);
-
         const result = await findCruisesAutonomous(coordinatorInput);
-        console.log('�� SP Travel Page: Received result...', result);
-
-        if (result.cruises && result.cruises.length > 0) {
+        
+        if (result && result.cruises) {
             setAiResults(result);
             toast({
-                title: "✅ SP AI Agent Success",
-                description: `Found ${result.cruises.length} premium cruise options using collective wisdom!`,
+                title: "AI Agent Success",
+                description: `Found ${result.cruises.length} synthesized cruise options.`,
             });
         } else {
-            toast({
-                title: "⚠️ SP AI Agent Notice", 
-                description: result.summary || "No cruises found. Try adjusting your criteria.",
+             toast({
+                title: "AI Agent Notice", 
+                description: "The agent returned no options. Please try adjusting your criteria.",
                 variant: "destructive",
             });
         }
 
     } catch (error: any) {
-      console.error('❌ SP Travel Page Error:', error);
-      setDebugInfo(`Error: ${error.message}\nStack: ${error.stack}`);
-      
+      console.error('AI agent processing failed:', error);
       toast({
-        title: "❌ SP AI Agent Error",
-        description: `System Error: ${error.message}`,
+        title: "AI Agent Error",
+        description: `The autonomous agent failed to process the request: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -104,8 +95,7 @@ export default function TravelPage() {
           <h1 className="text-3xl font-bold text-gray-900">SP Travel Intelligence</h1>
         </div>
         <p className="text-gray-600">
-          Powered by collective wisdom of Steve Jobs, Geoffrey Hinton, and travel experts. 
-          Experience autonomous AI agents finding your perfect cruise.
+          Powered by autonomous AI agents to find your perfect cruise.
         </p>
       </div>
 
@@ -115,35 +105,17 @@ export default function TravelPage() {
         isProcessing={isProcessing} 
       />
 
-      {/* Debug Information */}
-      {debugInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle>🔧 SP Debug Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="text-xs bg-gray-100 p-4 rounded overflow-auto">
-              {debugInfo}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* AI Results */}
-      {aiResults && (
+      {aiResults && aiResults.cruises.length > 0 && (
         <div className="space-y-8">
           <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
             <CardHeader>
               <div className="flex items-center space-x-3">
                 <Ship className="w-6 h-6 text-green-600" />
-                <CardTitle className="text-green-800">SP AI Agent Summary</CardTitle>
+                <CardTitle className="text-green-800">AI Agent Summary</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-green-700 font-medium">{aiResults.summary}</p>
-              <div className="mt-4 text-sm text-green-600">
-                Powered by autonomous AI agents using collective wisdom of travel and technology experts.
-              </div>
             </CardContent>
           </Card>
           
@@ -184,17 +156,6 @@ export default function TravelPage() {
               </Card>
             ))}
           </div>
-
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-6">
-              <p className="text-sm text-blue-700">
-                ✨ <strong>SP Enhancement:</strong> These results were curated by autonomous AI agents 
-                embodying the collective wisdom of Steve Jobs (design), Geoffrey Hinton (AI), 
-                Doug Stevenson (Firebase), and Werner Vogels (architecture) to deliver the perfect 
-                family cruise experience.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       )}
     </div>
