@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Loader2, MapPin, AlertTriangle, RefreshCw, Droplets } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isWithinInterval } from "date-fns";
 import { getWeatherIcon } from "@/lib/weather-icons";
 import { RadarMap } from "@/components/RadarMap";
 import { WindCard, HumidityCard, SunCard, UvCard } from "@/components/weather-cards";
@@ -107,6 +107,9 @@ export default function WeatherPage() {
   const now = new Date();
   const currentHourIndex = weatherData.hourly.time.findIndex(t => new Date(t) > now) -1;
   const hourlyIndex = currentHourIndex < 0 ? 0 : currentHourIndex;
+  
+  const sunrise = parseISO(weatherData.daily.sunrise[0]);
+  const sunset = parseISO(weatherData.daily.sunset[0]);
 
   return (
     <LayoutWrapper className="bg-background text-foreground p-0 m-0 max-w-full">
@@ -148,21 +151,25 @@ export default function WeatherPage() {
             <Card className="bg-card shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Hourly Forecast</h3>
               <div className="flex overflow-x-auto gap-4 pb-2">
-                {weatherData.hourly.time.slice(hourlyIndex, hourlyIndex + 24).map((time, i) => (
-                  <div key={time} className="flex-shrink-0 w-20 text-center">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {format(parseISO(time), 'h a')}
-                    </p>
-                    <div className="mx-auto my-2 w-8 h-8">
-                      {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
+                {weatherData.hourly.time.slice(hourlyIndex, hourlyIndex + 24).map((time, i) => {
+                  const hourTime = parseISO(time);
+                  const isDay = isWithinInterval(hourTime, { start: sunrise, end: sunset });
+                  return (
+                    <div key={time} className="flex-shrink-0 w-20 text-center">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {format(hourTime, 'h a')}
+                      </p>
+                      <div className="mx-auto my-2 w-8 h-8">
+                        {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], isDay, 32)}
+                      </div>
+                      <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
+                      <div className="flex items-center justify-center text-xs text-blue-500 mt-1">
+                        <Droplets size={12} className="mr-1" />
+                        <span>{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
+                      </div>
                     </div>
-                    <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
-                    <div className="flex items-center justify-center text-xs text-blue-500 mt-1">
-                      <Droplets size={12} className="mr-1" />
-                      <span>{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </Card>
              {/* Details Cards moved from sidebar */}
@@ -254,3 +261,5 @@ const iconDescriptions: { [key: number]: string } = {
   80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
   95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
 };
+
+    
