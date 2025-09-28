@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The "Data Synthesizer" sub-agent.
@@ -8,6 +9,15 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { RawCruiseDataSchema, CoordinatedCruiseResultSchema } from './types';
+
+/**
+ * Takes raw scraped or API data and synthesizes it into a clean, structured format.
+ * @param input Raw data from the Information Retriever.
+ * @returns A promise that resolves to a clean, structured list of cruises.
+ */
+export async function synthesizeCruiseData(input: z.infer<typeof RawCruiseDataSchema>): Promise<z.infer<typeof CoordinatedCruiseResultSchema>> {
+    return dataSynthesizerAgent(input);
+}
 
 const dataSynthesizerAgent = ai.defineFlow(
   {
@@ -45,13 +55,3 @@ const dataSynthesizerAgent = ai.defineFlow(
     return output!;
   }
 );
-
-
-/**
- * Takes raw scraped or API data and synthesizes it into a clean, structured format.
- * @param input Raw data from the Information Retriever.
- * @returns A promise that resolves to a clean, structured list of cruises.
- */
-export async function synthesizeCruiseData(input: z.infer<typeof RawCruiseDataSchema>): Promise<z.infer<typeof CoordinatedCruiseResultSchema>> {
-    return dataSynthesizerAgent(input);
-}

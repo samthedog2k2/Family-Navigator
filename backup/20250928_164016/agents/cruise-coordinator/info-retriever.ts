@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The "Information Retrieval" sub-agent.
@@ -9,6 +10,16 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { StructuredQuerySchema, RawCruiseDataSchema } from './types';
 import { searchCruiseApi, scrapeCruiseWebsite } from './tools';
+
+/**
+ * Retrieves raw cruise information based on a structured query.
+ * It autonomously decides which tools to use.
+ * @param input A structured query from the Query Analyst.
+ * @returns A promise that resolves to a collection of raw, unstructured cruise data.
+ */
+export async function retrieveCruiseInformation(input: z.infer<typeof StructuredQuerySchema>): Promise<z.infer<typeof RawCruiseDataSchema>> {
+    return infoRetrieverAgent(input);
+}
 
 const infoRetrieverAgent = ai.defineFlow(
   {
@@ -61,13 +72,3 @@ const infoRetrieverAgent = ai.defineFlow(
     return { results: rawResults };
   }
 );
-
-/**
- * Retrieves raw cruise information based on a structured query.
- * It autonomously decides which tools to use.
- * @param input A structured query from the Query Analyst.
- * @returns A promise that resolves to a collection of raw, unstructured cruise data.
- */
-export async function retrieveCruiseInformation(input: z.infer<typeof StructuredQuerySchema>): Promise<z.infer<typeof RawCruiseDataSchema>> {
-    return infoRetrieverAgent(input);
-}

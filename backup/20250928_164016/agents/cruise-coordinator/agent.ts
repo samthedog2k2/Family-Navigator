@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The main "Cruise Travel Coordinator" autonomous agent.
@@ -9,6 +10,15 @@ import { CruiseCoordinatorInputSchema, CruiseCoordinatorOutputSchema, type Cruis
 import { analyzeUserQuery } from './query-analyst';
 import { retrieveCruiseInformation } from './info-retriever';
 import { synthesizeCruiseData } from './data-synthesizer';
+
+/**
+ * The main entry point for the autonomous cruise travel agent.
+ * @param input The user's preferences from the UI.
+ * @returns A promise that resolves to a structured list of curated cruise options.
+ */
+export async function findCruisesAutonomous(input: CruiseCoordinatorInput) {
+  return cruiseCoordinatorAgent(input);
+}
 
 const cruiseCoordinatorAgent = ai.defineFlow(
   {
@@ -41,12 +51,3 @@ const cruiseCoordinatorAgent = ai.defineFlow(
     };
   }
 );
-
-/**
- * The main entry point for the autonomous cruise travel agent.
- * @param input The user's preferences from the UI.
- * @returns A promise that resolves to a structured list of curated cruise options.
- */
-export async function findCruisesAutonomous(input: CruiseCoordinatorInput) {
-  return cruiseCoordinatorAgent(input);
-}

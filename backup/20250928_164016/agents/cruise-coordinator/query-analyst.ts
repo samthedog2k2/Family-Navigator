@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The "Query Analyst" sub-agent.
@@ -8,6 +9,15 @@
 import { ai } from '@/ai/genkit';
 import { UserPreferencesSchema, StructuredQuerySchema, type UserPreferences } from './types';
 import { z } from 'zod';
+
+/**
+ * Analyzes the user's free-form preferences and converts them into a structured query.
+ * @param input The user's preferences.
+ * @returns A promise that resolves to a structured query object.
+ */
+export async function analyzeUserQuery(input: UserPreferences): Promise<z.infer<typeof StructuredQuerySchema>> {
+    return queryAnalystAgent(input);
+}
 
 const queryAnalystAgent = ai.defineFlow(
   {
@@ -39,12 +49,3 @@ const queryAnalystAgent = ai.defineFlow(
     return output!;
   }
 );
-
-/**
- * Analyzes the user's free-form preferences and converts them into a structured query.
- * @param input The user's preferences.
- * @returns A promise that resolves to a structured query object.
- */
-export async function analyzeUserQuery(input: UserPreferences): Promise<z.infer<typeof StructuredQuerySchema>> {
-    return queryAnalystAgent(input);
-}
