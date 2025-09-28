@@ -1,4 +1,3 @@
-
 /**
  * SP Travel Coordinator Page - FAST & STABLE
  * Embodying: Werner Vogels (Performance) + Steve Jobs (Simplicity) + Linus Torvalds (Stability)
@@ -11,7 +10,7 @@ import { Calendar, MapPin, Users, CheckCircle, Clock, Ship, Plane, Hotel, Activi
 import { findCruisesAutonomous, CruiseCoordinatorInput, CoordinatedCruiseResultSchema } from '@/ai/agents/cruise-coordinator/agent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 
 type CruiseResult = z.infer<typeof CoordinatedCruiseResultSchema>;
