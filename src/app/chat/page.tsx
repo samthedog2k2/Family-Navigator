@@ -15,17 +15,13 @@ export default function ChatPage() {
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <div className="flex flex-1">
-        <SidebarProvider>
+        <SidebarProvider defaultCollapsed={true}>
           <Sidebar>
             <SidebarContent>
               <ChatHistory />
             </SidebarContent>
           </Sidebar>
           <SidebarInset className="p-4 sm:p-6 flex flex-col flex-1">
-            <PageHeader
-              title="Chat Agent"
-              description="Chat with an AI to improve the app."
-            />
             <ChatInterface />
           </SidebarInset>
         </SidebarProvider>

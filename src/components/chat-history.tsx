@@ -8,15 +8,9 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarMenuAction,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useChatState } from "@/hooks/use-chat-state";
-import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { ScrollArea } from "./ui/scroll-area";
 import { useState } from "react";
 
@@ -48,13 +42,14 @@ export function ChatHistory() {
 
   return (
     <div className="flex flex-col h-full">
-      <SidebarHeader>
-        <h2 className="text-lg font-semibold">Chat History</h2>
+      <SidebarHeader className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold group-data-[state=collapsed]:hidden">Chat History</h2>
+        <SidebarTrigger />
       </SidebarHeader>
       <ScrollArea className="flex-1">
         <SidebarContent>
           <SidebarMenu>
-            <p className="px-2 text-xs font-semibold text-muted-foreground">
+            <p className="px-2 text-xs font-semibold text-muted-foreground group-data-[state=collapsed]:hidden">
               Active
             </p>
             {activeConversations.map((convo) => (
@@ -62,6 +57,7 @@ export function ChatHistory() {
                 <SidebarMenuButton
                   isActive={convo.id === activeConversationId}
                   onClick={() => setActiveConversationId(convo.id)}
+                  tooltip={convo.title}
                 >
                   <FileText />
                   <span>{convo.title}</span>
@@ -82,13 +78,13 @@ export function ChatHistory() {
               </SidebarMenuItem>
             ))}
             {activeConversations.length === 0 && (
-              <p className="p-2 text-sm text-muted-foreground">
+              <p className="p-2 text-sm text-muted-foreground group-data-[state=collapsed]:hidden">
                 No active chats.
               </p>
             )}
           </SidebarMenu>
           <SidebarMenu>
-            <p className="px-2 text-xs font-semibold text-muted-foreground">
+            <p className="px-2 text-xs font-semibold text-muted-foreground group-data-[state=collapsed]:hidden">
               Archived
             </p>
             {archivedConversations.map((convo) => (
@@ -96,6 +92,7 @@ export function ChatHistory() {
                 <SidebarMenuButton
                   isActive={convo.id === activeConversationId}
                   onClick={() => setActiveConversationId(convo.id)}
+                   tooltip={convo.title}
                 >
                   <FileText />
                   <span>{convo.title}</span>
@@ -116,7 +113,7 @@ export function ChatHistory() {
               </SidebarMenuItem>
             ))}
             {archivedConversations.length === 0 && (
-              <p className="p-2 text-sm text-muted-foreground">
+              <p className="p-2 text-sm text-muted-foreground group-data-[state=collapsed]:hidden">
                 No archived chats.
               </p>
             )}
