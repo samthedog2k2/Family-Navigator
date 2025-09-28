@@ -11,14 +11,15 @@ import { Calendar, MapPin, Users, CheckCircle, Clock, Ship, Plane, Hotel, Activi
 import { findCruisesAutonomous, CruiseCoordinatorInput, CoordinatedCruiseResultSchema } from '@/ai/agents/cruise-coordinator/agent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { z } from 'zod';
 
 type CruiseResult = z.infer<typeof CoordinatedCruiseResultSchema>;
 
-export default function TravelCoordinatorPage() {
+export default function TravelPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [aiResults, setAiResults] = useState<CruiseResult | null>(null);
+  const { toast } = useToast();
 
   const handleAICruiseSearch = async () => {
     setIsProcessing(true);
