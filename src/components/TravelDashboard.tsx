@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Users, DollarSign, Search, Sparkles, Clock } from 'lucide-react';
+import { Calendar, MapPin, Users, DollarSign, Search, Sparkles, Clock, Ship, Plane, Car, Globe } from 'lucide-react';
 import { FamilyData, TripRequest } from '../lib/travel-types';
 
 interface TravelDashboardProps {
@@ -35,10 +35,10 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
   };
 
   const tripTypes = [
-    { id: 'cruise', label: 'Cruise', icon: '🚢' },
-    { id: 'flight', label: 'Flight', icon: '✈️' },
-    { id: 'roadtrip', label: 'Road Trip', icon: '🚗' },
-    { id: 'hybrid', label: 'Combined', icon: '🌍' },
+    { id: 'cruise', label: 'Cruise', icon: Ship },
+    { id: 'flight', label: 'Flight', icon: Plane },
+    { id: 'roadtrip', label: 'Road Trip', icon: Car },
+    { id: 'hybrid', label: 'Combined', icon: Globe },
   ];
 
   return (
@@ -52,22 +52,25 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-3">Trip Type</label>
         <div className="grid grid-cols-4 gap-3">
-          {tripTypes.map((type) => (
-            <motion.button
-              key={type.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setTripType(type.id as any)}
-              className={`p-3 rounded-xl border-2 transition-all ${
-                tripType === type.id
-                  ? 'border-indigo-500 bg-indigo-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="text-2xl mb-1">{type.icon}</div>
-              <div className="text-sm font-medium">{type.label}</div>
-            </motion.button>
-          ))}
+          {tripTypes.map((type) => {
+            const Icon = type.icon;
+            return (
+              <motion.button
+                key={type.id}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setTripType(type.id as any)}
+                className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center space-y-2 ${
+                  tripType === type.id
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                }`}
+              >
+                <Icon className="w-6 h-6" />
+                <div className="text-sm font-medium">{type.label}</div>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
