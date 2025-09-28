@@ -17,16 +17,32 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, User, Bot, PlusCircle } from "lucide-react";
+import { Loader2, User, Bot, PlusCircle, Globe } from "lucide-react";
 import { useChatState } from "@/hooks/use-chat-state";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message is required."),
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const llms = [
+    { name: 'Gemini', url: 'https://gemini.google.com/' },
+    { name: 'ChatGPT', url: 'https://chat.openai.com/' },
+    { name: 'Claude', url: 'https://claude.ai/' },
+    { name: 'Grok', url: 'https://grok.x.ai/' },
+]
 
 export function ChatInterface() {
   const {
@@ -66,7 +82,6 @@ export function ChatInterface() {
     setIsLoading(true);
     let currentConversationId = activeConversationId;
     
-    // Create a new conversation if one isn't active, or add the message to the existing one.
     if (!currentConversationId) {
       const newConversation = createNewConversation(data.message);
       currentConversationId = newConversation.id;
@@ -81,26 +96,21 @@ export function ChatInterface() {
     reset();
 
     try {
-      // Prepare the input for the AI flow
       const chatInput: ChatInput = {
         message: data.message,
         history: [],
       };
 
-      // If there are previous messages, add them to the history for context
       const conversationForHistory = conversations.find(c => c.id === currentConversationId);
       if (conversationForHistory && conversationForHistory.messages.length > 1) {
-         // The history should only contain messages before the current user message
          chatInput.history = conversationForHistory.messages.slice(0, -1).map(m => {
             if (m.role === 'user') return { user: m.text };
             return { bot: m.text };
          });
       }
       
-      // Get response from the AI
       const result = await chat(chatInput);
       
-      // Add the AI's response to the conversation
       if(currentConversationId) {
         addMessage(currentConversationId, {
             id: uuidv4(),
@@ -127,16 +137,34 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="relative h-[calc(100vh-12rem)] flex flex-col">
-       <Button
-        onClick={handleNewChat}
-        className="absolute top-0 right-0"
-        variant="outline"
-        size="sm"
-      >
-        <PlusCircle className="mr-2" />
-        New Chat
-      </Button>
+    <div className="relative h-full flex flex-col">
+       <div className="absolute top-0 right-0 flex gap-2">
+         <Button
+            onClick={handleNewChat}
+            variant="outline"
+            size="sm"
+          >
+            <PlusCircle className="mr-2" />
+            New Chat
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <Globe className="mr-2" />
+                    Select LLM
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuLabel>External LLMs</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {llms.map(llm => (
+                    <DropdownMenuItem key={llm.name} asChild>
+                        <Link href={llm.url} target="_blank">{llm.name}</Link>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+       </div>
       <Card className="flex-1 flex flex-col mt-12">
         <CardHeader>
           <CardTitle>
