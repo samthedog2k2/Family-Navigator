@@ -6,26 +6,17 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-import { UserPreferencesSchema, CoordinatedCruiseResultSchema, type UserPreferences } from './types';
+import { CruiseCoordinatorInputSchema, CruiseCoordinatorOutputSchema, type CruiseCoordinatorInput } from './types';
 import { analyzeUserQuery } from './query-analyst';
 import { retrieveCruiseInformation } from './info-retriever';
 import { synthesizeCruiseData } from './data-synthesizer';
-
-// Define the main input for the coordinator, which is the user's raw preferences.
-export const CruiseCoordinatorInputSchema = UserPreferencesSchema;
-export type CruiseCoordinatorInput = UserPreferences;
-
-// Define the final output schema for the coordinator.
-export const CruiseCoordinatorOutputSchema = CoordinatedCruiseResultSchema;
-export type CruiseCoordinatorOutput = z.infer<typeof CruiseCoordinatorOutputSchema>;
 
 /**
  * The main entry point for the autonomous cruise travel agent.
  * @param input The user's preferences from the UI.
  * @returns A promise that resolves to a structured list of curated cruise options.
  */
-export async function findCruisesAutonomous(input: CruiseCoordinatorInput): Promise<CruiseCoordinatorOutput> {
+export async function findCruisesAutonomous(input: CruiseCoordinatorInput) {
   return cruiseCoordinatorAgent(input);
 }
 

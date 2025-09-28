@@ -57,3 +57,12 @@ export const CoordinatedCruiseResultSchema = z.object({
   })),
   summary: z.string().optional().describe("An optional summary of the results."),
 });
+
+
+// Define the main input for the coordinator, which is the user's raw preferences.
+export const CruiseCoordinatorInputSchema = UserPreferencesSchema;
+export type CruiseCoordinatorInput = z.infer<typeof CruiseCoordinatorInputSchema>;
+
+// Define the final output schema for the coordinator.
+export const CruiseCoordinatorOutputSchema = CoordinatedCruiseResultSchema;
+export type CruiseCoordinatorOutput = z.infer<typeof CruiseCoordinatorOutputSchema>;

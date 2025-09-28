@@ -8,6 +8,7 @@
 
 import { ai } from '@/ai/genkit';
 import { UserPreferencesSchema, StructuredQuerySchema, type UserPreferences } from './types';
+import { z } from 'zod';
 
 /**
  * Analyzes the user's free-form preferences and converts them into a structured query.
