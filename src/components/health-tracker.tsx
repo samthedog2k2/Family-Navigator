@@ -62,13 +62,19 @@ function HealthForm({
     reset,
   } = useForm<HealthFormData>({
     resolver: zodResolver(healthSchema),
-    defaultValues: data,
+    defaultValues: {
+      ...data,
+      gender: data.gender === "" ? "Male" : data.gender, // Ensure gender is not an empty string
+    },
   });
   
   const { errors } = useFormState({ control });
 
   useEffect(() => {
-    reset(data);
+    reset({
+      ...data,
+      gender: data.gender === "" ? "Male" : data.gender,
+    });
   }, [data, reset]);
 
 
