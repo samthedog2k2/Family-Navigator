@@ -122,7 +122,7 @@ export function ChatInterface() {
   return (
     <div className="relative h-full flex flex-col pt-16">
         {/* Top Model Selector Bar */}
-        <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-center">
+        <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-start px-4">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2">
