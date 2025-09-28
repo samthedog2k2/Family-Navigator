@@ -5,10 +5,9 @@ import { useState } from 'react';
 import { findCruisesAutonomous, CruiseCoordinatorInput, CoordinatedCruiseResultSchema } from '@/ai/agents/cruise-coordinator/agent';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import TravelDashboard from '@/components/TravelDashboard';
-import { TripRequest, FamilyData } from '@/lib/travel-types';
-import { DEFAULT_FAMILY } from '@/lib/constants';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import TravelCoordinatorFast from '@/components/travel-coordinator-fast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 type CruiseResult = z.infer<typeof CoordinatedCruiseResultSchema>;
 
@@ -17,29 +16,33 @@ export default function TravelPage() {
   const [aiResults, setAiResults] = useState<CruiseResult | null>(null);
   const { toast } = useToast();
 
-  const handleTripRequest = async (request: TripRequest) => {
+  const handleGetRecommendations = async () => {
     setIsProcessing(true);
     setAiResults(null);
     
     try {
+        // Hard-coded input for now to test the agent
         const coordinatorInput: CruiseCoordinatorInput = {
-            departurePort: request.origin || DEFAULT_FAMILY.homeAddress.city,
-            destination: request.destinations.join(', '),
+            departurePort: "Miami, FL",
+            destination: "Caribbean",
             dateRange: { 
-              from: request.startDate.toISOString().split('T')[0], 
-              to: request.endDate.toISOString().split('T')[0] 
+              from: "2025-10-01", 
+              to: "2025-10-31"
             },
-            duration: Math.round((request.endDate.getTime() - request.startDate.getTime()) / (1000 * 3600 * 24)),
-            interests: request.interests.join(', ')
+            duration: 7,
+            interests: "family-friendly, water slides, relaxation"
         };
 
-        const result = await findCruisesAutonomous(coordinatorInput);
-        
-        setAiResults(result);
+        // This call is currently commented out until foundational issues are resolved
+        // const result = await findCruisesAutonomous(coordinatorInput);
+        // setAiResults(result);
+
+        // Simulate a delay to show the processing state
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         toast({
-            title: "AI Recommendations Ready",
-            description: result.summary || "The autonomous agent has returned cruise options.",
+            title: "AI Agent Processed (Simulated)",
+            description: "Displaying static results for now.",
         });
 
     } catch (error) {
@@ -55,23 +58,12 @@ export default function TravelPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">🌟 Find Your Perfect Trip</h1>
-        <p className="text-gray-600">AI-powered travel planning with instant results</p>
-      </div>
-
-      <TravelDashboard 
-        family={DEFAULT_FAMILY} 
-        onTripRequest={handleTripRequest} 
+    <div className="space-y-8">
+      
+      <TravelCoordinatorFast 
+        onFindTrip={handleGetRecommendations} 
         isProcessing={isProcessing} 
       />
-
-      {isProcessing && (
-        <div className="text-center text-muted-foreground">
-            <p>The autonomous agent is analyzing your request, retrieving information, and synthesizing the best options...</p>
-        </div>
-      )}
 
       {aiResults && (
         <div className="space-y-8">
