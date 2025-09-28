@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 
 const WeatherCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <Card className={cn("bg-msn-bg/50 shadow-inner p-4", className)}>
+    <Card className={cn("bg-muted/30 dark:bg-muted/50 p-4", className)}>
         {children}
     </Card>
 );
@@ -23,19 +23,19 @@ export const WindCard = ({ weather }: { weather: any }) => {
 
     return (
         <WeatherCard>
-            <h2 className="text-sm text-msn-text-secondary mb-2">Wind</h2>
+            <h2 className="text-sm text-muted-foreground mb-2">Wind</h2>
             <div className="flex items-center gap-4">
                 <div className="relative w-16 h-16">
-                    <div className="absolute inset-0 border-2 border-msn-text-secondary/50 rounded-full"></div>
+                    <div className="absolute inset-0 border-2 border-muted-foreground/50 rounded-full"></div>
                     <div className="absolute inset-2" style={windDirectionStyle}>
                         <div className="relative w-full h-full">
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1/2 w-0.5 bg-msn-text"></div>
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 border-t-2 border-l-2 border-msn-text transform rotate-45"></div>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1/2 w-0.5 bg-foreground"></div>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 border-t-2 border-l-2 border-foreground transform rotate-45"></div>
                         </div>
                     </div>
                 </div>
                 <div className="flex-1">
-                    <p className="text-xs text-msn-text-secondary">From {degreesToCompass(weather.current.windDirection)}</p>
+                    <p className="text-xs text-muted-foreground">From {degreesToCompass(weather.current.windDirection)}</p>
                     <p><span className="text-3xl font-bold">{Math.round(weather.current.windSpeed)}</span> mph</p>
                 </div>
             </div>
@@ -48,22 +48,22 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
     if (!weather?.hourly?.humidity) {
         return (
             <WeatherCard>
-                <h2 className="text-sm text-msn-text-secondary mb-2">Humidity</h2>
-                <div className="text-msn-text-muted">Data unavailable</div>
+                <h2 className="text-sm text-muted-foreground mb-2">Humidity</h2>
+                <div className="text-muted-foreground">Data unavailable</div>
             </WeatherCard>
         );
     }
     return (
         <WeatherCard>
-            <h2 className="text-sm text-msn-text-secondary mb-2">Humidity</h2>
+            <h2 className="text-sm text-muted-foreground mb-2">Humidity</h2>
             <div className="flex justify-between items-start">
                  <div>
                     <p className="text-3xl font-bold">{weather.current.humidity}%</p>
-                    <p className="text-xs text-msn-text-secondary">Relative</p>
+                    <p className="text-xs text-muted-foreground">Relative</p>
                 </div>
                 <TooltipProvider>
                     <div className="flex flex-col items-center">
-                        <p className="text-xs font-semibold text-msn-text-secondary">Hourly</p>
+                        <p className="text-xs font-semibold text-muted-foreground">Hourly</p>
                         <div className="flex gap-2 pt-1 items-end h-16">
                             {weather.hourly.time.slice(hourlyIndex, hourlyIndex + 5).map((time: string, i: number) => {
                                 const humidityValue = weather.hourly.humidity[hourlyIndex + i];
@@ -71,10 +71,10 @@ export const HumidityCard = ({ weather, hourlyIndex }: { weather: any, hourlyInd
                                     <Tooltip key={time}>
                                         <TooltipTrigger asChild>
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className="w-2.5 rounded-full bg-gray-200 dark:bg-gray-700 h-12 flex flex-col-reverse">
-                                                    <div className="bg-msn-blue w-full rounded-full" style={{ height: `${humidityValue}%` }}></div>
+                                                <div className="w-2.5 rounded-full bg-secondary h-12 flex flex-col-reverse">
+                                                    <div className="bg-blue-400 w-full rounded-full" style={{ height: `${humidityValue}%` }}></div>
                                                 </div>
-                                                <p className="text-[10px] text-msn-text-secondary">{format(parseISO(time), 'ha')}</p>
+                                                <p className="text-[10px] text-muted-foreground">{format(parseISO(time), 'ha')}</p>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -124,13 +124,13 @@ export const SunCard = ({ weather }: { weather: any }) => {
 
   return (
     <WeatherCard>
-      <h2 className="text-sm text-msn-text-secondary mb-4">Sunrise & Sunset</h2>
+      <h2 className="text-sm text-muted-foreground mb-4">Sunrise & Sunset</h2>
       <div className="flex justify-between items-center text-center">
         {/* Sunrise Info */}
         <div>
-          <Sunrise className="mx-auto text-msn-icon-sun" />
+          <Sunrise className="mx-auto text-orange-400" />
           <p className="text-lg font-bold">{format(sunrise, 'h:mm')}</p>
-          <p className="text-xs text-msn-text-muted">{format(sunrise, 'a')}</p>
+          <p className="text-xs text-muted-foreground">{format(sunrise, 'a')}</p>
         </div>
 
         {/* Sun Arc and Time */}
@@ -139,11 +139,11 @@ export const SunCard = ({ weather }: { weather: any }) => {
             <path d="M 5 50 A 45 45 0 0 1 95 50" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeDasharray="2 3" />
             {sunProgress > 0 && sunProgress < 100 && (
               <g transform={`translate(${sunX}, ${sunY})`}>
-                <Sun size={12} className="text-msn-icon-sun" fill="hsl(var(--msn-icon-sun))"/>
+                <Sun size={12} className="text-yellow-500" fill="hsl(var(--yellow-500))"/>
               </g>
             )}
           </svg>
-          <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-msn-text-secondary font-semibold text-xs">
+          <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-muted-foreground font-semibold text-xs">
             {format(currentTime, 'h:mm:ss a')}
           </p>
         </div>
@@ -152,7 +152,7 @@ export const SunCard = ({ weather }: { weather: any }) => {
         <div>
           <Sunset className="mx-auto text-orange-500" />
           <p className="text-lg font-bold">{format(sunset, 'h:mm')}</p>
-          <p className="text-xs text-msn-text-muted">{format(sunset, 'a')}</p>
+          <p className="text-xs text-muted-foreground">{format(sunset, 'a')}</p>
         </div>
       </div>
     </WeatherCard>
@@ -168,9 +168,9 @@ export const UvCard = ({ weather }: { weather: any }) => {
 
     return (
         <WeatherCard>
-            <h2 className="text-sm text-msn-text-secondary mb-4">UV Index</h2>
+            <h2 className="text-sm text-muted-foreground mb-4">UV Index</h2>
             <div className="space-y-2">
-                <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                <div className="w-full bg-secondary rounded-full h-4">
                     <div 
                         className="h-4 rounded-full flex items-center justify-end pr-2" 
                         style={{ width: `${percentage}%`, backgroundColor: color }}

@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle, CloudLightning, CloudFog, CloudSun, Moon } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle, CloudLightning, CloudFog, CloudSun, Moon, CloudMoon } from 'lucide-react';
 
 export function getWeatherIcon(code: number, isDay: boolean = true, size: number = 24) {
     const altText = iconDescriptions[code] || 'Weather';
@@ -11,21 +11,21 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
     switch (code) {
         // Clear sky
         case 0:
-            return isDay ? <Sun {...props} className="text-msn-icon-sun fill-msn-icon-sun" /> : <Moon {...props} className="text-msn-icon-gray" />;
+            return isDay ? <Sun {...props} className="text-yellow-500 fill-yellow-400" /> : <Moon {...props} className="text-slate-400 fill-slate-500" />;
 
         // Mainly clear, partly cloudy
         case 1:
         case 2:
-            return isDay? <CloudSun {...props} className="text-msn-icon-gray" /> : <Moon {...props} className="text-msn-icon-gray" />;
+            return isDay ? <CloudSun {...props} className="text-slate-400" /> : <CloudMoon {...props} className="text-slate-400" />;
         
         // Overcast
         case 3:
-            return <Cloud {...props} className="text-msn-icon-gray" />;
+            return <Cloud {...props} className="text-slate-400" />;
 
         // Fog
         case 45:
         case 48:
-            return <CloudFog {...props} className="text-msn-icon-gray" />;
+            return <CloudFog {...props} className="text-slate-400" />;
 
         // Drizzle
         case 51:
@@ -33,7 +33,7 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
         case 55:
         case 56:
         case 57:
-            return <CloudDrizzle {...props} className="text-msn-icon-blue" />;
+            return <CloudDrizzle {...props} className="text-blue-400" />;
 
         // Rain
         case 61:
@@ -44,7 +44,7 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
         case 80:
         case 81:
         case 82:
-            return <CloudRain {...props} className="text-msn-icon-blue" />;
+            return <CloudRain {...props} className="text-blue-500" />;
 
         // Snow fall
         case 71:
@@ -53,17 +53,17 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
         case 77:
         case 85:
         case 86:
-            return <CloudSnow {...props} className="text-msn-icon-blue" />;
+            return <CloudSnow {...props} className="text-blue-300" />;
 
         // Thunderstorm
         case 95:
         case 96:
         case 99:
-            return <CloudLightning {...props} className="text-msn-icon-sun" />;
+            return <CloudLightning {...props} className="text-yellow-500" />;
 
         // Default fallback
         default:
-            return <Cloud {...props} className="text-msn-icon-gray" />;
+            return <Cloud {...props} className="text-slate-400" />;
     }
 }
 

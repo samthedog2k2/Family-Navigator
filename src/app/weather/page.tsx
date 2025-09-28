@@ -82,7 +82,7 @@ export default function WeatherPage() {
         <div className="flex h-[80vh] items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-msn-text-secondary">Loading weather data...</p>
+            <p className="text-muted-foreground">Loading weather data...</p>
           </div>
         </div>
       </LayoutWrapper>
@@ -109,18 +109,18 @@ export default function WeatherPage() {
   const hourlyIndex = currentHourIndex < 0 ? 0 : currentHourIndex;
 
   return (
-    <LayoutWrapper className="bg-msn-bg text-msn-text font-sans p-0 m-0 max-w-full">
-      <header className="bg-msn-card shadow-msn px-6 py-4 flex items-center justify-between border-b">
+    <LayoutWrapper className="bg-background text-foreground p-0 m-0 max-w-full">
+      <header className="bg-card shadow-sm px-6 py-4 flex items-center justify-between border-b">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-msn-text">
-            <MapPin className="h-4 w-4 text-msn-blue" />
-            <h1 className="text-xl font-semibold text-msn-blue">{weatherData.location.name}</h1>
+          <div className="flex items-center gap-1 text-foreground">
+            <MapPin className="h-4 w-4 text-primary" />
+            <h1 className="text-xl font-semibold">{weatherData.location.name}</h1>
           </div>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-msn-blue text-white rounded-md hover:bg-msn-blue/90 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -131,11 +131,11 @@ export default function WeatherPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Current Weather Hero */}
-            <Card className="bg-msn-card shadow-msn p-6 flex items-center justify-between">
+            <Card className="bg-card shadow-sm p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-5xl font-bold">{Math.round(weatherData.current.temperature)}°F</h2>
-                <p className="text-msn-text-secondary">{iconDescriptions[weatherData.current.weatherCode] || ''}</p>
-                <p className="text-sm text-msn-text-muted">
+                <p className="text-muted-foreground">{iconDescriptions[weatherData.current.weatherCode] || ''}</p>
+                <p className="text-sm text-muted-foreground">
                   High {Math.round(weatherData.daily.temperatureMax[0])}° • Low {Math.round(weatherData.daily.temperatureMin[0])}°
                 </p>
               </div>
@@ -145,28 +145,28 @@ export default function WeatherPage() {
             </Card>
 
             {/* Hourly Forecast */}
-            <Card className="bg-msn-card shadow-msn p-6">
+            <Card className="bg-card shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Hourly Forecast</h3>
               <div className="flex overflow-x-auto gap-4 pb-2">
                 {weatherData.hourly.time.slice(hourlyIndex, hourlyIndex + 24).map((time, i) => (
                   <div key={time} className="flex-shrink-0 w-20 text-center">
-                    <p className="text-xs text-msn-text-secondary mb-2">
+                    <p className="text-xs text-muted-foreground mb-2">
                       {format(parseISO(time), 'h a')}
                     </p>
                     <div className="mx-auto my-2 w-8 h-8">
                       {getWeatherIcon(weatherData.hourly.weatherCode[hourlyIndex + i], true, 32)}
                     </div>
                     <p className="font-medium text-sm">{Math.round(weatherData.hourly.temperature[hourlyIndex + i])}°</p>
-                    <div className="flex items-center justify-center text-xs mt-1">
-                      <Droplets size={12} className="mr-1 text-msn-icon-blue" />
-                      <span className="text-msn-icon-blue">{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
+                    <div className="flex items-center justify-center text-xs text-blue-500 mt-1">
+                      <Droplets size={12} className="mr-1" />
+                      <span>{weatherData.hourly.precipitation[hourlyIndex + i]}%</span>
                     </div>
                   </div>
                 ))}
               </div>
             </Card>
              {/* Details Cards moved from sidebar */}
-            <Card className="bg-msn-card shadow-msn p-6">
+            <Card className="bg-card shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                     <SunCard weather={weatherData} />
@@ -181,7 +181,7 @@ export default function WeatherPage() {
           <div className="lg:col-span-1 space-y-6">
              {/* Weather Alerts */}
             {weatherData.alerts && weatherData.alerts.length > 0 && (
-              <Card className="bg-msn-card shadow-msn p-4">
+              <Card className="bg-card shadow-sm p-4">
                 <h3 className="text-lg font-semibold mb-2 text-destructive">Weather Alerts</h3>
                 <div className="space-y-2">
                   {weatherData.alerts.map((alert) => (
@@ -197,7 +197,7 @@ export default function WeatherPage() {
             )}
 
             {/* 10-Day Forecast */}
-            <Card className="bg-msn-card shadow-msn p-6">
+            <Card className="bg-card shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">10-Day Forecast</h3>
               <div className="space-y-2">
                 {weatherData.daily.time.slice(0, 10).map((day, i) => {
@@ -209,24 +209,24 @@ export default function WeatherPage() {
                   
                   return (
                     <div key={day} className="grid grid-cols-4 items-center gap-2 text-sm">
-                      <p className="font-medium text-msn-text-secondary w-16">
+                      <p className="font-medium text-muted-foreground w-16">
                         {i === 0 ? "Today" : format(parseISO(day), 'EEE')}
                       </p>
                        <div className="flex items-center gap-2 col-span-1">
                         <div className="w-8 h-8">
                            {getWeatherIcon(weatherData.daily.weatherCode[i], true, 32)}
                         </div>
-                        <div className="flex items-center text-xs">
-                           <Droplets size={12} className="mr-1 text-msn-icon-blue"/>
-                           <span className="text-msn-icon-blue">{weatherData.daily.precipitationSum[i]}%</span>
+                        <div className="flex items-center text-xs text-blue-500">
+                           <Droplets size={12} className="mr-1"/>
+                           <span>{weatherData.daily.precipitationSum[i]}%</span>
                         </div>
                       </div>
                       <div className="flex items-center col-span-2 gap-2">
-                        <span className="text-msn-text-muted w-8 text-right">{dayMin}°</span>
+                        <span className="text-muted-foreground w-8 text-right">{dayMin}°</span>
                         <div className="w-full bg-muted rounded-full h-2.5">
-                           <div className="bg-gradient-to-r from-cyan-500 to-yellow-500 h-2.5 rounded-full" style={{ marginLeft: `${leftOffset}%`, width: `${barWidth}%` }}></div>
+                           <div className="bg-gradient-to-r from-cyan-400 to-yellow-400 h-2.5 rounded-full" style={{ marginLeft: `${leftOffset}%`, width: `${barWidth}%` }}></div>
                         </div>
-                        <span className="text-msn-text w-8">{dayMax}°</span>
+                        <span className="text-foreground w-8">{dayMax}°</span>
                       </div>
                     </div>
                   )
@@ -234,7 +234,7 @@ export default function WeatherPage() {
               </div>
             </Card>
 
-            <Card className="bg-msn-card shadow-msn p-6">
+            <Card className="bg-card shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Weather Radar</h3>
               <RadarMap />
             </Card>
