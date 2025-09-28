@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "�� STARTING FAST DEV SERVER - NO CRASHES"
+echo "🚀 STARTING FAST DEV SERVER - NO CRASHES"
 echo "========================================"
 
 # Ensure clean environment
@@ -16,6 +16,5 @@ sleep 2
 
 echo "🔥 Starting optimized Next.js server..."
 
-# Start with optimal settings for performance
-npm run dev -- --port 3000 --hostname localhost --experimental-https false
-
+# Start with the standard, stable dev command
+npm run dev
