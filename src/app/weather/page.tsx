@@ -172,7 +172,13 @@ export default function WeatherPage() {
                 })}
               </div>
             </Card>
-             {/* Details Cards moved from sidebar */}
+            
+            <Card className="bg-card shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Weather Radar</h3>
+              <RadarMap />
+            </Card>
+
+            {/* Details Cards moved from sidebar */}
             <Card className="bg-card shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Details</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -241,10 +247,6 @@ export default function WeatherPage() {
               </div>
             </Card>
 
-            <Card className="bg-card shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Weather Radar</h3>
-              <RadarMap />
-            </Card>
           </div>
         </div>
       </main>
@@ -261,5 +263,3 @@ const iconDescriptions: { [key: number]: string } = {
   80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers', 85: 'Snow Showers', 86: 'Heavy Snow Showers',
   95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail',
 };
-
-    
