@@ -4,7 +4,7 @@ export type FamilyMember = "Adam" | "Holly" | "Ethan" | "Elle";
 export type HealthData = {
   height: string;
   age: number;
-  gender: "" | "Male" | "Female" | "Other";
+  gender: "Male" | "Female" | "Other";
   weight: string;
   glucose: string;
   notes?: string;
@@ -37,3 +37,4 @@ export interface AgentConfig {
     priority: number;
     capabilities: string[];
   }
+
