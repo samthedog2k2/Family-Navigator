@@ -8,7 +8,7 @@ import TravelDashboard from '@/components/TravelDashboard';
 import AgentSelector from '@/components/AgentSelector';
 import FamilyProfile from '@/components/FamilyProfile';
 import TripComparison from '@/components/TripComparison';
-import { TravelCoordinator } from '@/agents/coordinator/MainTravelAgent';
+import { initializeCoordinator, planTrip } from '@/agents/coordinator/MainTravelAgent';
 import { FamilyData, TripRequest, AgentConfig, FullTripRequest } from '@/lib/travel-types';
 import { DEFAULT_FAMILY } from '@/lib/constants';
 import { LayoutWrapper } from '@/components/layout-wrapper';
@@ -22,16 +22,19 @@ export default function TravelCoordinatorPage() {
   const [family, setFamily] = useState<FamilyData>(DEFAULT_FAMILY);
   const [activeAgents, setActiveAgents] = useState<string[]>(['cruise', 'flight', 'hotel']);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [coordinator, setCoordinator] = useState<TravelCoordinator | null>(null);
+  const [isCoordinatorReady, setIsCoordinatorReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize the main coordinator with SP methodology
     const initCoordinator = async () => {
       try {
-        const coord = new TravelCoordinator();
-        await coord.initialize();
-        setCoordinator(coord);
+        const result = await initializeCoordinator();
+        if (result.success) {
+          setIsCoordinatorReady(true);
+        } else {
+          setError('Failed to initialize Travel Coordinator');
+        }
       } catch (err) {
         setError('Failed to initialize Travel Coordinator');
         console.error('SP Coordinator Init Error:', err);
@@ -41,7 +44,7 @@ export default function TravelCoordinatorPage() {
   }, []);
 
   const handleTripRequest = async (request: TripRequest) => {
-    if (!coordinator) {
+    if (!isCoordinatorReady) {
       setError('Coordinator not initialized');
       return;
     }
@@ -56,7 +59,7 @@ export default function TravelCoordinatorPage() {
         activeAgents,
         origin: family.homeAddress.city,
       };
-      const result = await coordinator.planTrip(fullRequest);
+      const result = await planTrip(fullRequest);
       
       // Handle the result - will be connected to the dashboard
       console.log('SP Trip Planning Result:', result);
