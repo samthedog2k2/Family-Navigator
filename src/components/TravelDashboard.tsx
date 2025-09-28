@@ -24,6 +24,7 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
       type: tripType,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
+      origin: family.homeAddress.city,
       destinations,
       budget: {
         total: budget,
@@ -51,7 +52,7 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
       {/* Trip Type Selection */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-3">Trip Type</label>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {tripTypes.map((type) => {
             const Icon = type.icon;
             return (
@@ -75,7 +76,7 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
       </div>
 
       {/* Date Selection */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Calendar className="inline w-4 h-4 mr-1" />
@@ -120,7 +121,7 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
         </div>
         <input
           type="text"
-          placeholder="Add destination..."
+          placeholder="Add destination and press Enter..."
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               const input = e.currentTarget;
@@ -177,7 +178,7 @@ export default function TravelDashboard({ family, onTripRequest, isProcessing }:
         onClick={handleSubmit}
         disabled={isProcessing || !startDate || !endDate}
         className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 ${
-          isProcessing
+          isProcessing || !startDate || !endDate
             ? 'bg-gray-300 cursor-not-allowed'
             : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-lg'
         }`}

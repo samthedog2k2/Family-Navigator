@@ -6,7 +6,9 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import TravelDashboard from '@/components/TravelDashboard';
 import { FamilyData, TripRequest } from '@/lib/travel-types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 
 type CruiseResult = z.infer<typeof CoordinatedCruiseResultSchema>;
 
@@ -48,13 +50,13 @@ export default function TravelPage() {
     try {
         const coordinatorInput: CruiseCoordinatorInput = {
             departurePort: request.origin,
-            destination: request.destinations.join(', '), // Join destinations into a string
-            dateRange: { 
-              from: request.startDate.toISOString().split('T')[0], // Format to YYYY-MM-DD string
-              to: request.endDate.toISOString().split('T')[0],     // Format to YYYY-MM-DD string
+            destination: request.destinations.join(', '),
+            dateRange: {
+              from: request.startDate.toISOString().split('T')[0],
+              to: request.endDate.toISOString().split('T')[0],
             },
             duration: Math.round((request.endDate.getTime() - request.startDate.getTime()) / (1000 * 60 * 60 * 24)),
-            interests: request.interests.join(', ') // Join interests into a string
+            interests: request.interests.join(', ')
         };
 
         const result = await findCruisesAutonomous(coordinatorInput);
@@ -97,25 +99,33 @@ export default function TravelPage() {
             </CardContent>
           </Card>
           
-          <div className="grid gap-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {aiResults.cruises.map((cruise, index) => (
-              <Card key={index} className="overflow-hidden">
+              <Card key={index} className="overflow-hidden flex flex-col">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-xl">{cruise.shipName}</CardTitle>
                       <CardDescription>{cruise.cruiseLine}</CardDescription>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0 ml-4">
                        <p className="font-bold text-lg">{cruise.price}</p>
                        <p className="text-sm text-muted-foreground">{cruise.durationDays} days</p>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-grow">
                    <p className="font-semibold text-sm">Sailing from {cruise.departurePort} on {cruise.departureDate}</p>
                    <p className="text-sm mt-2"><strong>Itinerary:</strong> {cruise.itinerary.join(', ')}</p>
                 </CardContent>
+                <CardFooter>
+                   <Button asChild className="w-full" variant="outline">
+                      <a href={cruise.bookingLink} target="_blank" rel="noopener noreferrer">
+                         View Deal
+                         <ExternalLink className="ml-2 h-4 w-4" />
+                      </a>
+                   </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
