@@ -2,7 +2,31 @@
 "use client";
 
 import React from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle, CloudLightning, CloudFog, CloudSun, Moon, CloudMoon } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle, CloudLightning, CloudFog, CloudSun, CloudMoon } from 'lucide-react';
+
+const CustomMoonIcon = ({ size = 24, ...props }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <defs>
+      <linearGradient id="moonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+      </linearGradient>
+    </defs>
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" fill="url(#moonGradient)" stroke="#4A4A4A" />
+  </svg>
+);
+
 
 export function getWeatherIcon(code: number, isDay: boolean = true, size: number = 24) {
     const altText = iconDescriptions[code] || 'Weather';
@@ -11,7 +35,7 @@ export function getWeatherIcon(code: number, isDay: boolean = true, size: number
     switch (code) {
         // Clear sky
         case 0:
-            return isDay ? <Sun {...props} className="text-yellow-500 fill-yellow-400" /> : <Moon {...props} className="text-slate-400 fill-slate-500" />;
+            return isDay ? <Sun {...props} className="text-yellow-500 fill-yellow-400" /> : <CustomMoonIcon {...props} />;
 
         // Mainly clear, partly cloudy
         case 1:
