@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -96,7 +95,7 @@ export default function TravelCoordinatorPage() {
                 <Plane className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">SP Travel Coordinator</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Travel Coordinator</h1>
                 <p className="text-gray-600">Powered by 1000+ Travel Experts' Collective Wisdom</p>
               </div>
             </div>
