@@ -44,5 +44,3 @@ export function PackingGuide({ mode }: PackingGuideProps) {
     </Card>
   );
 }
-
-    
