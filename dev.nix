@@ -1,4 +1,12 @@
 { pkgs ? import <nixpkgs> {} }:
+
 pkgs.mkShell {
-  packages = with pkgs; [ htop sysstat procps ];
+  # The packages listed here will be available in your shell
+  packages = with pkgs; [
+    # For running the export script
+    tree
+
+    # For system administration (optional but useful)
+    sudo
+  ];
 }
