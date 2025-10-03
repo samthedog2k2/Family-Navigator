@@ -1,0 +1,34 @@
+{
+  "placeholderImages": [
+    {
+      "id": "cruise-ship",
+      "description": "A large cruise ship on the ocean.",
+      "imageUrl": "https://picsum.photos/seed/cruise/600/400",
+      "imageHint": "cruise ship"
+    },
+    {
+      "id": "road-trip",
+      "description": "A car on an open road through mountains.",
+      "imageUrl": "https://picsum.photos/seed/roadtrip/600/400",
+      "imageHint": "road trip"
+    },
+    {
+      "id": "lodging",
+      "description": "A cozy cabin in the woods.",
+      "imageUrl": "https://picsum.photos/seed/lodging/600/400",
+      "imageHint": "cabin forest"
+    },
+    {
+      "id": "health-chart",
+      "description": "Abstract representation of a health chart.",
+      "imageUrl": "https://picsum.photos/seed/health/600/400",
+      "imageHint": "health chart"
+    },
+    {
+      "id": "hero-family",
+      "description": "A family enjoying a day at the park.",
+      "imageUrl": "https://picsum.photos/seed/family/1600/900",
+      "imageHint": "family park"
+    }
+  ]
+}
