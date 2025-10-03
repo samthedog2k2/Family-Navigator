@@ -116,7 +116,7 @@ export function useFamilyProfile(initialFamily: FamilyData, onFamilyUpdate: (fam
     setIsEditing(true);
   }, []);
 
-  const startEditingMember = useCallback((memberId: string) => {
+  const startEditingMember = useCallback((memberId: string | null) => {
     setEditingMember(memberId);
   }, []);
 

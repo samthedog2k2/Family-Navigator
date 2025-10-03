@@ -40,6 +40,7 @@ export default function FamilyProfileExample() {
       city: 'Indianapolis',
       state: 'IN',
       zip: '46250',
+      country: 'USA'
     },
     defaultAirport: 'IND',
     preferences: {
