@@ -29,14 +29,17 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['localhost'],
-    formats: ['image/webp', 'image/avif'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
   },
 
   // Compression
   compress: true,
 
-  // Bundle analyzer (development only)
   ...(process.env.ANALYZE === 'true' && {
     bundleAnalyzer: {
       enabled: true,
