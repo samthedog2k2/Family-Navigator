@@ -1,8 +1,6 @@
-
 "use client";
-
 import { useState, useEffect } from "react";
-import { useForm, Controller, useFormState, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -36,7 +34,7 @@ const familyMembers: FamilyMember[] = ["Adam", "Holly", "Ethan", "Elle"];
 const healthSchema = z.object({
   height: z.string().min(1, "Height is required"),
   age: z.coerce.number().positive("Age must be positive"),
-  gender: z.enum(["Male", "Female", "Other", ""]),
+  gender: z.enum(["Male", "Female", "Other"]).optional(),
   weight: z.string().min(1, "Weight is required"),
   glucose: z.string().min(1, "Glucose level is required"),
   notes: z.string().max(140, "Notes must be 140 characters or less").optional(),
@@ -60,20 +58,28 @@ function HealthForm({
     handleSubmit,
     control,
     reset,
+    formState: { errors },
   } = useForm<HealthFormData>({
     resolver: zodResolver(healthSchema),
-    defaultValues: data,
+    defaultValues: {
+      ...data,
+      gender: data.gender || undefined,
+    },
   });
-  
-  const { errors } = useFormState({ control });
 
   useEffect(() => {
-    reset(data);
+    reset({
+      ...data,
+      gender: data.gender || undefined,
+    });
   }, [data, reset]);
 
-
   const onSubmit: SubmitHandler<HealthFormData> = (formData) => {
-    onSave(member, formData as HealthData);
+    const healthData: HealthData = {
+      ...formData,
+      gender: formData.gender || "",
+    };
+    onSave(member, healthData);
   };
 
   return (
@@ -94,7 +100,9 @@ function HealthForm({
                 placeholder="e.g., 5'10&quot;"
                 {...register("height")}
               />
-              {errors.height && <p className="text-destructive text-sm">{errors.height.message}</p>}
+              {errors.height && (
+                <p className="text-destructive text-sm">{errors.height.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor={`age-${member}`}>Age</Label>
@@ -104,7 +112,9 @@ function HealthForm({
                 placeholder="e.g., 35"
                 {...register("age")}
               />
-              {errors.age && <p className="text-destructive text-sm">{errors.age.message}</p>}
+              {errors.age && (
+                <p className="text-destructive text-sm">{errors.age.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor={`gender-${member}`}>Gender</Label>
@@ -112,7 +122,10 @@ function HealthForm({
                 name="gender"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
                     <SelectTrigger id={`gender-${member}`}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -134,7 +147,9 @@ function HealthForm({
                 placeholder="e.g., 180"
                 {...register("weight")}
               />
-              {errors.weight && <p className="text-destructive text-sm">{errors.weight.message}</p>}
+              {errors.weight && (
+                <p className="text-destructive text-sm">{errors.weight.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor={`glucose-${member}`}>Glucose (mg/dL)</Label>
@@ -143,7 +158,9 @@ function HealthForm({
                 placeholder="e.g., 95"
                 {...register("glucose")}
               />
-              {errors.glucose && <p className="text-destructive text-sm">{errors.glucose.message}</p>}
+              {errors.glucose && (
+                <p className="text-destructive text-sm">{errors.glucose.message}</p>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -153,7 +170,9 @@ function HealthForm({
               placeholder="Any relevant notes (max 140 chars)"
               {...register("notes")}
             />
-            {errors.notes && <p className="text-destructive text-sm">{errors.notes.message}</p>}
+            {errors.notes && (
+              <p className="text-destructive text-sm">{errors.notes.message}</p>
+            )}
           </div>
         </CardContent>
         <CardFooter>
@@ -189,6 +208,7 @@ export function HealthTracker() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<FamilyMember>(familyMembers[0]);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadData() {
@@ -197,15 +217,14 @@ export function HealthTracker() {
         const loadedData: AppState = { ...defaultState };
         let source = "default";
         for (const member of familyMembers) {
-            const memberData = await ClientDataService.getHealthData(member);
-            if(memberData) {
-                loadedData[member] = memberData as HealthData;
-                source = "firebase";
-            }
+          const memberData = await ClientDataService.getHealthData(member);
+          if (memberData) {
+            loadedData[member] = memberData as HealthData;
+            source = "firebase";
+          }
         }
         setAppState(loadedData);
         setDataSource(source);
-
       } catch (error) {
         toast({
           title: "Error Loading Data",
@@ -219,27 +238,26 @@ export function HealthTracker() {
       }
     }
     loadData();
-  }, []);
+  }, [toast]);
 
   const handleSave = async (member: FamilyMember, data: HealthData) => {
     setIsSaving(true);
     try {
       await ClientDataService.saveHealthData(member, data);
-      
-      setAppState(prevState => {
+
+      setAppState((prevState) => {
         if (!prevState) return null;
         return {
-            ...prevState,
-            [member]: data,
-        }
+          ...prevState,
+          [member]: data,
+        };
       });
-
       toast({
         title: "Data Saved",
         description: `Health data for ${member} has been updated.`,
       });
     } catch (error) {
-       toast({
+      toast({
         title: "Error Saving Data",
         description: `Could not save health data for ${member}.`,
         variant: "destructive",
@@ -263,30 +281,39 @@ export function HealthTracker() {
 
   return (
     <div className="relative">
-        {dataSource && (
-            <Badge variant="outline" className="absolute top-0 right-0">
-                Data Source: {dataSource}
-            </Badge>
-        )}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as FamilyMember)} className="w-full">
+      {dataSource && (
+        <Badge variant="outline" className="absolute top-0 right-0">
+          Data Source: {dataSource}
+        </Badge>
+      )}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as FamilyMember)}
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-4">
-            {familyMembers.map((member) => (
+          {familyMembers.map((member) => (
             <TabsTrigger key={member} value={member}>
-                {member}
+              {member}
             </TabsTrigger>
-            ))}
+          ))}
         </TabsList>
         {familyMembers.map((member) => (
-            <TabsContent key={member} value={member} forceMount={true} hidden={activeTab !== member}>
-              <HealthForm
-                  member={member}
-                  data={appState[member]}
-                  onSave={handleSave}
-                  isSaving={isSaving}
-              />
-            </TabsContent>
+          <TabsContent
+            key={member}
+            value={member}
+            forceMount={true}
+            hidden={activeTab !== member}
+          >
+            <HealthForm
+              member={member}
+              data={appState[member]}
+              onSave={handleSave}
+              isSaving={isSaving}
+            />
+          </TabsContent>
         ))}
-        </Tabs>
+      </Tabs>
     </div>
   );
 }
