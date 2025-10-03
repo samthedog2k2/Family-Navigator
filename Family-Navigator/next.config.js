@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Trigger server restart.
   // Security headers
   async headers() {
     return [
@@ -28,22 +27,21 @@ const nextConfig = {
     ]
   },
 
-  // Image optimization using modern remotePatterns
+  // Image optimization
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-    ],
+    domains: ['localhost'],
+    formats: ['image/webp', 'image/avif'],
   },
 
   // Compression
   compress: true,
+
+  // Bundle analyzer (development only)
+  ...(process.env.ANALYZE === 'true' && {
+    bundleAnalyzer: {
+      enabled: true,
+    },
+  }),
 }
 
 export default nextConfig;
