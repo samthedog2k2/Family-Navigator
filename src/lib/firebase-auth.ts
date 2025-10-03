@@ -64,8 +64,6 @@ export class FamilyNavigatorAuth {
       return { success: true, user: enhancedUser };
 
     } catch (error: any) {
-      // We will no longer use signInWithRedirect as it's unsupported in this environment.
-      // We will simply report the popup error.
       console.error("Google Sign-In Error:", error);
       return { success: false, error: this.getReadableError(error.code) };
     }
@@ -159,6 +157,7 @@ export class FamilyNavigatorAuth {
       'auth/weak-password': 'Password should be at least 6 characters.',
       'auth/user-not-found': 'No account found with this email address.',
       'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-credential': 'Incorrect email or password.',
     };
     return errorMessages[errorCode] || defaultError;
   }

@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Update package.json to always use port 9002
+cat > package.json << 'PACKAGE'
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -49,3 +53,8 @@
     "typescript": "^5"
   }
 }
+PACKAGE
+
+echo "Updated package.json to use port 9002"
+rm -rf .next
+echo "Cleared cache"
