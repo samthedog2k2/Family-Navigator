@@ -2,8 +2,7 @@
  * Firebase Client Configuration - Browser Safe
  * Follows Doug Stevenson's Firebase best practices
  */
-
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -16,11 +15,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase app (client-side)
+function initializeClientApp() {
+  if (getApps().length > 0) {
+    return getApp();
+  }
+  return initializeApp(firebaseConfig);
+}
 
-// Initialize Firebase services
+export const app = initializeClientApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-export default app;
