@@ -27,21 +27,22 @@ const nextConfig = {
     ]
   },
 
-  // Image optimization
+  // Image optimization using modern remotePatterns
   images: {
-    domains: ['localhost'],
-    formats: ['image/webp', 'image/avif'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
   },
 
   // Compression
   compress: true,
-
-  // Bundle analyzer (development only)
-  ...(process.env.ANALYZE === 'true' && {
-    bundleAnalyzer: {
-      enabled: true,
-    },
-  }),
 }
 
 export default nextConfig;
