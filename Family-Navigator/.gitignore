@@ -75,6 +75,3 @@ family-navigator-analysis*
 debug_*
 test-*
 *.backup
-
-# Ignore backup folder during build
-backup/
