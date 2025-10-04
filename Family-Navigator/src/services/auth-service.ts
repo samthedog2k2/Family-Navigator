@@ -129,8 +129,7 @@ export class AuthService {
         uid: result.user.uid,
         email: result.user.email,
         displayName: result.user.displayName,
-        providerId: result.providerId,
-        accessToken: result.user.accessToken ? 'present' : 'missing'
+        providerId: result.providerId
       });
 
       return result.user;

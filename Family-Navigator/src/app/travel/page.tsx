@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { findCruisesAutonomous, type CruiseCoordinatorInput, type CoordinatedCruiseResultSchema } from '@/ai/agents/cruise-coordinator/agent';
+import { findCruisesAutonomous } from '@/ai/agents/cruise-coordinator/agent';
+import type { CruiseCoordinatorInput } from '@/ai/agents/cruise-coordinator/types';
+import { CoordinatedCruiseResultSchema } from '@/ai/agents/cruise-coordinator/types';
 import { z } from 'zod';
 import TravelCoordinatorFast from '@/components/travel-coordinator-fast';
 import { FamilyData, type TripRequest } from '@/lib/travel-types';

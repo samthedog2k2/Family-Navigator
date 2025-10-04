@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { searchCruises, CruiseSearchInput } from '@/ai/flows/cruise-search';
+import { searchCruises } from '@/ai/flows/cruise-search';
+import type { CruiseSearchInput } from '@/ai/flows/cruise-search-types';
 
 export async function POST(request: Request) {
     try {

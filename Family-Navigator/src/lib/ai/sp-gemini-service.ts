@@ -6,7 +6,6 @@
 
 // Import your existing Genkit setup
 import { ai } from '@/ai/genkit';
-import { generate } from 'genkit';
 
 export class SPGeminiService {
   /**

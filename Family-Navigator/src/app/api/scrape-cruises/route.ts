@@ -140,7 +140,7 @@ function getSiteConfig(url: string) {
   return SITE_CONFIGS[domain as keyof typeof SITE_CONFIGS];
 }
 
-function pickText($el: cheerio.Cheerio<cheerio.Element>, selectors: string[]) {
+function pickText($el: any, selectors: string[]) {
   for (const sel of selectors) {
     const txt = $el.find(sel).first().text().trim();
     if (txt) return txt;
@@ -148,7 +148,7 @@ function pickText($el: cheerio.Cheerio<cheerio.Element>, selectors: string[]) {
   return null;
 }
 
-function pickAttr($el: cheerio.Cheerio<cheerio.Element>, selectors: string[], attr: string) {
+function pickAttr($el: any, selectors: string[], attr: string) {
   for (const sel of selectors) {
     const val = $el.find(sel).first().attr(attr);
     if (val) return val;

@@ -13,11 +13,16 @@ const colorClasses: Record<string, string> = {
   Elle: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/50 dark:text-pink-200 dark:border-pink-700",
 };
 
-export function Event({ event }: { event: TCalendarEvent }) {
+export function Event({ event, onClick, onDelete }: {
+  event: TCalendarEvent;
+  onClick?: (event: TCalendarEvent) => void;
+  onDelete?: (event: TCalendarEvent) => void;
+}) {
   const colorClass = colorClasses[event.calendar] || "bg-gray-100 text-gray-800 border-gray-300";
   return (
     <div
-      className={cn("rounded-md border p-1.5 text-xs font-medium leading-tight", colorClass)}
+      className={cn("rounded-md border p-1.5 text-xs font-medium leading-tight cursor-pointer", colorClass)}
+      onClick={() => onClick?.(event)}
     >
       <p className="truncate">{event.title}</p>
     </div>
@@ -27,10 +32,11 @@ export function Event({ event }: { event: TCalendarEvent }) {
 type TimelineEventProps = {
   event: TCalendarEvent & { slotIndex?: number; slotCount?: number };
   onClick?: (event: TCalendarEvent) => void;
+  onDelete?: (event: TCalendarEvent) => void;
 };
 
 
-export function TimelineEvent({ event, onClick }: TimelineEventProps) {
+export function TimelineEvent({ event, onClick, onDelete }: TimelineEventProps) {
   const HALF_HOUR_HEIGHT = 24; // 30min = 24px
 
   const startMinutes = differenceInMinutes(event.start, startOfDay(event.start));

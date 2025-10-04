@@ -290,7 +290,8 @@ const secureWebsiteAgentFlow = ai.defineFlow(
       ]
     });
 
-    const toolRequest = llmResponse.toolRequest;
+    const toolRequestMsg = llmResponse.toolRequests?.[0];
+    const toolRequest = toolRequestMsg?.toolRequest;
 
     if (toolRequest) {
       // Pass the credentials to the tool call

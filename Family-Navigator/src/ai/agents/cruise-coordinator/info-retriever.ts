@@ -36,13 +36,14 @@ const infoRetrieverAgent = ai.defineFlow(
         tools: [searchCruiseApi, scrapeCruiseWebsite],
     });
 
-    const toolRequest = llmResponse.toolRequest;
+    const toolRequestMsg = llmResponse.toolRequests?.[0];
 
-    if (!toolRequest) {
+    if (!toolRequestMsg?.toolRequest) {
         console.log('[InfoRetriever] LLM did not request a tool. Returning empty results.');
         return { results: [] };
     }
 
+    const toolRequest = toolRequestMsg.toolRequest;
     console.log(`[InfoRetriever] LLM decided to use tool: ${toolRequest.name}`);
     let rawResults: any[] = [];
 

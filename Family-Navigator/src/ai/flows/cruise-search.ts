@@ -14,6 +14,7 @@ import {
   type CruiseSearchResult,
 } from './cruise-search-types';
 import { shipData } from '@/data/cruise-ship-data';
+import { z } from 'zod';
 
 
 export async function searchCruises(input: CruiseSearchInput): Promise<CruiseSearchResult> {
@@ -28,7 +29,7 @@ const shipDataForPrompt = shipData.map(ship =>
 
 const cruiseSearchPrompt = ai.definePrompt({
   name: 'cruiseSearchPrompt',
-  input: { schema: CruiseSearchInputSchema },
+  input: { schema: CruiseSearchInputSchema.extend({ shipData: z.string() }) },
   output: { schema: CruiseSearchResultSchema },
   prompt: `You are an expert AI travel agent specializing in cruises. A user will provide a query describing their ideal cruise.
 Your task is to generate a list of 3 to 5 realistic, matching cruise options.
@@ -58,7 +59,7 @@ const cruiseSearchFlow = ai.defineFlow(
     outputSchema: CruiseSearchResultSchema,
   },
   async input => {
-    const { output } = await cruiseSearchPrompt({ ...input, shipData: shipDataForPrompt });
+    const { output } = await cruiseSearchPrompt({ query: input.query, shipData: shipDataForPrompt });
     return output!;
   }
 );
