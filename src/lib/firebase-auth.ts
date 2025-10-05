@@ -36,103 +36,79 @@ export interface FamilyNavigatorUser extends User {
   lastSignIn?: any;
 }
 
-export function useFamilyAuth() {
-  const [user, setUser] = useState<FamilyNavigatorUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const profile = await getUserProfile(firebaseUser.uid);
-        const enhancedUser: FamilyNavigatorUser = {
-            ...firebaseUser,
-            role: profile?.role || 'readonly',
-            familyId: profile?.familyId,
-        };
-        setUser(enhancedUser);
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const getUserProfile = async (userId: string) => {
-    const docSnap = await getDoc(doc(db, 'users', userId));
-    return docSnap.exists() ? docSnap.data() : null;
-  };
+export class FamilyNavigatorAuth {
+  private static instance: FamilyNavigatorAuth;
   
-  const getEnhancedUser = async (user: User): Promise<FamilyNavigatorUser> => {
-    const profile = await getUserProfile(user.uid);
-    return {
-      ...user,
-      role: profile?.role || 'readonly',
-      familyId: profile?.familyId || '',
-    } as FamilyNavigatorUser;
-  };
+  static getInstance(): FamilyNavigatorAuth {
+    if (!FamilyNavigatorAuth.instance) {
+      FamilyNavigatorAuth.instance = new FamilyNavigatorAuth();
+    }
+    return FamilyNavigatorAuth.instance;
+  }
 
-  const signInWithGoogle = async (): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string, redirect?: boolean}> => {
+  async signInWithGoogle(): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string, redirect?: boolean}> {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      const userProfile = await getUserProfile(user.uid);
+      const userProfile = await this.getUserProfile(user.uid);
       
       if (!userProfile) {
-        await createUserProfile(user, 'readonly');
+        await this.createUserProfile(user, 'readonly');
       } else {
-        await updateUserProfile(user.uid, {
+        await this.updateUserProfile(user.uid, {
           lastSignIn: serverTimestamp()
         });
       }
 
-      const enhancedUser = await getEnhancedUser(user);
+      const enhancedUser = await this.getEnhancedUser(user);
       return { success: true, user: enhancedUser };
 
     } catch (error: any) {
+      // We will no longer use signInWithRedirect as it's unsupported in this environment.
+      // We will simply report the popup error.
       console.error("Google Sign-In Error:", error);
-      return { success: false, error: getReadableError(error.code) };
+      return { success: false, error: this.getReadableError(error.code) };
     }
-  };
+  }
 
-  const createAccount = async (
+  async createAccount(
     email: string, 
     password: string, 
     displayName?: string
-  ): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string}> => {
+  ): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string}> {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const user = result.user;
-      await createUserProfile(user, 'readonly', displayName);
-      const enhancedUser = await getEnhancedUser(user);
+      await this.createUserProfile(user, 'readonly', displayName);
+      const enhancedUser = await this.getEnhancedUser(user);
       return { success: true, user: enhancedUser };
     } catch (error: any) {
-      return { success: false, error: getReadableError(error.code) };
+      return { success: false, error: this.getReadableError(error.code) };
     }
-  };
+  }
 
-  const signInWithEmail = async (email: string, password: string): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string}> => {
+  async signInWithEmail(email: string, password: string): Promise<{success: boolean, user?: FamilyNavigatorUser, error?: string}> {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
-      await updateUserProfile(user.uid, { lastSignIn: serverTimestamp() });
-      const enhancedUser = await getEnhancedUser(user);
+      await this.updateUserProfile(user.uid, { lastSignIn: serverTimestamp() });
+      const enhancedUser = await this.getEnhancedUser(user);
       return { success: true, user: enhancedUser };
     } catch (error: any) {
-      return { success: false, error: getReadableError(error.code) };
+      return { success: false, error: this.getReadableError(error.code) };
     }
-  };
+  }
 
-  const signOut = async (): Promise<{success: boolean, error?: string}> => {
+  async signOut(): Promise<{success: boolean, error?: string}> {
     try {
       await firebaseSignOut(auth);
       return { success: true };
     } catch (error: any) {
       return { success: false, error: 'Failed to sign out.' };
     }
-  };
+  }
 
-  const createUserProfile = async (user: User, role: UserRole, displayName?: string) => {
+  private async createUserProfile(user: User, role: UserRole, displayName?: string) {
     const userProfileRef = doc(db, 'users', user.uid);
     const userProfile = {
       uid: user.uid,
@@ -147,17 +123,31 @@ export function useFamilyAuth() {
       isActive: true,
     };
     return setDoc(userProfileRef, userProfile, { merge: true });
-  };
+  }
 
-  const updateUserProfile = async (userId: string, updates: any) => {
+  private async updateUserProfile(userId: string, updates: any) {
      const userRef = doc(db, 'users', userId);
      const userDoc = await getDoc(userRef);
      if (userDoc.exists()) {
         return updateDoc(userRef, updates);
      }
-  };
+  }
 
-  const getReadableError = (errorCode: string): string => {
+  private async getUserProfile(userId: string) {
+    const docSnap = await getDoc(doc(db, 'users', userId));
+    return docSnap.exists() ? docSnap.data() : null;
+  }
+
+  public async getEnhancedUser(user: User): Promise<FamilyNavigatorUser> {
+    const profile = await this.getUserProfile(user.uid);
+    return {
+      ...user,
+      role: profile?.role || 'readonly',
+      familyId: profile?.familyId || '',
+    } as FamilyNavigatorUser;
+  }
+
+  private getReadableError(errorCode: string): string {
     const defaultError = 'An unexpected error occurred. Please try again.';
     const errorMessages: Record<string, string> = {
       'auth/popup-closed-by-user': 'The sign-in window was closed before completion.',
@@ -169,19 +159,37 @@ export function useFamilyAuth() {
       'auth/weak-password': 'Password should be at least 6 characters.',
       'auth/user-not-found': 'No account found with this email address.',
       'auth/wrong-password': 'Incorrect password.',
-      'auth/invalid-credential': 'Incorrect email or password.',
     };
     return errorMessages[errorCode] || defaultError;
-  };
+  }
+}
 
+export const familyAuth = FamilyNavigatorAuth.getInstance();
+
+export function useFamilyAuth() {
+  const [user, setUser] = useState<FamilyNavigatorUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const enhancedUser = await familyAuth.getEnhancedUser(firebaseUser);
+        setUser(enhancedUser);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   return {
     user,
     loading,
     isAuthenticated: !!user,
-    signInWithGoogle,
-    createAccount,
-    signInWithEmail,
-    signOut,
+    signInWithGoogle: familyAuth.signInWithGoogle.bind(familyAuth),
+    createAccount: familyAuth.createAccount.bind(familyAuth),
+    signInWithEmail: familyAuth.signInWithEmail.bind(familyAuth),
+    signOut: familyAuth.signOut.bind(familyAuth),
   };
 }

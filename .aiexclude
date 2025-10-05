@@ -1,0 +1,7 @@
+package.json
+next.config.js
+firebase.json
+apphosting.yaml
+.firebaserc
+tsconfig.json
+.env.local

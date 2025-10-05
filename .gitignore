@@ -1,77 +1,15 @@
-# Dependencies
 node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Next.js
 /.next/
 /out/
-
-# Production
-/build
-/dist
-
-# Misc
-.DS_Store
-*.pem
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
-.env*.local
 .env
-.env.development
-.env.production
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Logs
-logs
+.env*.local
+.firebase/
+firebase-debug.log
+.DS_Store
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# IDEs
+*.backup
+.cache/
+dist/
+build/
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Credentials and sensitive files
-credentials/
-*.pem
-*.key
-.env
-.env.local
-
-# Backup files
-*.backup.*
-*~
-
-# Analysis and debug files
-family-navigator-analysis*
-debug_*
-test-*
-*.backup

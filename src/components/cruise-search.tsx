@@ -6,187 +6,192 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin } from "lucide-react";
+import { Loader2, Ship, Anchor, Calendar as CalendarIcon, Users, DollarSign, Search, MapPin, Sailboat, LinkIcon, ExternalLink } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
+import { Badge } from "./ui/badge";
+import { toast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
 const cruiseSearchSchema = z.object({
-  destinations: z.array(z.string()).min(1, "Please select at least one destination."),
-  shipType: z.string().optional(),
-  departurePort: z.string().optional(),
-  shipName: z.string().optional(),
-  line: z.string().optional(),
-  dateRange: z.object({
-    from: z.date().optional(),
-    to: z.date().optional(),
-  }).optional(),
-  cruiseLength: z.string().optional(),
+  url: z.string().url("Please select a valid website to scrape."),
+  // Other fields can be re-added later for more advanced query building
 });
 
 type CruiseSearchFormData = z.infer<typeof cruiseSearchSchema>;
 
-interface CruiseSearchProps {
-    onSearch: (data: CruiseSearchFormData) => void;
-    isLoading: boolean;
+interface ScrapedCruise {
+  title: string | null;
+  ship: string | null;
+  line: string | null;
+  price: string | null;
+  duration: string | null;
+  itinerary: string | null;
+  departure: string | null;
+  rating: string | null;
+  date: string | null;
+  link: string | null;
 }
 
-export function CruiseSearch({ onSearch, isLoading }: CruiseSearchProps) {
-  const [filterData, setFilterData] = useState<any>(null);
+const SCRAPE_TARGETS = [
+    { name: "CruiseCritic.com", url: "https://www.cruisecritic.com/find-a-cruise/" },
+    { name: "Cruises.com", url: "https://www.cruises.com/" },
+    { name: "Cruise.com", url: "https://www.cruise.com/" },
+    { name: "MSC Cruises", url: "https://www.msccruisesusa.com/cruise/deals" },
+    { name: "CruiseMapper.com", url: "https://www.cruisemapper.com/cruise-search" },
+];
 
-  const { control, handleSubmit, watch, formState: { errors } } = useForm<CruiseSearchFormData>({
+export function CruiseSearch() {
+  const [results, setResults] = useState<ScrapedCruise[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { control, handleSubmit } = useForm<CruiseSearchFormData>({
     resolver: zodResolver(cruiseSearchSchema),
     defaultValues: {
-      destinations: ["CARIB"],
-      shipType: "ocean",
-      cruiseLength: "any"
+      url: SCRAPE_TARGETS[0].url,
     },
   });
-
-  useEffect(() => {
-    async function loadFilters() {
-      const response = await fetch('/api/search-filters');
-      const data = await response.json();
-      setFilterData(data.data);
-    }
-    loadFilters();
-  }, []);
   
-  const dateRange = watch("dateRange");
+  const onSubmit = async (data: CruiseSearchFormData) => {
+    setIsLoading(true);
+    setResults(null);
+    setError(null);
+
+    try {
+        // Note: This fetch-based scraper is simple and may be blocked by ads or dynamic content.
+        // A more robust solution would use a headless browser, but that is not supported in this environment.
+        const response = await fetch(`/api/scrape-cruises?url=${encodeURIComponent(data.url)}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.details || `Scraping failed with status ${response.status}`);
+        }
+
+        const scrapedData = await response.json();
+
+        if (scrapedData.results && scrapedData.results.length > 0) {
+            setResults(scrapedData.results);
+        } else {
+            toast({ title: "No Results", description: "The scraper couldn't find any cruise results. The site may be blocking the request or its layout has changed."});
+        }
+
+    } catch(err) {
+        console.error("Scraper fetch failed:", err);
+        const errorMessage = (err as Error).message || "An unknown error occurred during scraping.";
+        setError(errorMessage);
+        toast({ title: "Scraping Error", description: errorMessage, variant: "destructive"});
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Cruise Finder</CardTitle>
-        <CardDescription>
-          Use our AI-powered search to find the perfect cruise. Your family's preferences are pre-selected.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSearch)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Destinations */}
-            <div className="space-y-2">
-              <Label>Destinations</Label>
-              <Controller name="destinations" control={control} render={({ field }) => (
-                <Select onValueChange={(val) => field.onChange([val])} defaultValue={field.value?.[0]}>
-                    <SelectTrigger><SelectValue placeholder="Select Destination" /></SelectTrigger>
-                    <SelectContent>
-                      {filterData?.regions.map((r: any) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-              )} />
-            </div>
-
-            {/* Ship Type */}
-            <div className="space-y-2">
-              <Label>Ship Type</Label>
-               <Controller name="shipType" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Select Ship Type" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ocean">Ocean & River</SelectItem>
-                      <SelectItem value="ocean_only">Ocean Only</SelectItem>
-                      <SelectItem value="river_only">River Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-               )} />
-            </div>
-
-            {/* Departure Port */}
-            <div className="space-y-2">
-              <Label>Departure Port</Label>
-              <Controller name="departurePort" control={control} render={({ field }) => (
-                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Any Port" /></SelectTrigger>
-                    <SelectContent>
-                       {filterData?.ports.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-              )} />
-            </div>
-
-            {/* Line / Company */}
-            <div className="space-y-2">
-                <Label>Line / Company</Label>
-                <Controller name="line" control={control} render={({ field }) => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-1 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Cruise Scraper</CardTitle>
+            <CardDescription>
+              Select a website and scrape live cruise deals.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              
+              <div className="space-y-2">
+                <Label>Website to Scrape</Label>
+                <Controller name="url" control={control} render={({ field }) => (
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger><SelectValue placeholder="Any Line" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select a website" /></SelectTrigger>
                         <SelectContent>
-                            {filterData?.lines.map((l: any) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                            {SCRAPE_TARGETS.map(site => <SelectItem key={site.url} value={site.url}>{site.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 )} />
-            </div>
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+                Scrape Live Deals
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
-             {/* Itinerary Dates */}
-            <div className="space-y-2 md:col-span-2">
-              <Label>Itinerary Dates</Label>
-              <Controller
-                name="dateRange"
-                control={control}
-                render={({ field }) => (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateRange?.from ? (
-                          dateRange.to ? (
-                            `${format(dateRange.from, 'LLL dd, y')} - ${format(dateRange.to, 'LLL dd, y')}`
-                          ) : (
-                            format(dateRange.from, 'LLL dd, y')
-                          )
-                        ) : (
-                          <span>Pick a date range</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="range"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
-              />
-            </div>
-            
-            {/* Cruise Length */}
-             <div className="space-y-2">
-              <Label>Cruise Length</Label>
-               <Controller name="cruiseLength" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Any Length" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any cruise length</SelectItem>
-                      <SelectItem value="1-2">1-2 days</SelectItem>
-                      <SelectItem value="3-5">3-5 days</SelectItem>
-                      <SelectItem value="6-9">6-9 days</SelectItem>
-                      <SelectItem value="10-14">10-14 days</SelectItem>
-                      <SelectItem value="15+">15+ days</SelectItem>
-                    </SelectContent>
-                  </Select>
-               )} />
-            </div>
-
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-            Find Cruises
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="lg:col-span-2 space-y-6">
+        <Card className="h-full">
+            <CardHeader>
+                <CardTitle>Scraped Results</CardTitle>
+                <CardDescription>Live data pulled directly from the selected website.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-[calc(100vh-16rem)] pr-4 -mr-4">
+                    {isLoading && (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                            <p className="text-lg font-semibold">Scraping live data...</p>
+                            <p>This can take a moment.</p>
+                        </div>
+                    )}
+                    {error && (
+                         <div className="flex flex-col items-center justify-center h-full text-destructive text-center p-4">
+                            <p className='font-semibold'>Scraping Error</p>
+                             <p>{error}</p>
+                         </div>
+                    )}
+                    {!isLoading && !results && !error && (
+                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center p-4">
+                            <Sailboat className="h-16 w-16 mb-4"/>
+                            <p className='font-semibold text-lg'>Your scraped cruise results will appear here.</p>
+                            <p>Select a website and click "Scrape Live Deals".</p>
+                        </div>
+                    )}
+                    {results && (
+                        <div className="space-y-4">
+                            {results.map((cruise, index) => (
+                                <Card key={index} className="overflow-hidden">
+                                    <CardHeader>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <CardTitle className="text-xl">{cruise.title || "Untitled Cruise"}</CardTitle>
+                                                <CardDescription>{cruise.line} - {cruise.ship}</CardDescription>
+                                            </div>
+                                             {cruise.price && <Badge variant="secondary">{cruise.price}</Badge>}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4 text-sm">
+                                       {cruise.itinerary && <p><span className="font-semibold">Itinerary:</span> {cruise.itinerary}</p>}
+                                       <div className="flex flex-wrap gap-x-4 gap-y-2 text-muted-foreground">
+                                           {cruise.duration && <div className="flex items-center gap-1"><CalendarIcon size={14} /><span>{cruise.duration}</span></div>}
+                                           {cruise.departure && <div className="flex items-center gap-1"><Anchor size={14} /><span>{cruise.departure}</span></div>}
+                                           {cruise.date && <div className="flex items-center gap-1"><CalendarIcon size={14} /><span>{cruise.date}</span></div>}
+                                       </div>
+                                    </CardContent>
+                                    {cruise.link && (
+                                    <CardFooter>
+                                        <Button asChild className="w-full" variant="outline">
+                                            <a href={cruise.link.startsWith('http') ? cruise.link : `https://www.cruisecritic.com${cruise.link}`} target="_blank" rel="noopener noreferrer">
+                                                View on Source Site <ExternalLink className="ml-2" size={14}/>
+                                            </a>
+                                        </Button>
+                                    </CardFooter>
+                                    )}
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

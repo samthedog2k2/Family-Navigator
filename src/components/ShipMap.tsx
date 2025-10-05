@@ -2,7 +2,7 @@
 
 import { Map, Marker } from "pigeon-maps";
 
-export function ShipMap({ lat, lng }) {
+export function ShipMap({ lat, lng }: { lat: number; lng: number }) {
   if (typeof lat !== 'number' || typeof lng !== 'number') {
     return <div>Loading map...</div>; // Or some other placeholder
   }

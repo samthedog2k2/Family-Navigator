@@ -75,11 +75,7 @@ function HealthForm({
   }, [data, reset]);
 
   const onSubmit: SubmitHandler<HealthFormData> = (formData) => {
-    const healthData: HealthData = {
-      ...formData,
-      gender: formData.gender || "",
-    };
-    onSave(member, healthData);
+    onSave(member, formData);
   };
 
   return (
@@ -189,7 +185,7 @@ function HealthForm({
 const emptyHealthData: HealthData = {
   height: "",
   age: 0,
-  gender: "",
+  gender: "Other",
   weight: "",
   glucose: "",
   notes: "",

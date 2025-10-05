@@ -84,12 +84,12 @@ export default function HuluAgentPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="huluUsername">Hulu Email</Label>
-                  <Input id="huluUsername" name="huluUsername" type="email" {...register('huluUsername')} placeholder="Your Hulu email" autoComplete="username" />
+                  <Input id="huluUsername" type="email" {...register('huluUsername')} placeholder="Your Hulu email" autoComplete="username" />
                   {errors.huluUsername && <p className="text-sm text-destructive">{errors.huluUsername.message}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="huluPassword">Hulu Password</Label>
-                  <Input id="huluPassword" name="huluPassword" type="password" {...register('huluPassword')} placeholder="Your Hulu password" autoComplete="current-password" />
+                  <Input id="huluPassword" type="password" {...register('huluPassword')} placeholder="Your Hulu password" autoComplete="current-password" />
                   {errors.huluPassword && <p className="text-sm text-destructive">{errors.huluPassword.message}</p>}
                 </div>
               </div>

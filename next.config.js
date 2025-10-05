@@ -1,48 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Security headers
+  experimental: {
+    allowedDevOrigins: [
+      '3000-firebase-studio-1758327366090.cluster-kadnvepafzbgiwrf2a46powzly.cloudworkstations.dev',
+      'studio.firebase.google.com',
+      '.cloudworkstations.dev'
+    ]
+  },
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ],
-      },
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          }
+        ]
+      }
     ]
-  },
-
-  // Image optimization using modern remotePatterns
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-    ],
-  },
-
-  // Compression
-  compress: true,
+  }
 }
 
-export default nextConfig;
+export default nextConfig
