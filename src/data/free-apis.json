@@ -1,0 +1,1289 @@
+{
+  "weather": [
+    {
+      "name": "7Timer!",
+      "url": "https://7timer.info",
+      "requires_key": false,
+      "description": "Weather and astronomical forecasts for amateur astronomers",
+      "docs": "https://7timer.info",
+      "status": "available"
+    },
+    {
+      "name": "AccuWeather",
+      "url": "https://developer.accuweather.com/apis",
+      "requires_key": true,
+      "free_tier": "Limited free tier",
+      "description": "Weather and forecast data",
+      "docs": "https://developer.accuweather.com/apis",
+      "status": "available"
+    },
+    {
+      "name": "Aemet",
+      "url": "https://opendata.aemet.es/",
+      "requires_key": false,
+      "description": "Spanish meteorological service - forecast and climate data",
+      "docs": "https://opendata.aemet.es/",
+      "status": "available"
+    },
+    {
+      "name": "APIXU / WeatherAPI",
+      "url": "https://www.weatherapi.com/",
+      "requires_key": true,
+      "free_tier": "Free tier available",
+      "description": "Weather data with free tier",
+      "docs": "https://www.weatherapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "AQICN",
+      "url": "https://aqicn.org/api/",
+      "requires_key": false,
+      "description": "Air Quality Index and pollutant concentrations",
+      "docs": "https://aqicn.org/api/",
+      "status": "available"
+    },
+    {
+      "name": "AviationWeather",
+      "url": "https://aviationweather.gov/dataserver",
+      "requires_key": false,
+      "description": "NOAA aviation weather forecasts and observations",
+      "docs": "https://aviationweather.gov/dataserver",
+      "status": "available"
+    },
+    {
+      "name": "ColorfulClouds",
+      "url": "http://docs.colorfulclouds.com",
+      "requires_key": false,
+      "description": "Weather data and forecast",
+      "docs": "http://docs.colorfulclouds.com",
+      "status": "available"
+    },
+    {
+      "name": "Euskalmet",
+      "url": "https://www.euskalmet.euskadi.eus/",
+      "requires_key": false,
+      "description": "Basque Country meteorological data",
+      "docs": "https://www.euskalmet.euskadi.eus/",
+      "status": "available"
+    },
+    {
+      "name": "Foreca",
+      "url": "https://developer.foreca.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Global weather forecasts",
+      "docs": "https://developer.foreca.com/",
+      "status": "available"
+    },
+    {
+      "name": "GribStream",
+      "url": "https://gribstream.com/",
+      "requires_key": false,
+      "description": "Global weather forecast using NBM and GFS models",
+      "docs": "https://gribstream.com/",
+      "status": "available"
+    },
+    {
+      "name": "HG Weather",
+      "url": "https://hgbrasil.com/status/weather",
+      "requires_key": false,
+      "description": "Brazilian city forecasts",
+      "docs": "https://hgbrasil.com/status/weather",
+      "status": "available"
+    },
+    {
+      "name": "Hong Kong Observatory",
+      "url": "https://www.hko.gov.hk/en/index.html",
+      "requires_key": false,
+      "description": "Weather, earthquake and climate data",
+      "docs": "https://www.hko.gov.hk/en/index.html",
+      "status": "available"
+    },
+    {
+      "name": "Korea Meteorological Administration",
+      "url": "https://apihub.kma.go.kr/",
+      "requires_key": false,
+      "description": "KMA weather and climate data",
+      "docs": "https://apihub.kma.go.kr/",
+      "status": "available"
+    },
+    {
+      "name": "Met Office DataPoint",
+      "url": "https://www.metoffice.gov.uk/datapoint",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "UK Met Office weather datasets",
+      "docs": "https://www.metoffice.gov.uk/datapoint",
+      "status": "available"
+    },
+    {
+      "name": "Meteoblue",
+      "url": "https://www.meteoblue.com/en/weather/api",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Global weather with 100+ variables",
+      "docs": "https://www.meteoblue.com/en/weather/api",
+      "status": "available"
+    },
+    {
+      "name": "Meteorologisk Institutt",
+      "url": "https://api.met.no/",
+      "requires_key": false,
+      "description": "Norwegian weather and climate",
+      "docs": "https://api.met.no/",
+      "status": "available"
+    },
+    {
+      "name": "Meteosource",
+      "url": "https://www.meteosource.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Forecasts based on machine learning and historical data",
+      "docs": "https://www.meteosource.com/",
+      "status": "available"
+    },
+    {
+      "name": "ODWeather",
+      "url": "https://www.odweather.com/",
+      "requires_key": false,
+      "description": "Weather and webcam data",
+      "docs": "https://www.odweather.com/",
+      "status": "available"
+    },
+    {
+      "name": "Oikolab",
+      "url": "https://www.oikolab.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "70+ years of global historical and forecast weather data",
+      "docs": "https://www.oikolab.com/",
+      "status": "available"
+    },
+    {
+      "name": "Open-Meteo",
+      "url": "https://open-meteo.com/",
+      "requires_key": false,
+      "description": "Free, open-source weather API with no API key required",
+      "docs": "https://open-meteo.com/",
+      "status": "active"
+    },
+    {
+      "name": "openSenseMap",
+      "url": "https://api.opensensemap.org/",
+      "requires_key": false,
+      "description": "Data from personal weather stations (senseBoxes)",
+      "docs": "https://api.opensensemap.org/",
+      "status": "available"
+    },
+    {
+      "name": "OpenUV",
+      "url": "https://www.openuv.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Real-time UV index forecasts",
+      "docs": "https://www.openuv.io/",
+      "status": "available"
+    },
+    {
+      "name": "OpenWeatherMap",
+      "url": "https://openweathermap.org/api",
+      "requires_key": true,
+      "free_tier": "1000 calls/day free",
+      "description": "Current weather, forecasts and historical data",
+      "docs": "https://openweathermap.org/api",
+      "status": "available"
+    },
+    {
+      "name": "QWeather",
+      "url": "https://dev.qweather.com/en/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Location-based weather data",
+      "docs": "https://dev.qweather.com/en/",
+      "status": "available"
+    },
+    {
+      "name": "RainViewer",
+      "url": "https://www.rainviewer.com/api.html",
+      "requires_key": false,
+      "description": "Radar data from different weather radar networks",
+      "docs": "https://www.rainviewer.com/api.html",
+      "status": "available"
+    },
+    {
+      "name": "Storm Glass",
+      "url": "https://stormglass.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Marine weather and ocean conditions",
+      "docs": "https://stormglass.io/",
+      "status": "available"
+    },
+    {
+      "name": "Tomorrow.io",
+      "url": "https://www.tomorrow.io/weather-api/",
+      "requires_key": true,
+      "free_tier": "500 calls/day free",
+      "description": "Hyperlocal weather API with free tier",
+      "docs": "https://www.tomorrow.io/weather-api/",
+      "status": "available"
+    },
+    {
+      "name": "US Weather (NWS)",
+      "url": "https://api.weather.gov/",
+      "requires_key": false,
+      "description": "National Weather Service API for forecasts, alerts and observations",
+      "docs": "https://api.weather.gov/",
+      "status": "available"
+    },
+    {
+      "name": "Visual Crossing",
+      "url": "https://www.visualcrossing.com/weather-data-api",
+      "requires_key": true,
+      "free_tier": "1000 records/day free",
+      "description": "Global historical and forecast weather data",
+      "docs": "https://www.visualcrossing.com/weather-data-api",
+      "status": "available"
+    },
+    {
+      "name": "weather-api",
+      "url": "https://github.com/robertoduessmann/weather-api",
+      "requires_key": false,
+      "description": "Simple RESTful API for checking weather",
+      "docs": "https://github.com/robertoduessmann/weather-api",
+      "status": "available"
+    },
+    {
+      "name": "WeatherAPI",
+      "url": "https://www.weatherapi.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Comprehensive weather and astronomy data",
+      "docs": "https://www.weatherapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "Weatherbit",
+      "url": "https://www.weatherbit.io/api",
+      "requires_key": true,
+      "free_tier": "500 calls/day free",
+      "description": "Weather forecasts and historical data",
+      "docs": "https://www.weatherbit.io/api",
+      "status": "available"
+    },
+    {
+      "name": "Yandex.Weather",
+      "url": "https://yandex.com/dev/weather/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Weather conditions for specific locations",
+      "docs": "https://yandex.com/dev/weather/",
+      "status": "available"
+    }
+  ],
+  "transportation": [
+    {
+      "name": "ADS-B Exchange",
+      "url": "https://www.adsbexchange.com/",
+      "requires_key": false,
+      "description": "Real-time and historical aircraft positions",
+      "docs": "https://www.adsbexchange.com/",
+      "status": "available"
+    },
+    {
+      "name": "adsbdb",
+      "url": "https://www.adsbdb.com/",
+      "requires_key": false,
+      "description": "Open access to aircraft, airline and flight route data",
+      "docs": "https://www.adsbdb.com/",
+      "status": "available"
+    },
+    {
+      "name": "airportsapi",
+      "url": "https://airportsapi.com/",
+      "requires_key": false,
+      "description": "Retrieve airport name and website by ICAO code",
+      "docs": "https://airportsapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "AIS Hub",
+      "url": "https://www.aishub.net/",
+      "requires_key": false,
+      "description": "Real-time marine and inland vessel tracking",
+      "docs": "https://www.aishub.net/",
+      "status": "available"
+    },
+    {
+      "name": "Amadeus for Developers",
+      "url": "https://developers.amadeus.com/",
+      "requires_key": true,
+      "free_tier": "2000 calls/month free",
+      "description": "Flight, hotel and travel search with free tier",
+      "docs": "https://developers.amadeus.com/",
+      "status": "available"
+    },
+    {
+      "name": "AviationAPI",
+      "url": "https://aviationapi.com/",
+      "requires_key": false,
+      "description": "FAA aeronautical charts, publications and airport weather",
+      "docs": "https://aviationapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "AZ511",
+      "url": "https://az511.com/api",
+      "requires_key": false,
+      "description": "Traffic data from Arizona Department of Transportation",
+      "docs": "https://az511.com/api",
+      "status": "available"
+    },
+    {
+      "name": "Bay Area Rapid Transit (BART)",
+      "url": "https://api.bart.gov/docs/overview/index.html",
+      "requires_key": false,
+      "description": "Stations and predicted arrival times",
+      "docs": "https://api.bart.gov/docs/overview/index.html",
+      "status": "available"
+    },
+    {
+      "name": "BC Ferries",
+      "url": "https://www.bcferries.com/",
+      "requires_key": false,
+      "description": "Sailing times and capacities for BC Ferries",
+      "docs": "https://www.bcferries.com/",
+      "status": "available"
+    },
+    {
+      "name": "BIC-Boxtech",
+      "url": "https://www.bic-boxtech.org/",
+      "requires_key": false,
+      "description": "Technical details for the global container fleet",
+      "docs": "https://www.bic-boxtech.org/",
+      "status": "available"
+    },
+    {
+      "name": "Boston MBTA Transit",
+      "url": "https://api.mbta.com/",
+      "requires_key": false,
+      "description": "Stations and predicted arrivals for Massachusetts Bay transit",
+      "docs": "https://api.mbta.com/",
+      "status": "available"
+    },
+    {
+      "name": "Community Transit (Transitland)",
+      "url": "https://transit.land/",
+      "requires_key": false,
+      "description": "Aggregated transit data",
+      "docs": "https://transit.land/",
+      "status": "available"
+    },
+    {
+      "name": "CTS",
+      "url": "https://api.cts-strasbourg.eu/",
+      "requires_key": false,
+      "description": "CTS realtime API (Strasbourg transport)",
+      "docs": "https://api.cts-strasbourg.eu/",
+      "status": "available"
+    },
+    {
+      "name": "facha",
+      "url": "https://facha.pw/",
+      "requires_key": false,
+      "description": "Combined aircraft tracking, ship tracking and more",
+      "docs": "https://facha.pw/",
+      "status": "available"
+    },
+    {
+      "name": "Flight Fare Search",
+      "url": "https://api.flightapi.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Search realtime flight fares across destinations",
+      "docs": "https://api.flightapi.io/",
+      "status": "available"
+    },
+    {
+      "name": "Fuel Prices at Spanish Gas Stations",
+      "url": "https://www.datos.gob.es/en/catalogo/lod/isotc211ciy-48",
+      "requires_key": false,
+      "description": "Information about fuel prices in Spain",
+      "docs": "https://www.datos.gob.es/en/catalogo/lod/isotc211ciy-48",
+      "status": "available"
+    },
+    {
+      "name": "Grab",
+      "url": "https://developer.grab.com/docs/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Ride-hailing, deliveries and payments",
+      "docs": "https://developer.grab.com/docs/",
+      "status": "available"
+    },
+    {
+      "name": "GraphHopper",
+      "url": "https://graphhopper.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "A-to-B routing with turn-by-turn instructions",
+      "docs": "https://graphhopper.com/",
+      "status": "available"
+    },
+    {
+      "name": "Icelandic APIs",
+      "url": "https://docs.apis.is/",
+      "requires_key": false,
+      "description": "Open APIs delivering services in or regarding Iceland",
+      "docs": "https://docs.apis.is/",
+      "status": "available"
+    },
+    {
+      "name": "Izi",
+      "url": "https://izi.travel/api/",
+      "requires_key": false,
+      "description": "Audio guides for travellers",
+      "docs": "https://izi.travel/api/",
+      "status": "available"
+    },
+    {
+      "name": "Konkan Railway Live Train Position",
+      "url": "https://konkanrailway.com/",
+      "requires_key": false,
+      "description": "Real-time positions for trains on India's Konkan Railway",
+      "docs": "https://konkanrailway.com/",
+      "status": "available"
+    },
+    {
+      "name": "Land Transport Authority DataMall (Singapore)",
+      "url": "https://datamall.lta.gov.sg/content/datamall/en.html",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "Data about buses, parking and traffic",
+      "docs": "https://datamall.lta.gov.sg/content/datamall/en.html",
+      "status": "available"
+    },
+    {
+      "name": "Metro Lisboa",
+      "url": "https://dados.cm-lisboa.pt/dataset/metro-lisboa",
+      "requires_key": false,
+      "description": "Delays in Lisbon's subway lines",
+      "docs": "https://dados.cm-lisboa.pt/dataset/metro-lisboa",
+      "status": "available"
+    },
+    {
+      "name": "Navitia",
+      "url": "https://www.navitia.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Open API for building transport applications",
+      "docs": "https://www.navitia.io/",
+      "status": "available"
+    },
+    {
+      "name": "Open Charge Map",
+      "url": "https://openchargemap.org/site/develop",
+      "requires_key": false,
+      "description": "Global public registry of electric vehicle charging locations",
+      "docs": "https://openchargemap.org/site/develop",
+      "status": "available"
+    },
+    {
+      "name": "Railway Transport for France (SNCF)",
+      "url": "https://www.sncf.com/en/service-open-data",
+      "requires_key": false,
+      "description": "Open data for French railways",
+      "docs": "https://www.sncf.com/en/service-open-data",
+      "status": "available"
+    },
+    {
+      "name": "REFUGE Restrooms",
+      "url": "https://www.refugerestrooms.org/api",
+      "requires_key": false,
+      "description": "Locations of safe restrooms for transgender, intersex and gender non-conforming individuals",
+      "docs": "https://www.refugerestrooms.org/api",
+      "status": "available"
+    },
+    {
+      "name": "Sabre for Developers",
+      "url": "https://developer.sabre.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Travel search, flights and hotels",
+      "docs": "https://developer.sabre.com/",
+      "status": "available"
+    },
+    {
+      "name": "Schiphol Airport",
+      "url": "https://developer.schiphol.nl/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Airport and flight information for Amsterdam Schiphol",
+      "docs": "https://developer.schiphol.nl/",
+      "status": "available"
+    },
+    {
+      "name": "Swedavia Airports",
+      "url": "https://api.swedavia.se/",
+      "requires_key": false,
+      "description": "Airport and flight info for Swedish airports",
+      "docs": "https://api.swedavia.se/",
+      "status": "available"
+    },
+    {
+      "name": "Tankerkoenig",
+      "url": "https://creativecommons.tankerkoenig.de/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "German real-time gas and diesel prices",
+      "docs": "https://creativecommons.tankerkoenig.de/",
+      "status": "available"
+    },
+    {
+      "name": "Trackr TMS",
+      "url": "https://trackr.tech/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Create, assign and track shipments",
+      "docs": "https://trackr.tech/",
+      "status": "available"
+    },
+    {
+      "name": "TransitLand",
+      "url": "https://transit.land/",
+      "requires_key": false,
+      "description": "Aggregated public transit data and schedules",
+      "docs": "https://transit.land/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Atlanta (MARTA)",
+      "url": "http://www.itsmarta.com/",
+      "requires_key": false,
+      "description": "Real-time positions of Atlanta Metro vehicles",
+      "docs": "http://www.itsmarta.com/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Auckland, NZ",
+      "url": "https://api.at.govt.nz/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "Data for Auckland's public transport",
+      "docs": "https://api.at.govt.nz/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Belgium (iRail)",
+      "url": "https://api.irail.be/",
+      "requires_key": false,
+      "description": "Belgian public transport information",
+      "docs": "https://api.irail.be/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Berlin (VBB)",
+      "url": "https://api.vbb.transport.rest/",
+      "requires_key": false,
+      "description": "Berlin's public transport API",
+      "docs": "https://api.vbb.transport.rest/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Bordeaux",
+      "url": "https://data.bordeaux-metropole.fr/",
+      "requires_key": false,
+      "description": "Bordeaux Métropole public transport",
+      "docs": "https://data.bordeaux-metropole.fr/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Budapest",
+      "url": "https://bkk.hu/en/data",
+      "requires_key": false,
+      "description": "Budapest public transport",
+      "docs": "https://bkk.hu/en/data",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Chicago",
+      "url": "https://www.transitchicago.com/developers/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "Chicago Transit Authority API",
+      "docs": "https://www.transitchicago.com/developers/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Czech Republic",
+      "url": "https://www.mdcr.cz/",
+      "requires_key": false,
+      "description": "Public transport API",
+      "docs": "https://www.mdcr.cz/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Finland",
+      "url": "https://digitransit.fi/en/developers/",
+      "requires_key": false,
+      "description": "Finland transport data",
+      "docs": "https://digitransit.fi/en/developers/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Grenoble",
+      "url": "https://www.tag.fr/en/opendata-api",
+      "requires_key": false,
+      "description": "Grenoble public transport",
+      "docs": "https://www.tag.fr/en/opendata-api",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Hessen",
+      "url": "https://www.rmv.de/c/en/services/developer-api",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "RMV API for Hesse, Germany",
+      "docs": "https://www.rmv.de/c/en/services/developer-api",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Honolulu",
+      "url": "https://www.honolulutransit.org/open-data/",
+      "requires_key": false,
+      "description": "Honolulu public transport information",
+      "docs": "https://www.honolulutransit.org/open-data/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Lisbon, Portugal",
+      "url": "https://dados.cm-lisboa.pt/dataset/",
+      "requires_key": false,
+      "description": "Bus routes, parking and traffic",
+      "docs": "https://dados.cm-lisboa.pt/dataset/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for London",
+      "url": "https://api.tfl.gov.uk/",
+      "requires_key": false,
+      "description": "TfL unified API",
+      "docs": "https://api.tfl.gov.uk/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Los Angeles",
+      "url": "https://developer.metro.net/introduction/",
+      "requires_key": false,
+      "description": "LA Metro real-time positions",
+      "docs": "https://developer.metro.net/introduction/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Norway",
+      "url": "https://api.entur.io/",
+      "requires_key": false,
+      "description": "Public transport and datasets",
+      "docs": "https://api.entur.io/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Ottawa, Canada",
+      "url": "https://www.octranspo.com/en/plan-your-trip/developers/",
+      "requires_key": false,
+      "description": "OC Transpo API",
+      "docs": "https://www.octranspo.com/en/plan-your-trip/developers/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Paris (RATP)",
+      "url": "https://data.ratp.fr/",
+      "requires_key": false,
+      "description": "Paris public transport data",
+      "docs": "https://data.ratp.fr/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Sao Paulo",
+      "url": "http://api.olhovivo.sptrans.com.br/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "SPTrans open data",
+      "docs": "http://api.olhovivo.sptrans.com.br/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Spain",
+      "url": "https://data.renfe.com/",
+      "requires_key": false,
+      "description": "Spanish public trains (Renfe) data",
+      "docs": "https://data.renfe.com/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Sweden",
+      "url": "https://www.trafiklab.se/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Public Transport consumer API",
+      "docs": "https://www.trafiklab.se/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Switzerland",
+      "url": "https://transport.opendata.ch/",
+      "requires_key": false,
+      "description": "Swiss public transport API",
+      "docs": "https://transport.opendata.ch/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for The Netherlands (NS trains)",
+      "url": "http://www.ns.nl/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "Dutch national rail",
+      "docs": "http://www.ns.nl/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Toronto (TTC)",
+      "url": "https://myttc.ca/developers/",
+      "requires_key": false,
+      "description": "Toronto Transit Commission data",
+      "docs": "https://myttc.ca/developers/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for UK",
+      "url": "https://data.gov.uk/dataset/transportapi",
+      "requires_key": false,
+      "description": "Unified UK transport dataset",
+      "docs": "https://data.gov.uk/dataset/transportapi",
+      "status": "available"
+    },
+    {
+      "name": "Transport for United States (NextBus)",
+      "url": "http://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf",
+      "requires_key": false,
+      "description": "NextBus API for U.S. transit",
+      "docs": "http://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Vancouver (TransLink)",
+      "url": "https://developer.translink.ca/",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "Vancouver Metro data",
+      "docs": "https://developer.translink.ca/",
+      "status": "available"
+    },
+    {
+      "name": "Transport for Washington, US",
+      "url": "https://developer.wmata.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Washington Metro API",
+      "docs": "https://developer.wmata.com/",
+      "status": "available"
+    },
+    {
+      "name": "transport.rest",
+      "url": "https://transport.rest/",
+      "requires_key": false,
+      "description": "Community-maintained public transport API",
+      "docs": "https://transport.rest/",
+      "status": "available"
+    },
+    {
+      "name": "Velib Metropolis (Paris)",
+      "url": "https://www.velib-metropole.fr/opendata",
+      "requires_key": false,
+      "description": "Velib bike sharing open data",
+      "docs": "https://www.velib-metropole.fr/opendata",
+      "status": "available"
+    }
+  ],
+  "health": [
+    {
+      "name": "CMS.gov",
+      "url": "https://data.cms.gov/",
+      "requires_key": false,
+      "description": "Access data from the U.S. Centers for Medicare & Medicaid Services",
+      "docs": "https://data.cms.gov/",
+      "status": "available"
+    },
+    {
+      "name": "Coronavirus in the UK",
+      "url": "https://api.coronavirus.data.gov.uk/",
+      "requires_key": false,
+      "description": "UK government COVID-19 data by region",
+      "docs": "https://api.coronavirus.data.gov.uk/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19",
+      "url": "https://covid19api.com/",
+      "requires_key": false,
+      "description": "Global COVID-19 cases, deaths and recoveries",
+      "docs": "https://covid19api.com/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Datenhub",
+      "url": "https://covid19-static-sc.now.sh/",
+      "requires_key": false,
+      "description": "Maps and datasets related to COVID-19",
+      "docs": "https://covid19-static-sc.now.sh/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Government Response",
+      "url": "https://covidtracker.bsg.ox.ac.uk/",
+      "requires_key": false,
+      "description": "Government response tracker",
+      "docs": "https://covidtracker.bsg.ox.ac.uk/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 India",
+      "url": "https://data.covid19india.org/",
+      "requires_key": false,
+      "description": "Statistics state and district wise",
+      "docs": "https://data.covid19india.org/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 JHU CSSE",
+      "url": "https://github.com/CSSEGISandData/COVID-19",
+      "requires_key": false,
+      "description": "Johns Hopkins University open COVID-19 data",
+      "docs": "https://github.com/CSSEGISandData/COVID-19",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Live Data",
+      "url": "https://github.com/ieee-yesist12/covid19-live-data",
+      "requires_key": false,
+      "description": "Global & country-wise daily summaries",
+      "docs": "https://github.com/ieee-yesist12/covid19-live-data",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Philippines",
+      "url": "https://doh.gov.ph/",
+      "requires_key": false,
+      "description": "DOH data on COVID-19 in the Philippines",
+      "docs": "https://doh.gov.ph/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Tracker Canada",
+      "url": "https://api.covid19tracker.ca/",
+      "requires_key": false,
+      "description": "COVID-19 cases and vaccinations in Canada",
+      "docs": "https://api.covid19tracker.ca/",
+      "status": "available"
+    },
+    {
+      "name": "Covid-19 Tracker Sri Lanka",
+      "url": "https://www.hpb.health.gov.lk/",
+      "requires_key": false,
+      "description": "Sri Lanka COVID-19 statistics",
+      "docs": "https://www.hpb.health.gov.lk/",
+      "status": "available"
+    },
+    {
+      "name": "Covid Tracking Project",
+      "url": "https://covidtracking.com/data/api",
+      "requires_key": false,
+      "description": "U.S. COVID-19 data (archived)",
+      "docs": "https://covidtracking.com/data/api",
+      "status": "available"
+    },
+    {
+      "name": "Dataflow Kit COVID-19",
+      "url": "https://covid-19.dataflowkit.com/",
+      "requires_key": false,
+      "description": "Live COVID-19 statistics for websites",
+      "docs": "https://covid-19.dataflowkit.com/",
+      "status": "available"
+    },
+    {
+      "name": "FoodData Central",
+      "url": "https://fdc.nal.usda.gov/api-key-signup.html",
+      "requires_key": true,
+      "free_tier": "Free",
+      "description": "U.S. Department of Agriculture nutrient database",
+      "docs": "https://fdc.nal.usda.gov/api-key-signup.html",
+      "status": "available"
+    },
+    {
+      "name": "Healthcare.gov",
+      "url": "https://www.healthcare.gov/",
+      "requires_key": false,
+      "description": "Educational content about the U.S. Health Insurance Marketplace",
+      "docs": "https://www.healthcare.gov/",
+      "status": "available"
+    },
+    {
+      "name": "Humanitarian Data Exchange (HDX)",
+      "url": "https://data.humdata.org/",
+      "requires_key": false,
+      "description": "Open platform for sharing crisis data",
+      "docs": "https://data.humdata.org/",
+      "status": "available"
+    },
+    {
+      "name": "Infermedica",
+      "url": "https://developer.infermedica.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "NLP-based symptom checker and triage",
+      "docs": "https://developer.infermedica.com/",
+      "status": "available"
+    },
+    {
+      "name": "LAPIS",
+      "url": "https://cov-spectrum.ethz.ch/",
+      "requires_key": false,
+      "description": "SARS-CoV-2 genomic sequences",
+      "docs": "https://cov-spectrum.ethz.ch/",
+      "status": "available"
+    },
+    {
+      "name": "Lexigram",
+      "url": "https://docs.lexigram.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Extracts clinical concepts from text",
+      "docs": "https://docs.lexigram.io/",
+      "status": "available"
+    },
+    {
+      "name": "Makeup",
+      "url": "http://makeup-api.herokuapp.com/",
+      "requires_key": false,
+      "description": "Makeup product information",
+      "docs": "http://makeup-api.herokuapp.com/",
+      "status": "available"
+    },
+    {
+      "name": "MyVaccination (Malaysia)",
+      "url": "https://www.vaksin.gov.my",
+      "requires_key": false,
+      "description": "Vaccination data for Malaysia",
+      "docs": "https://www.vaksin.gov.my",
+      "status": "available"
+    },
+    {
+      "name": "NPPES",
+      "url": "https://npiregistry.cms.hhs.gov/",
+      "requires_key": false,
+      "description": "U.S. healthcare provider enumeration system",
+      "docs": "https://npiregistry.cms.hhs.gov/",
+      "status": "available"
+    },
+    {
+      "name": "Nutritionix",
+      "url": "https://developer.nutritionix.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "One of the largest nutrition databases",
+      "docs": "https://developer.nutritionix.com/",
+      "status": "available"
+    },
+    {
+      "name": "Open Data NHS Scotland",
+      "url": "https://www.opendata.nhs.scot/",
+      "requires_key": false,
+      "description": "Scottish medical reference data",
+      "docs": "https://www.opendata.nhs.scot/",
+      "status": "available"
+    },
+    {
+      "name": "Open Disease",
+      "url": "https://disease.sh/",
+      "requires_key": false,
+      "description": "API for COVID-19 and influenza cases",
+      "docs": "https://disease.sh/",
+      "status": "available"
+    },
+    {
+      "name": "openFDA",
+      "url": "https://open.fda.gov/apis/",
+      "requires_key": false,
+      "description": "U.S. FDA data on drugs, devices and foods",
+      "docs": "https://open.fda.gov/apis/",
+      "status": "available"
+    }
+  ],
+  "finance": [
+    {
+      "name": "Abstract VAT Validation",
+      "url": "https://www.abstractapi.com/vat-validation-api",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Validate VAT numbers and compute VAT rates",
+      "docs": "https://www.abstractapi.com/vat-validation-api",
+      "status": "available"
+    },
+    {
+      "name": "Aletheia",
+      "url": "https://aletheiaapi.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Insider trading data, earnings call analysis and financial statements",
+      "docs": "https://aletheiaapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "Alpha Vantage",
+      "url": "https://www.alphavantage.co/",
+      "requires_key": true,
+      "free_tier": "500 calls/day free",
+      "description": "Real-time and historical stock data",
+      "docs": "https://www.alphavantage.co/",
+      "status": "available"
+    },
+    {
+      "name": "ArgentoFX",
+      "url": "https://api.argentofx.com/",
+      "requires_key": false,
+      "description": "Real-time foreign exchange rates for Argentina",
+      "docs": "https://api.argentofx.com/",
+      "status": "available"
+    },
+    {
+      "name": "Binlist",
+      "url": "https://lookup.binlist.net/",
+      "requires_key": false,
+      "description": "Public database of IIN/BIN information",
+      "docs": "https://lookup.binlist.net/",
+      "status": "available"
+    },
+    {
+      "name": "Bullbear Advisors",
+      "url": "https://bullbearadvisors.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Buy & sell signals based on candlestick patterns",
+      "docs": "https://bullbearadvisors.com/",
+      "status": "available"
+    },
+    {
+      "name": "DolarAPI",
+      "url": "https://api.bluelytics.com.ar/",
+      "requires_key": false,
+      "description": "Exchange rates for Latin American currencies",
+      "docs": "https://api.bluelytics.com.ar/",
+      "status": "available"
+    },
+    {
+      "name": "Econdb",
+      "url": "https://www.econdb.com/api/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Global macroeconomic and financial data",
+      "docs": "https://www.econdb.com/api/",
+      "status": "available"
+    },
+    {
+      "name": "Fed Treasury",
+      "url": "https://fiscaldata.treasury.gov/datasets/",
+      "requires_key": false,
+      "description": "U.S. Department of the Treasury datasets",
+      "docs": "https://fiscaldata.treasury.gov/datasets/",
+      "status": "available"
+    },
+    {
+      "name": "FRED (Federal Reserve Economic Data)",
+      "url": "https://fred.stlouisfed.org/docs/api/fred/",
+      "requires_key": true,
+      "free_tier": "1000 calls/day free",
+      "description": "Economic data from the St. Louis Fed",
+      "docs": "https://fred.stlouisfed.org/docs/api/fred/",
+      "status": "available"
+    },
+    {
+      "name": "Financial Modeling Prep",
+      "url": "https://site.financialmodelingprep.com/developer/docs/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Real-time and historical stock market data",
+      "docs": "https://site.financialmodelingprep.com/developer/docs/",
+      "status": "available"
+    },
+    {
+      "name": "Finage",
+      "url": "https://www.finage.co.uk/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Stock, currency and cryptocurrency market data",
+      "docs": "https://www.finage.co.uk/",
+      "status": "available"
+    },
+    {
+      "name": "FinFeedAPI",
+      "url": "https://finfeedapi.com/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Developer-focused market data",
+      "docs": "https://finfeedapi.com/",
+      "status": "available"
+    },
+    {
+      "name": "Finturest IBAN",
+      "url": "https://finturest.com/iban-validation-api",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Fast IBAN validation & generation",
+      "docs": "https://finturest.com/iban-validation-api",
+      "status": "available"
+    },
+    {
+      "name": "OpenFIGI",
+      "url": "https://www.openfigi.com/api",
+      "requires_key": false,
+      "description": "Symbol lookup for equities, indices, futures and options",
+      "docs": "https://www.openfigi.com/api",
+      "status": "available"
+    },
+    {
+      "name": "Polygon",
+      "url": "https://polygon.io/",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Historical stock data with a free tier",
+      "docs": "https://polygon.io/",
+      "status": "available"
+    },
+    {
+      "name": "Validate IBAN API",
+      "url": "https://api.apilayer.com/iban/check-iban",
+      "requires_key": true,
+      "free_tier": "Free tier",
+      "description": "Validate international bank account numbers",
+      "docs": "https://api.apilayer.com/iban/check-iban",
+      "status": "available"
+    },
+    {
+      "name": "Validate Swift/BIC",
+      "url": "https://www.bankcodevalidator.com/",
+      "requires_key": false,
+      "description": "Validate BIC/SWIFT codes",
+      "docs": "https://www.bankcodevalidator.com/",
+      "status": "available"
+    },
+    {
+      "name": "SEC EDGAR Data",
+      "url": "https://www.sec.gov/edgar/sec-api-documentation",
+      "requires_key": false,
+      "description": "U.S. Securities and Exchange Commission filings",
+      "docs": "https://www.sec.gov/edgar/sec-api-documentation",
+      "status": "available"
+    },
+    {
+      "name": "WallstreetBets Sentiment",
+      "url": "https://apewisdom.io/wallstreetbets/",
+      "requires_key": false,
+      "description": "Sentiment analysis of Reddit's WallstreetBets comments",
+      "docs": "https://apewisdom.io/wallstreetbets/",
+      "status": "available"
+    }
+  ],
+  "google": [
+    {
+      "name": "Google Books API",
+      "url": "https://developers.google.com/books",
+      "requires_key": true,
+      "free_tier": "Generous free tier",
+      "description": "Search and retrieve metadata about books",
+      "docs": "https://developers.google.com/books",
+      "status": "available"
+    },
+    {
+      "name": "Google Calendar API",
+      "url": "https://developers.google.com/calendar",
+      "requires_key": true,
+      "free_tier": "Generous free tier",
+      "description": "Read and write calendar events",
+      "docs": "https://developers.google.com/calendar",
+      "status": "available"
+    },
+    {
+      "name": "Google Drive API",
+      "url": "https://developers.google.com/drive",
+      "requires_key": true,
+      "free_tier": "Generous free tier",
+      "description": "Manage files in Google Drive",
+      "docs": "https://developers.google.com/drive",
+      "status": "available"
+    },
+    {
+      "name": "Google Sheets API",
+      "url": "https://developers.google.com/sheets/api",
+      "requires_key": true,
+      "free_tier": "Generous free tier",
+      "description": "Read and update spreadsheet data",
+      "docs": "https://developers.google.com/sheets/api",
+      "status": "available"
+    },
+    {
+      "name": "Google Maps Directions API",
+      "url": "https://developers.google.com/maps/documentation/directions",
+      "requires_key": true,
+      "free_tier": "$200/month free",
+      "description": "Routing and travel time for driving, walking and transit",
+      "docs": "https://developers.google.com/maps/documentation/directions",
+      "status": "active"
+    },
+    {
+      "name": "Google Maps Geocoding API",
+      "url": "https://developers.google.com/maps/documentation/geocoding",
+      "requires_key": true,
+      "free_tier": "$200/month free",
+      "description": "Convert addresses into geographic coordinates and vice versa",
+      "docs": "https://developers.google.com/maps/documentation/geocoding",
+      "status": "active"
+    },
+    {
+      "name": "Google Maps Places API",
+      "url": "https://developers.google.com/maps/documentation/places",
+      "requires_key": true,
+      "free_tier": "$200/month free",
+      "description": "Place search and details for points of interest",
+      "docs": "https://developers.google.com/maps/documentation/places",
+      "status": "active"
+    }
+  ],
+  "maps": [
+    {
+      "name": "OpenStreetMap Nominatim",
+      "url": "https://nominatim.openstreetmap.org/",
+      "requires_key": false,
+      "description": "Free forward and reverse geocoding using OpenStreetMap data",
+      "docs": "https://nominatim.openstreetmap.org/",
+      "status": "available"
+    },
+    {
+      "name": "OpenRouteService",
+      "url": "https://openrouteservice.org/",
+      "requires_key": true,
+      "free_tier": "2000 requests/day free",
+      "description": "Routing, isochrones and navigation with open data",
+      "docs": "https://openrouteservice.org/",
+      "status": "available"
+    },
+    {
+      "name": "Mapbox",
+      "url": "https://docs.mapbox.com/api/",
+      "requires_key": true,
+      "free_tier": "Generous free tier",
+      "description": "Maps, geocoding and navigation with a free tier",
+      "docs": "https://docs.mapbox.com/api/",
+      "status": "available"
+    }
+  ]
+}
